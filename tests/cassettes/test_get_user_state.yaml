@@ -1,0 +1,40 @@
+interactions:
+- request:
+    body: '{"type": "clearinghouseState", "user": "0x5e9ee1089755c3435139848e47e6635505d5a13a"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '84'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.2
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '{"assetPositions":[{"position":{"coin":"BTC","entryPx":"26951.0","leverage":{"type":"cross","value":20},"liquidationPx":"173198.69592357","marginUsed":"10.582271","maxTradeSzs":["0.76534","0.74964"],"positionValue":"211.64542","returnOnEquity":"-0.00756643","szi":"-0.00785","unrealizedPnl":"-0.08007"},"type":"oneWay"},{"position":{"coin":"ETH","entryPx":"1705.82","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"11.383755","maxTradeSzs":["11.8423","12.1091"],"positionValue":"227.675114","returnOnEquity":"0.01042942","szi":"0.1334","unrealizedPnl":"0.118726"},"type":"oneWay"},{"position":{"coin":"ATOM","entryPx":"10.787","leverage":{"type":"cross","value":20},"liquidationPx":"2561.83187333","marginUsed":"0.243","maxTradeSzs":["1872.32","1871.42"],"positionValue":"4.86","returnOnEquity":"-0.02407407","szi":"-0.45","unrealizedPnl":"-0.00585"},"type":"oneWay"},{"position":{"coin":"MATIC","entryPx":"1.03483","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"3.96788","maxTradeSzs":["19509.1","19662.3"],"positionValue":"79.3576","returnOnEquity":"0.02258687","szi":"76.6","unrealizedPnl":"0.089622"},"type":"oneWay"},{"position":{"coin":"DYDX","entryPx":"2.36808","leverage":{"type":"cross","value":20},"liquidationPx":"11.841653","marginUsed":"14.3622","maxTradeSzs":["8770.4","8528.0"],"positionValue":"287.244","returnOnEquity":"-0.01620253","szi":"-121.2","unrealizedPnl":"-0.232704"},"type":"oneWay"},{"position":{"coin":"SOL","entryPx":"19.6789","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"7.275455","maxTradeSzs":["1026.48","1041.26"],"positionValue":"145.5091","returnOnEquity":"0.01127476","szi":"7.39","unrealizedPnl":"0.082029"},"type":"oneWay"},{"position":{"coin":"AVAX","entryPx":"16.3839","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"23.206","maxTradeSzs":["1232.4","1289.0"],"positionValue":"464.12","returnOnEquity":"0.01963415","szi":"28.3","unrealizedPnl":"0.45563"},"type":"oneWay"},{"position":{"coin":"BNB","entryPx":"306.509","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"29.40102","maxTradeSzs":["65.856","69.688"],"positionValue":"588.0204","returnOnEquity":"0.02548061","szi":"1.916","unrealizedPnl":"0.749156"},"type":"oneWay"},{"position":{"coin":"APE","entryPx":"3.86082","leverage":{"type":"cross","value":20},"liquidationPx":"12.57589638","marginUsed":"25.47694","maxTradeSzs":["5491.5","5227.9"],"positionValue":"509.5388","returnOnEquity":"-0.02679772","szi":"-131.8","unrealizedPnl":"-0.682724"},"type":"oneWay"},{"position":{"coin":"OP","entryPx":"2.04459","leverage":{"type":"cross","value":20},"liquidationPx":"17.0707113","marginUsed":"7.8119","maxTradeSzs":["10036.1","9883.3"],"positionValue":"156.238","returnOnEquity":"-0.00400978","szi":"-76.4","unrealizedPnl":"-0.031324"},"type":"oneWay"},{"position":{"coin":"LTC","entryPx":"88.0926","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"23.48931","maxTradeSzs":["229.31","239.97"],"positionValue":"469.7862","returnOnEquity":"0.01075562","szi":"5.33","unrealizedPnl":"0.252642"},"type":"oneWay"},{"position":{"coin":"ARB","entryPx":"1.17991","leverage":{"type":"cross","value":20},"liquidationPx":null,"marginUsed":"14.541035","maxTradeSzs":["17131.2","17624.2"],"positionValue":"290.8207","returnOnEquity":"-0.00186472","szi":"246.5","unrealizedPnl":"-0.027115"},"type":"oneWay"}],"crossMarginSummary":{"accountValue":"1182.312496","totalMarginUsed":"171.740766","totalNtlPos":"3434.815334","totalRawUsd":"86.549602","withdrawable":"1010.57173"},"marginSummary":{"accountValue":"1182.312496","totalMarginUsed":"171.740766","totalNtlPos":"3434.815334","totalRawUsd":"86.549602","withdrawable":"1010.57173"}}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      content-length:
+      - '3768'
+      content-type:
+      - application/json
+      date:
+      - Mon, 27 Mar 2023 18:05:22 GMT
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

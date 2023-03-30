@@ -1,0 +1,36 @@
+default_language_version:
+  python: python3.10
+
+default_stages: [commit, push]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: LICENSE
+
+  - repo: local
+    hooks:
+      - id: pyupgrade
+        name: pyupgrade
+        entry: poetry run pyupgrade --py310-plus
+        types: [python]
+        language: system
+
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        entry: poetry run isort --settings-path pyproject.toml
+        types: [python]
+        language: system
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: poetry run black --config pyproject.toml
+        types: [python]
+        language: system

@@ -1,0 +1,4 @@
+{
+    "comments": "Make a copy of this file and save to `config.json` Fill in your secret key e.g. 0x0000000000000000000000000000000000000000000000000000000000000000",
+    "secret_key": ""
+}
