@@ -18,9 +18,16 @@ from hyperliquid.utils.types import Meta, Any, Literal, Optional
 
 
 class Exchange(API):
-    def __init__(self, wallet: LocalAccount, base_url: Optional[str] = None, meta: Optional[Meta] = None):
+    def __init__(
+        self,
+        wallet: LocalAccount,
+        base_url: Optional[str] = None,
+        meta: Optional[Meta] = None,
+        vault_address: Optional[str] = None,
+    ):
         super().__init__(base_url)
         self.wallet = wallet
+        self.vault_address = vault_address
         if meta is None:
             info = Info(base_url, skip_ws=True)
             self.meta = info.meta()
@@ -48,39 +55,32 @@ class Exchange(API):
             self.wallet,
             ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"],
             [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
-            ZERO_ADDRESS,
+            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
         )
-        logging.debug(
-            {
-                "action": {
-                    "type": "order",
-                    "grouping": grouping,
-                    "orders": [order_spec_to_order_wire(order_spec)],
-                },
-                "nonce": timestamp,
-                "signature": signature,
-                "vaultAddress": None,
-            }
-        )
-        return self.post(
-            "/exchange",
-            {
-                "action": {
-                    "type": "order",
-                    "grouping": grouping,
-                    "orders": [order_spec_to_order_wire(order_spec)],
-                },
-                "nonce": timestamp,
-                "signature": signature,
-                "vaultAddress": None,
+        payload = {
+            "action": {
+                "type": "order",
+                "grouping": grouping,
+                "orders": [order_spec_to_order_wire(order_spec)],
             },
-        )
+            "nonce": timestamp,
+            "signature": signature,
+            "vaultAddress": self.vault_address,
+        }
+        logging.debug(payload)
+        return self.post("/exchange", payload)
 
     def cancel(self, coin: str, oid: int) -> Any:
         timestamp = get_timestamp_ms()
         asset = self.coin_to_asset[coin]
-        signature = sign_l1_action(self.wallet, ["(uint32,uint64)[]"], [[(asset, oid)]], ZERO_ADDRESS, timestamp)
+        signature = sign_l1_action(
+            self.wallet,
+            ["(uint32,uint64)[]"],
+            [[(asset, oid)]],
+            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            timestamp,
+        )
         return self.post(
             "/exchange",
             {
@@ -95,6 +95,6 @@ class Exchange(API):
                 },
                 "nonce": timestamp,
                 "signature": signature,
-                "vaultAddress": None,
+                "vaultAddress": self.vault_address,
             },
         )

@@ -44,6 +44,16 @@ def test_l1_action_signing_matches():
     assert signature["v"] == 27
 
 
+def test_l1_action_signing_matches_with_vault():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    signature = sign_l1_action(
+        wallet, ["uint64"], [float_to_int_for_hashing(1000)], "0x1719884eb866cb12b2287399b15f7db5e7d775ea", 0
+    )
+    assert signature["r"] == "0x9358ee731732877d9a6d1a761fb6db43f93cb7c69ca74ecb382bd0773ac9b093"
+    assert signature["s"] == "0x2879b3d8384b80664346c4286c34f947fc970c3a84c2f3995555f68493adf60b"
+    assert signature["v"] == 27
+
+
 def test_float_to_int_for_hashing():
     assert float_to_int_for_hashing(123123123123) == 12312312312300000000
     assert float_to_int_for_hashing(0.00001231) == 1231

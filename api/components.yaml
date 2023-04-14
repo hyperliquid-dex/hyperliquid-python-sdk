@@ -1,0 +1,12 @@
+components:
+  schemas:
+    FloatString:
+      type: string
+      pattern: "^\\d+\\.?\\d*$"
+    Address:
+      type: string
+      pattern: "^0x[a-fA-F0-9]{40}$"
+    AssetPosition:
+      type: object
+    MarginSummary:
+      type: object

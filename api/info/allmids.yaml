@@ -1,0 +1,44 @@
+openapi: 3.0.1
+info:
+  title: Hyperliquid
+  description: API for interacting with the Hyperliquid DEX
+  version: '0.1'
+servers:
+  - url: https://api.hyperliquid.xyz
+    description: Mainnet
+  - url: https://api.hyperliquid-testnet.xyz
+    description: Testnet
+  - url: http://localhost:3001
+    description: Local
+paths:
+  /info:
+    post:
+      summary: Retrieve all mids for all actively traded coins
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [allMids]
+              required:
+                - type
+            example:
+              type: allMids
+      responses:
+        '200':
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "../components.yaml#/components/schemas/FloatString"
+              example:
+                APE: "4.36255"
+                ARB: "1.22965"
+                ATOM: "11.2585"
+                AVAX: "18.3695"

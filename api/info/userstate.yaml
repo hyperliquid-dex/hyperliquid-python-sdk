@@ -1,0 +1,79 @@
+openapi: 3.0.1
+info:
+  title: Hyperliquid
+  description: API for interacting with the Hyperliquid DEX
+  version: '0.1'
+servers:
+  - url: https://api.hyperliquid.xyz
+    description: Mainnet
+  - url: https://api.hyperliquid-testnet.xyz
+    description: Testnet
+  - url: http://localhost:3001
+    description: Local
+paths:
+  /info:
+    post:
+      summary: Retrieve a user's state
+      description: See a user's open positions and margin summary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [clearinghouseState]
+                user:
+                  $ref: "../components.yaml#/components/schemas/Address"
+              required:
+                - type
+                - user
+            example:
+                type: "clearinghouseState"
+                user: "0x0000000000000000000000000000000000000000"
+      responses:
+        '200':
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assetPositions:
+                    type: array
+                    items:
+                      $ref: "../components.yaml#/components/schemas/AssetPosition"
+                  marginSummary:
+                    $ref: "../components.yaml#/components/schemas/MarginSummary"
+                  crossMarginSummary:
+                    $ref: "../components.yaml#/components/schemas/MarginSummary"
+              example:
+                assetPositions:
+                  - position:
+                      coin: "BTC"
+                      entryPx: null
+                      leverage:
+                        type: "cross"
+                        value: 20
+                      liquidationPx: "NaN"
+                      marginUsed: "0.0"
+                      maxTradeSzs: ["0.0", "0.0"]
+                      positionValue: "0.0"
+                      returnOnEquity: "0.0"
+                      szi: "0.0"
+                      unrealizedPnl: "0.0"
+                    type: "oneWay"
+                marginSummary:
+                  accountValue: "0.0"
+                  totalMarginUsed: "0.0"
+                  totalNtlPos: "0.0"
+                  totalRawUsd: "0.0"
+                  withdrawable: "0.0"
+                crossMarginSummary:
+                  accountValue: "0.0"
+                  totalMarginUsed: "0.0"
+                  totalNtlPos: "0.0"
+                  totalRawUsd: "0.0"
+                  withdrawable: "0.0"
