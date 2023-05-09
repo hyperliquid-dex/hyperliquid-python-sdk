@@ -1,0 +1,107 @@
+openapi: 3.0.1
+info:
+  title: Hyperliquid
+  description: API for interacting with the Hyperliquid DEX
+  version: '0.1'
+servers:
+  - url: https://api.hyperliquid.xyz
+    description: Mainnet
+paths:
+  /info:
+    post:
+      summary: Retrieve candle snapshot.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [candleSnapshot]
+                  description: Type of request being made.
+                req:
+                  type: object
+                  properties:
+                    coin:
+                      type: string
+                      description: The asset being queried.
+                    interval:
+                      type: string
+                      description: The time interval of the candles, e.g. "1m", "15m", "1h", "1d".
+                    startTime:
+                      type: integer
+                      description: The timestamp of the first candle in the snapshot.
+                    endTime:
+                      type: integer
+                      description: The timestamp of the last candle in the snapshot.
+                  required:
+                    - coin
+                    - interval
+                    - startTime
+                    - endTime
+                  example:
+                    coin: "BTC"
+                    interval: "15m"
+                    startTime: 1681923833000
+                    endTime: 1681923833000
+            example:
+              type: candleSnapshot
+              req:
+                coin: "BTC"
+                interval: "15m"
+                startTime: 1681923833000
+                endTime: 1681923833000
+      responses:
+        '200':
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    T:
+                      type: integer
+                      description: The timestamp of the end of the candle.
+                    c:
+                      type: string
+                      description: The closing price of the candle.
+                    h:
+                      type: string
+                      description: The highest price reached during the candle.
+                    i:
+                      type: string
+                      description: The time interval of the candle.
+                    l:
+                      type: string
+                      description: The lowest price reached during the candle.
+                    n:
+                      type: integer
+                      description: The number of trades that occurred during the candle.
+                    o:
+                      type: string
+                      description: The opening price of the candle.
+                    s:
+                      type: string
+                      description: The asset being queried.
+                    t:
+                      type: integer
+                      description: The timestamp of the beginning of the candle
+                    v:
+                      type: string
+                      description: The volume traded during the candle.
+                  example:
+                    - T: 1681924499999
+                      c: "29258.0"
+                      h: "29309.0"
+                      i: "15m"
+                      l: "29250.0"
+                      n: 189
+                      o: "29295.0"
+                      s: "BTC"
+                      t: 1681923600000
+                      v: "0.98639"
+

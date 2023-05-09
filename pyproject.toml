@@ -47,6 +47,7 @@ eth-utils = "^2.1.0"
 eth-abi = "^3.0.1"
 eth-account = "^0.8.0"
 websocket-client = "^1.5.1"
+requests = "^2.28.2"
 
 [tool.poetry.dev-dependencies]
 python = "3.10.10"

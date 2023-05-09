@@ -1,0 +1,68 @@
+openapi: 3.0.1
+info:
+  title: Active Trading Assets API
+  version: 1.0.0
+servers:
+  - url: https://api.hyperliquid.xyz
+paths:
+  /info:
+    post:
+      summary: Retrieve metadata and context information for actively trading assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: ["metaAndAssetCtxs"]
+              example:
+                type: "metaAndAssetCtxs"
+        required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  anyOf:
+                    - type: object
+                      properties:
+                        universe:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              szDecimals:
+                                type: integer
+                    - type: array
+                      items:
+                        type: object
+                        properties:
+                          dayNtlVlm:
+                            type: string
+                          funding:
+                            type: string
+                          markPx:
+                            type: string
+                          openInterest:
+                            type: string
+                          oraclePx:
+                            type: string
+                          prevDayPx:
+                            type: string
+              example:
+                - universe:
+                    - name: "BTC"
+                      szDecimals: 5
+                - - dayNtlVlm: "3559323.53447"
+                    funding: "-0.0000886"
+                    markPx: "28429.3"
+                    openInterest: "0.22168"
+                    oraclePx: "28445.0"
+                    prevDayPx: "29368.0"

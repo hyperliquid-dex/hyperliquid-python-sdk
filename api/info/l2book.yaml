@@ -1,0 +1,67 @@
+openapi: 3.0.1
+info:
+  title: Hyperliquid
+  description: API for interacting with the Hyperliquid DEX
+  version: '0.1'
+servers:
+  - url: https://api.hyperliquid.xyz
+    description: Mainnet
+  - url: https://api.hyperliquid-testnet.xyz
+    description: Testnet
+  - url: http://localhost:3001
+    description: Local
+paths:
+  /info:
+    post:
+      summary: Retrieve L2 book snapshot.
+      description: Returns the top 10 bids and asks of the order book.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [l2Book]
+                coin:
+                  type: string
+              required:
+                - type
+                - coin
+            example:
+              type: l2Book
+              coin: "BTC"
+      responses:
+        '200':
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      px:
+                        type: string
+                      sz:
+                        type: string
+                      n:
+                        type: integer
+                example:
+                  [
+                    [
+                      { "px": "19900", "sz": "1", "n": 1 },
+                      { "px": "19800", "sz": "2", "n": 2 },
+                      { "px": "19700", "sz": "3", "n": 3 }
+                    ],
+                    [
+                      { "px": "20100", "sz": "1", "n": 1 },
+                      { "px": "20200", "sz": "2", "n": 2 },
+                      { "px": "20300", "sz": "3", "n": 3 }
+                    ]
+                  ]
+

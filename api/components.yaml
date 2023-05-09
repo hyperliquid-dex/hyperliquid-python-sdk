@@ -10,3 +10,5 @@ components:
       type: object
     MarginSummary:
       type: object
+    L2Level:
+      type: object
