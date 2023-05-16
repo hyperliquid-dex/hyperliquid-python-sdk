@@ -1,9 +1,10 @@
 import time
+
 from eth_abi import encode
 from eth_account.messages import encode_structured_data
 from eth_utils import keccak, to_hex
 
-from hyperliquid.utils.types import TypedDict, Literal, Union, Any, Tuple
+from hyperliquid.utils.types import Any, Literal, Tuple, TypedDict, Union
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
@@ -137,9 +138,17 @@ def float_to_wire(x: float) -> str:
 
 
 def float_to_int_for_hashing(x: float) -> int:
-    with_decimals = x * 10**8
+    return float_to_int(x, 8)
+
+
+def float_to_usd_int(x: float) -> int:
+    return float_to_int(x, 6)
+
+
+def float_to_int(x: float, power: int) -> int:
+    with_decimals = x * 10**power
     if abs(round(with_decimals) - with_decimals) >= 1e-4:
-        raise ValueError("float_to_int_for_hashing causes rounding", x)
+        raise ValueError("float_to_int causes rounding", x)
     return round(with_decimals)
 
 

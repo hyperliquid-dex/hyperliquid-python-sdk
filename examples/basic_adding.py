@@ -5,24 +5,24 @@ import threading
 import time
 
 import eth_account
+import utils
 from eth_account.signers.local import LocalAccount
 
-import utils
 from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
 from hyperliquid.utils.signing import get_timestamp_ms
 from hyperliquid.utils.types import (
-    L2BookMsg,
-    L2BookSubscription,
-    UserEventsMsg,
-    Side,
     SIDES,
     Dict,
-    TypedDict,
-    Optional,
+    L2BookMsg,
+    L2BookSubscription,
     Literal,
+    Optional,
+    Side,
+    TypedDict,
     Union,
+    UserEventsMsg,
 )
 
 # How far from the best bid and offer this strategy ideally places orders. Currently set to .3%
@@ -88,7 +88,7 @@ class BasicAdder:
             # If a resting order exists, maybe cancel it
             provide_state = self.provide_state[side]
             if provide_state["type"] == "resting":
-                distance = abs((ideal_price - provide_state["px"]))
+                distance = abs(ideal_price - provide_state["px"])
                 if distance > ALLOWABLE_DEVIATION * ideal_distance:
                     oid = provide_state["oid"]
                     print(

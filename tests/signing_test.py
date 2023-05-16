@@ -6,11 +6,11 @@ from eth_utils import to_hex
 
 from hyperliquid.utils.signing import (
     ZERO_ADDRESS,
+    OrderSpec,
     construct_phantom_agent,
+    float_to_int_for_hashing,
     order_grouping_to_number,
     order_spec_preprocessing,
-    OrderSpec,
-    float_to_int_for_hashing,
     sign_l1_action,
 )
 

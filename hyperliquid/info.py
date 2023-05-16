@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Meta, Subscription, Any, cast, Callable
+from hyperliquid.utils.types import Any, Callable, Meta, Subscription, cast
 from hyperliquid.websocket_manager import WebsocketManager
 
 

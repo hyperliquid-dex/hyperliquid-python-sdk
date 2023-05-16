@@ -35,7 +35,7 @@ vim examples/config.json
 python examples/basic_order.py
 ```
 
-## Getting started with development
+## Getting started with contributing to this repo
 
 1. Download `Poetry`: https://python-poetry.org/. Note that in the install script you might have to set `symlinks=True` in `venv.EnvBuilder`.
 

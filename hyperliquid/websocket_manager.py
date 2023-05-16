@@ -1,10 +1,11 @@
-import logging
-from collections import defaultdict
 import json
+import logging
 import threading
+from collections import defaultdict
+
 import websocket
 
-from hyperliquid.utils.types import Subscription, WsMsg, Callable, Any, NamedTuple, Optional, List, Tuple, Dict
+from hyperliquid.utils.types import Any, Callable, Dict, List, NamedTuple, Optional, Subscription, Tuple, WsMsg
 
 ActiveSubscription = NamedTuple("ActiveSubscription", [("callback", Callable[[Any], None]), ("subscription_id", int)])
 

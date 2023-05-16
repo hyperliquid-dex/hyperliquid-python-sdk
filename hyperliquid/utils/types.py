@@ -1,11 +1,11 @@
 import sys
 
 if sys.version_info >= (3, 8):
-    from typing import TypedDict, Literal
+    from typing import Literal, TypedDict
 else:
     from typing_extensions import TypedDict, Literal
 
-from typing import List, Union, Dict, Tuple, Any, Optional, cast, Callable, NamedTuple
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union, cast
 
 Any = Any
 Option = Optional

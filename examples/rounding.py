@@ -7,13 +7,14 @@ Sizes are rounded to the szDecimals of that asset.
 For example, if szDecimals = 3 then 1.001 is a valid size but 1.0001 is not.
 You can find the szDecimals for an asset by making a meta request to the info endpoint
 """
-from eth_account.signers.local import LocalAccount
-import eth_account
 import json
-import utils
 
-from hyperliquid.info import Info
+import eth_account
+import utils
+from eth_account.signers.local import LocalAccount
+
 from hyperliquid.exchange import Exchange
+from hyperliquid.info import Info
 from hyperliquid.utils import constants
 
 
@@ -29,8 +30,8 @@ def main():
 
     # create a szDecimals map
     sz_decimals = {}
-    for info in meta["universe"]:
-        sz_decimals[info["name"]] = info["szDecimals"]
+    for asset_info in meta["universe"]:
+        sz_decimals[asset_info["name"]] = asset_info["szDecimals"]
 
     # For demonstration purposes we'll start with a price and size that have too many digits
     sz = 12.345678

@@ -1,9 +1,9 @@
-from eth_account.signers.local import LocalAccount
 import eth_account
 import utils
+from eth_account.signers.local import LocalAccount
 
-from hyperliquid.info import Info
 from hyperliquid.exchange import Exchange
+from hyperliquid.info import Info
 from hyperliquid.utils import constants
 
 
