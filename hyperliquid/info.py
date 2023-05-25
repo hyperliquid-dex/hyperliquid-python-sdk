@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, Subscription, cast
+from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -136,6 +136,91 @@ class Info(API):
             }
         """
         return cast(Meta, self.post("/info", {"type": "meta"}))
+
+    def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
+        """Retrieve funding history for a given coin
+
+        POST /info
+
+        Args:
+            coin (str): Coin to retrieve funding history for.
+            startTime (int): Unix timestamp in milliseconds.
+            endTime (int): Unix timestamp in milliseconds.
+
+        Returns:
+            [
+                {
+                    coin: str,
+                    fundingRate: float string,
+                    premium: float string,
+                    time: int
+                },
+                ...
+            ]
+        """
+        if endTime is not None:
+            return self.post(
+                "/info", {"type": "fundingHistory", "coin": coin, "startTime": startTime, "endTime": endTime}
+            )
+        return self.post("/info", {"type": "fundingHistory", "coin": coin, "startTime": startTime})
+
+    def l2_snapshot(self, coin: str) -> Any:
+        """Retrieve L2 snapshot for a given coin
+
+        POST /info
+
+        Args:
+            coin (str): Coin to retrieve L2 snapshot for.
+
+        Returns:
+            {
+                coin: str,
+                levels: [
+                    [
+                        {
+                            n: int,
+                            px: float string,
+                            sz: float string
+                        },
+                        ...
+                    ],
+                    ...
+                ],
+                time: int
+            }
+        """
+        return self.post("/info", {"type": "l2Book", "coin": coin})
+
+    def candles_snapshot(self, coin: str, interval: str, startTime: int, endTime: int) -> Any:
+        """Retrieve candles snapshot for a given coin
+
+        POST /info
+
+        Args:
+            coin (str): Coin to retrieve candles snapshot for.
+            interval (str): Candlestick interval.
+            startTime (int): Unix timestamp in milliseconds.
+            endTime (int): Unix timestamp in milliseconds.
+
+        Returns:
+            [
+                {
+                    T: int,
+                    c: float string,
+                    h: float string,
+                    i: str,
+                    l: float string,
+                    n: int,
+                    o: float string,
+                    s: string,
+                    t: int,
+                    v: float string
+                },
+                ...
+            ]
+        """
+        req = {"coin": coin, "interval": interval, "startTime": startTime, "endTime": endTime}
+        return self.post("/info", {"type": "candleSnapshot", "req": req})
 
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if self.ws_manager is None:
