@@ -47,7 +47,7 @@ def test_get_info():
 
 @pytest.mark.vcr()
 @pytest.mark.parametrize("endTime", [None, 1684811870000])
-def test_get_funding_history(endTime: int):
+def test_get_funding_history(endTime):
     info = Info(skip_ws=True)
     if endTime is None:
         response = info.funding_history(coin="BTC", startTime=1681923833000)
