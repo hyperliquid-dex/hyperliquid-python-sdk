@@ -1,0 +1,40 @@
+interactions:
+- request:
+    body: '{"type": "fundingHistory", "coin": "BTC", "startTime": 1681923833000}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '69'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.2
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"coin":"BTC","fundingRate":"-0.00061334","premium":"-0.00091334","time":1683849600048},{"coin":"BTC","fundingRate":"-0.00074503","premium":"-0.00104503","time":1683878400388},{"coin":"BTC","fundingRate":"-0.00081798","premium":"-0.00111798","time":1683907200253},{"coin":"BTC","fundingRate":"-0.00044036","premium":"-0.00074036","time":1683936000278},{"coin":"BTC","fundingRate":"-0.00010343","premium":"-0.00040343","time":1683964800255},{"coin":"BTC","fundingRate":"-0.00013803","premium":"-0.00043803","time":1683993600054},{"coin":"BTC","fundingRate":"-0.0002227","premium":"-0.0005227","time":1684022400087},{"coin":"BTC","fundingRate":"-0.00021372","premium":"-0.00051372","time":1684051200271},{"coin":"BTC","fundingRate":"-0.00019454","premium":"-0.00049454","time":1684080000380},{"coin":"BTC","fundingRate":"-0.0000782","premium":"-0.0003782","time":1684108800374},{"coin":"BTC","fundingRate":"-0.00012763","premium":"-0.00042763","time":1684137600045},{"coin":"BTC","fundingRate":"-0.00012881","premium":"-0.00042881","time":1684166400409},{"coin":"BTC","fundingRate":"-0.00002537","premium":"-0.00032537","time":1684195200447},{"coin":"BTC","fundingRate":"-0.00012952","premium":"-0.00042952","time":1684224000126},{"coin":"BTC","fundingRate":"-0.00004628","premium":"-0.00034628","time":1684252800731},{"coin":"BTC","fundingRate":"-0.00002615","premium":"-0.00032615","time":1684281600067},{"coin":"BTC","fundingRate":"0.0001","premium":"-0.00004426","time":1684310400279},{"coin":"BTC","fundingRate":"0.0001","premium":"-0.00007651","time":1684339200024},{"coin":"BTC","fundingRate":"0.0001","premium":"-0.00004908","time":1684368000048},{"coin":"BTC","fundingRate":"-0.00000646","premium":"-0.00030646","time":1684396800038},{"coin":"BTC","fundingRate":"-0.0000067","premium":"-0.0003067","time":1684425600052},{"coin":"BTC","fundingRate":"0.00008923","premium":"-0.00021077","time":1684454400026},{"coin":"BTC","fundingRate":"0.0001","premium":"-0.00017735","time":1684483200158},{"coin":"BTC","fundingRate":"0.00009162","premium":"-0.00020838","time":1684512000396},{"coin":"BTC","fundingRate":"0.0000366","premium":"-0.0002634","time":1684540800029},{"coin":"BTC","fundingRate":"0.00006101","premium":"-0.00023899","time":1684569600111},{"coin":"BTC","fundingRate":"0.00000651","premium":"-0.00029349","time":1684598400345},{"coin":"BTC","fundingRate":"-0.00021389","premium":"-0.00051389","time":1684627200095},{"coin":"BTC","fundingRate":"-0.00012021","premium":"-0.00042021","time":1684656000013},{"coin":"BTC","fundingRate":"-0.00011985","premium":"-0.00041985","time":1684684800088},{"coin":"BTC","fundingRate":"-0.00015543","premium":"-0.00045543","time":1684713600066},{"coin":"BTC","fundingRate":"-0.0002855","premium":"-0.0005855","time":1684742400290},{"coin":"BTC","fundingRate":"-0.00026923","premium":"-0.00056923","time":1684771200159},{"coin":"BTC","fundingRate":"-0.00018991","premium":"-0.00048991","time":1684800000022},{"coin":"BTC","fundingRate":"-0.00017541","premium":"-0.00047541","time":1684830233040},{"coin":"BTC","fundingRate":"-0.00015528","premium":"-0.00045528","time":1684857600079},{"coin":"BTC","fundingRate":"-0.0001105","premium":"-0.0004105","time":1684886400035},{"coin":"BTC","fundingRate":"-0.00018093","premium":"-0.00048093","time":1684915200002},{"coin":"BTC","fundingRate":"-0.00019988","premium":"-0.00049988","time":1684944000001},{"coin":"BTC","fundingRate":"-0.00017638","premium":"-0.00047638","time":1684972800233}]'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      content-length:
+      - '3484'
+      content-type:
+      - application/json
+      date:
+      - Thu, 25 May 2023 02:38:22 GMT
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

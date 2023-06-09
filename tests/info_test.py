@@ -43,3 +43,40 @@ def test_get_info():
     assert len(response["universe"]) == 12
     assert response["universe"][0]["name"] == "BTC"
     assert response["universe"][0]["szDecimals"] == 5
+
+
+@pytest.mark.vcr()
+@pytest.mark.parametrize("endTime", [None, 1684811870000])
+def test_get_funding_history(endTime):
+    info = Info(skip_ws=True)
+    if endTime is None:
+        response = info.funding_history(coin="BTC", startTime=1681923833000)
+    else:
+        response = info.funding_history(coin="BTC", startTime=1681923833000, endTime=endTime)
+    assert len(response) != 0
+    assert response[0]["coin"] == "BTC"
+    for key in ["coin", "fundingRate", "premium", "time"]:
+        assert key in response[0].keys()
+
+
+@pytest.mark.vcr()
+def test_get_l2_snapshot():
+    info = Info(skip_ws=True)
+    response = info.l2_snapshot(coin="DYDX")
+    assert len(response) != 0
+    assert len(response["levels"]) == 2
+    assert response["coin"] == "DYDX"
+    for key in ["coin", "time"]:
+        assert key in response.keys()
+    for key in ["n", "sz", "px"]:
+        assert key in response["levels"][0][0].keys()
+        assert key in response["levels"][1][0].keys()
+
+
+@pytest.mark.vcr()
+def test_get_candles_snapshot():
+    info = Info(skip_ws=True)
+    response = info.candles_snapshot(coin="kPEPE", interval="1h", startTime=1684702007000, endTime=1684784807000)
+    assert len(response) == 24
+    for key in ["T", "c", "h", "i", "l", "n", "o", "s", "t", "v"]:
+        assert key in response[0].keys()
