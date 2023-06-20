@@ -11,11 +11,13 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 Tif = Union[Literal["Alo"], Literal["Ioc"], Literal["Gtc"]]
 Tpsl = Union[Literal["tp"], Literal["sl"]]
 LimitOrderType = TypedDict("LimitOrderType", {"tif": Tif})
-TriggerOrderType = TypedDict("TriggerOrderType", {"triggerPx": int, "isMarket": bool, "tpsl": Tpsl})
+TriggerOrderType = TypedDict("TriggerOrderType", {"triggerPx": float, "isMarket": bool, "tpsl": Tpsl})
+TriggerOrderTypeWire = TypedDict("TriggerOrderTypeWire", {"triggerPx": str, "isMarket": bool, "tpsl": Tpsl})
 OrderType = TypedDict("OrderType", {"limit": LimitOrderType, "trigger": TriggerOrderType}, total=False)
+OrderTypeWire = TypedDict("OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False)
 
 
-def order_type_to_tuple(order_type: OrderType) -> Tuple[int, int]:
+def order_type_to_tuple(order_type: OrderType) -> Tuple[int, float]:
     if "limit" in order_type:
         tif = order_type["limit"]["tif"]
         if tif == "Gtc":
@@ -69,8 +71,23 @@ def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
 
 
 OrderWire = TypedDict(
-    "OrderWire", {"asset": int, "isBuy": bool, "limitPx": str, "sz": str, "reduceOnly": bool, "orderType": OrderType}
+    "OrderWire",
+    {"asset": int, "isBuy": bool, "limitPx": str, "sz": str, "reduceOnly": bool, "orderType": OrderTypeWire},
 )
+
+
+def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
+    if "limit" in order_type:
+        return {"limit": order_type["limit"]}
+    elif "trigger" in order_type:
+        return {
+            "trigger": {
+                "triggerPx": float_to_wire(order_type["trigger"]["triggerPx"]),
+                "tpsl": order_type["trigger"]["tpsl"],
+                "isMarket": order_type["trigger"]["isMarket"],
+            }
+        }
+    raise ValueError("Invalid order type", order_type)
 
 
 def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
@@ -81,7 +98,7 @@ def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
         "limitPx": float_to_wire(order["limitPx"]),
         "sz": float_to_wire(order["sz"]),
         "reduceOnly": order["reduceOnly"],
-        "orderType": order_spec["orderType"],
+        "orderType": order_type_to_wire(order_spec["orderType"]),
     }
 
 

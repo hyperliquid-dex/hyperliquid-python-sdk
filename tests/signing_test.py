@@ -44,6 +44,33 @@ def test_l1_action_signing_matches():
     assert signature["v"] == 27
 
 
+def test_l1_action_signing_order_matches():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    order_spec: OrderSpec = {
+        "order": {
+            "asset": 1,
+            "isBuy": True,
+            "reduceOnly": False,
+            "limitPx": 100,
+            "sz": 100,
+        },
+        "orderType": {"limit": {"tif": "Gtc"}},
+    }
+    timestamp = 0
+    grouping: Literal["na"] = "na"
+
+    signature = sign_l1_action(
+        wallet,
+        ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"],
+        [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+        ZERO_ADDRESS,
+        timestamp,
+    )
+    assert signature["r"] == "0xc7249fd2e6483b2ab8fb0a80ac5201c4d36c8ed52bea5896012de499cdb78f4f"
+    assert signature["s"] == "0x235a525be1a3b3c5186a241763a47f4e1db463dbba64a3c4abad3696852cd6ff"
+    assert signature["v"] == 27
+
+
 def test_l1_action_signing_matches_with_vault():
     wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
     signature = sign_l1_action(
@@ -52,6 +79,33 @@ def test_l1_action_signing_matches_with_vault():
     assert signature["r"] == "0x9358ee731732877d9a6d1a761fb6db43f93cb7c69ca74ecb382bd0773ac9b093"
     assert signature["s"] == "0x2879b3d8384b80664346c4286c34f947fc970c3a84c2f3995555f68493adf60b"
     assert signature["v"] == 27
+
+
+def test_l1_action_signing_tpsl_order_matches():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    order_spec: OrderSpec = {
+        "order": {
+            "asset": 1,
+            "isBuy": True,
+            "reduceOnly": False,
+            "limitPx": 100,
+            "sz": 100,
+        },
+        "orderType": {"trigger": {"triggerPx": 103, "isMarket": True, "tpsl": "sl"}},
+    }
+    timestamp = 0
+    grouping: Literal["na"] = "na"
+
+    signature = sign_l1_action(
+        wallet,
+        ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"],
+        [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+        ZERO_ADDRESS,
+        timestamp,
+    )
+    assert signature["r"] == "0xac0669959d0031e822c0aac9569f256ed66adfc409ab0bc3349f3006b794daf"
+    assert signature["s"] == "0x25e31fba6a324b13f1b1960142b9af31bfc4cc73796ac988aef434d693f865ea"
+    assert signature["v"] == 28
 
 
 def test_float_to_int_for_hashing():
