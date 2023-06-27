@@ -14,8 +14,10 @@ from hyperliquid.utils.signing import (
     order_spec_preprocessing,
     order_spec_to_order_wire,
     sign_l1_action,
+    sign_usd_transfer_action,
 )
 from hyperliquid.utils.types import Any, Literal, Meta, Optional
+from hyperliquid.utils.constants import MAINNET_API_URL
 
 
 class Exchange(API):
@@ -142,6 +144,25 @@ class Exchange(API):
                 "asset": asset,
                 "isBuy": True,
                 "ntli": amount,
+            },
+            signature,
+            timestamp,
+        )
+
+    def usd_tranfer(self, amount: float, destination: str) -> Any:
+        timestamp = get_timestamp_ms()
+        payload = {
+            "destination": destination,
+            "amount": str(amount),
+            "time": timestamp,
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_usd_transfer_action(self.wallet, payload, is_mainnet)
+        return self._post_action(
+            {
+                "chain": "Arbitrum" if is_mainnet else "ArbitrumGoerli",
+                "payload": payload,
+                "type": "usdTransfer",
             },
             signature,
             timestamp,
