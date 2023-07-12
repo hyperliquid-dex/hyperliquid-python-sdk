@@ -4,6 +4,7 @@ from eth_account.signers.local import LocalAccount
 
 from hyperliquid.api import API
 from hyperliquid.info import Info
+from hyperliquid.utils.constants import MAINNET_API_URL
 from hyperliquid.utils.signing import (
     ZERO_ADDRESS,
     OrderSpec,
@@ -16,8 +17,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
 )
-from hyperliquid.utils.types import Any, Literal, Meta, Optional
-from hyperliquid.utils.constants import MAINNET_API_URL
+from hyperliquid.utils.types import Any, Dict, List, Literal, Meta, Optional
 
 
 class Exchange(API):
@@ -49,25 +49,28 @@ class Exchange(API):
         return self.post("/exchange", payload)
 
     def order(
-        self, coin: str, is_buy: bool, sz: float, limit_px: float, order_type: OrderType, reduce_only: bool = False
+        self, coin: str, is_buy: bool, orders: List[Dict[str, float]], order_type: OrderType, reduce_only: bool = False
     ) -> Any:
-        order_spec: OrderSpec = {
-            "order": {
-                "asset": self.coin_to_asset[coin],
-                "isBuy": is_buy,
-                "reduceOnly": reduce_only,
-                "limitPx": limit_px,
-                "sz": sz,
-            },
-            "orderType": order_type,
-        }
+        order_specs: List[OrderSpec] = [
+            {
+                "order": {
+                    "asset": self.coin_to_asset[coin],
+                    "isBuy": is_buy,
+                    "reduceOnly": reduce_only,
+                    "limitPx": order["limit_px"],
+                    "sz": order["sz"],
+                },
+                "orderType": order_type,
+            }
+            for order in orders
+        ]
         timestamp = get_timestamp_ms()
         grouping: Literal["na"] = "na"
 
         signature = sign_l1_action(
             self.wallet,
             ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"],
-            [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+            [[order_spec_preprocessing(order_spec) for order_spec in order_specs], order_grouping_to_number(grouping)],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
         )
@@ -76,13 +79,13 @@ class Exchange(API):
             {
                 "type": "order",
                 "grouping": grouping,
-                "orders": [order_spec_to_order_wire(order_spec)],
+                "orders": [order_spec_to_order_wire(order_spec) for order_spec in order_specs],
             },
             signature,
             timestamp,
         )
 
-    def cancel(self, coin: str, oids: [int]) -> Any:
+    def cancel(self, coin: str, oids: List[int]) -> Any:
         timestamp = get_timestamp_ms()
         asset = self.coin_to_asset[coin]
         signature = sign_l1_action(

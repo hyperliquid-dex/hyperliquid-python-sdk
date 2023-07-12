@@ -47,7 +47,7 @@ def main():
 
     print(f"placing order with px {px} and sz {sz}")
     exchange = Exchange(account, constants.TESTNET_API_URL)
-    order_result = exchange.order(coin, True, sz, px, {"limit": {"tif": "Gtc"}})
+    order_result = exchange.order(coin, True, [{"sz": 0.2, "limit_px": 100}], {"limit": {"tif": "Gtc"}})
     print(order_result)
 
     # Cancel the order

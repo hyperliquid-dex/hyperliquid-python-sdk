@@ -118,7 +118,9 @@ class BasicAdder:
                 px = float(f"{ideal_price:.5g}")  # prices should have at most 5 significant digits
                 print(f"placing order sz:{sz} px:{px} side:{side}")
                 self.provide_state[side] = {"type": "in_flight_order", "time": get_timestamp_ms()}
-                response = self.exchange.order(COIN, side == "B", sz, px, {"limit": {"tif": "Alo"}})
+                response = self.exchange.order(
+                    COIN, side == "B", [{"sz": sz, "limit_px": px}], {"limit": {"tif": "Alo"}}
+                )
                 print("placed order", response)
                 if response["status"] == "ok":
                     status = response["response"]["data"]["statuses"][0]
