@@ -15,6 +15,11 @@ TriggerOrderType = TypedDict("TriggerOrderType", {"triggerPx": float, "isMarket"
 TriggerOrderTypeWire = TypedDict("TriggerOrderTypeWire", {"triggerPx": str, "isMarket": bool, "tpsl": Tpsl})
 OrderType = TypedDict("OrderType", {"limit": LimitOrderType, "trigger": TriggerOrderType}, total=False)
 OrderTypeWire = TypedDict("OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False)
+OrderRequest = TypedDict(
+    "OrderRequest",
+    {"coin": str, "is_buy": bool, "sz": float, "limit_px": float, "order_type": OrderType, "reduce_only": bool},
+)
+CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 
 
 def order_type_to_tuple(order_type: OrderType) -> Tuple[int, float]:
