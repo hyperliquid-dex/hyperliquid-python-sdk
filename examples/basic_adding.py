@@ -94,7 +94,7 @@ class BasicAdder:
                     print(
                         f"cancelling order due to deviation oid:{oid} side:{side} ideal_price:{ideal_price} px:{provide_state['px']}"
                     )
-                    response = self.exchange.cancel(COIN, [oid])
+                    response = self.exchange.cancel(COIN, oid)
                     if response["status"] == "ok":
                         self.recently_cancelled_oid_to_time[oid] = get_timestamp_ms()
                         self.provide_state[side] = {"type": "cancelled"}
@@ -154,7 +154,7 @@ class BasicAdder:
             for open_order in open_orders:
                 if open_order["coin"] == COIN and open_order["oid"] not in ok_oids:
                     print("Cancelling unknown oid", open_order["oid"])
-                    self.exchange.cancel(open_order["coin"], [open_order["oid"]])
+                    self.exchange.cancel(open_order["coin"], open_order["oid"])
 
             current_time = get_timestamp_ms()
             self.recently_cancelled_oid_to_time = {

@@ -54,7 +54,7 @@ def main():
     if order_result["status"] == "ok":
         status = order_result["response"]["data"]["statuses"][0]
         if "resting" in status:
-            cancel_result = exchange.cancel(coin, [status["resting"]["oid"]])
+            cancel_result = exchange.cancel(coin, status["resting"]["oid"])
             print(cancel_result)
 
 

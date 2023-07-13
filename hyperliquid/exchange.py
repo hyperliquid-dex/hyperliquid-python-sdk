@@ -82,13 +82,13 @@ class Exchange(API):
             timestamp,
         )
 
-    def cancel(self, coin: str, oids: [int]) -> Any:
+    def cancel(self, coin: str, oid: int) -> Any:
         timestamp = get_timestamp_ms()
         asset = self.coin_to_asset[coin]
         signature = sign_l1_action(
             self.wallet,
             ["(uint32,uint64)[]"],
-            [[(asset, oid) for oid in oids]],
+            [[(asset, oid)]],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
         )
@@ -100,7 +100,6 @@ class Exchange(API):
                         "asset": asset,
                         "oid": oid,
                     }
-                    for oid in oids
                 ],
             },
             signature,
