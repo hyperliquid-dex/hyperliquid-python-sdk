@@ -119,7 +119,7 @@ class Exchange(API):
                 "type": "cancel",
                 "cancels": [
                     {
-                        "asset": cancel["coin"],  # TODO: are asset and coin the same thing?
+                        "asset": self.coin_to_asset[cancel["coin"]],
                         "oid": cancel["oid"],
                     }
                     for cancel in cancel_requests
