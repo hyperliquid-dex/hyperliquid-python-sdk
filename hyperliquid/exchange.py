@@ -4,8 +4,11 @@ from eth_account.signers.local import LocalAccount
 
 from hyperliquid.api import API
 from hyperliquid.info import Info
+from hyperliquid.utils.constants import MAINNET_API_URL
 from hyperliquid.utils.signing import (
     ZERO_ADDRESS,
+    CancelRequest,
+    OrderRequest,
     OrderSpec,
     OrderType,
     float_to_usd_int,
@@ -16,8 +19,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
 )
-from hyperliquid.utils.types import Any, Literal, Meta, Optional
-from hyperliquid.utils.constants import MAINNET_API_URL
+from hyperliquid.utils.types import Any, List, Literal, Meta, Optional
 
 
 class Exchange(API):
@@ -51,23 +53,41 @@ class Exchange(API):
     def order(
         self, coin: str, is_buy: bool, sz: float, limit_px: float, order_type: OrderType, reduce_only: bool = False
     ) -> Any:
-        order_spec: OrderSpec = {
-            "order": {
-                "asset": self.coin_to_asset[coin],
-                "isBuy": is_buy,
-                "reduceOnly": reduce_only,
-                "limitPx": limit_px,
-                "sz": sz,
-            },
-            "orderType": order_type,
-        }
+        return self.bulk_orders(
+            [
+                {
+                    "coin": coin,
+                    "is_buy": is_buy,
+                    "sz": sz,
+                    "limit_px": limit_px,
+                    "order_type": order_type,
+                    "reduce_only": reduce_only,
+                }
+            ]
+        )
+
+    def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
+        order_specs: List[OrderSpec] = [
+            {
+                "order": {
+                    "asset": self.coin_to_asset[order["coin"]],
+                    "isBuy": order["is_buy"],
+                    "reduceOnly": order["reduce_only"],
+                    "limitPx": order["limit_px"],
+                    "sz": order["sz"],
+                },
+                "orderType": order["order_type"],
+            }
+            for order in order_requests
+        ]
+
         timestamp = get_timestamp_ms()
         grouping: Literal["na"] = "na"
 
         signature = sign_l1_action(
             self.wallet,
             ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"],
-            [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+            [[order_spec_preprocessing(order_spec) for order_spec in order_specs], order_grouping_to_number(grouping)],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
         )
@@ -76,19 +96,21 @@ class Exchange(API):
             {
                 "type": "order",
                 "grouping": grouping,
-                "orders": [order_spec_to_order_wire(order_spec)],
+                "orders": [order_spec_to_order_wire(order_spec) for order_spec in order_specs],
             },
             signature,
             timestamp,
         )
 
     def cancel(self, coin: str, oid: int) -> Any:
+        return self.bulk_cancel([{"coin": coin, "oid": oid}])
+
+    def bulk_cancel(self, cancel_requests: List[CancelRequest]) -> Any:
         timestamp = get_timestamp_ms()
-        asset = self.coin_to_asset[coin]
         signature = sign_l1_action(
             self.wallet,
             ["(uint32,uint64)[]"],
-            [[(asset, oid)]],
+            [[(self.coin_to_asset[cancel["coin"]], cancel["oid"]) for cancel in cancel_requests]],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
         )
@@ -97,9 +119,10 @@ class Exchange(API):
                 "type": "cancel",
                 "cancels": [
                     {
-                        "asset": asset,
-                        "oid": oid,
+                        "asset": self.coin_to_asset[cancel["coin"]],
+                        "oid": cancel["oid"],
                     }
+                    for cancel in cancel_requests
                 ],
             },
             signature,
