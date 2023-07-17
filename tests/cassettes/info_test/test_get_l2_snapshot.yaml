@@ -1,0 +1,40 @@
+interactions:
+- request:
+    body: '{"type": "l2Book", "coin": "DYDX"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.31.0
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '{"coin":"DYDX","levels":[[{"n":1,"px":"2.111","sz":"134.4"},{"n":1,"px":"2.1105","sz":"141.1"},{"n":1,"px":"2.1104","sz":"125.8"},{"n":1,"px":"2.1081","sz":"1379.2"},{"n":1,"px":"2.1075","sz":"1417.0"},{"n":2,"px":"2.1052","sz":"2800.9"},{"n":2,"px":"2.1017","sz":"3478.0"},{"n":1,"px":"2.1007","sz":"1655.6"},{"n":1,"px":"2.0998","sz":"1605.9"},{"n":2,"px":"2.0961","sz":"3695.0"},{"n":2,"px":"2.0947","sz":"3911.7"},{"n":2,"px":"2.0936","sz":"3736.5"},{"n":1,"px":"2.0903","sz":"12.0"},{"n":1,"px":"2.0861","sz":"15.0"},{"n":1,"px":"2.0819","sz":"25.0"},{"n":2,"px":"2.0786","sz":"3819.2"},{"n":1,"px":"2.0778","sz":"40.0"},{"n":1,"px":"2.0736","sz":"63.0"},{"n":2,"px":"2.0667","sz":"3669.0"},{"n":1,"px":"1.81","sz":"2397.0"}],[{"n":2,"px":"2.1124","sz":"352.3"},{"n":2,"px":"2.1125","sz":"364.9"},{"n":2,"px":"2.1128","sz":"3798.0"},{"n":2,"px":"2.113","sz":"3528.0"},{"n":2,"px":"2.1135","sz":"3635.0"},{"n":1,"px":"2.1141","sz":"1981.3"},{"n":1,"px":"2.1142","sz":"1957.3"},{"n":1,"px":"2.1146","sz":"1914.5"},{"n":2,"px":"2.1232","sz":"3245.0"},{"n":1,"px":"2.1274","sz":"1656.3"},{"n":1,"px":"2.1281","sz":"1839.9"},{"n":2,"px":"2.1298","sz":"3806.1"},{"n":2,"px":"2.1322","sz":"3578.7"},{"n":1,"px":"2.1347","sz":"11.0"},{"n":1,"px":"2.139","sz":"15.0"},{"n":1,"px":"2.1423","sz":"1983.8"},{"n":1,"px":"2.1432","sz":"24.0"},{"n":1,"px":"2.1468","sz":"1610.9"},{"n":1,"px":"2.1475","sz":"39.0"},{"n":1,"px":"2.1518","sz":"62.0"}]],"time":1689630203930}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      content-length:
+      - '1461'
+      content-type:
+      - application/json
+      date:
+      - Mon, 17 Jul 2023 21:43:24 GMT
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

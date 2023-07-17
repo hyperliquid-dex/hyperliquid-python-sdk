@@ -13,23 +13,23 @@ interactions:
       Content-Type:
       - application/json
       User-Agent:
-      - python-requests/2.28.2
+      - python-requests/2.31.0
     method: POST
     uri: https://api.hyperliquid.xyz/info
   response:
     body:
-      string: '{"ATOM":"12.249","BTC":"23202.5","ETH":"1607.7","MATIC":"1.1984"}'
+      string: '{"APE":"1.96595","APT":"7.7731","ARB":"1.28895","ATOM":"9.3384","AVAX":"14.1705","BCH":"240.525","BNB":"243.135","BTC":"30135.0","CFX":"0.186535","CRV":"0.79852","DOGE":"0.069277","DYDX":"2.11305","ETH":"1903.95","FTM":"0.26268","GMX":"55.8595","INJ":"9.32295","LDO":"2.0457","LINK":"6.9123","LTC":"91.832","MATIC":"0.77389","OP":"1.45515","RNDR":"1.94575","SNX":"2.6256","SOL":"26.516","STX":"0.62927","SUI":"0.69539","XRP":"0.73862","kPEPE":"0.001565"}'
     headers:
       access-control-allow-origin:
       - '*'
       access-control-expose-headers:
       - '*'
       content-length:
-      - '65'
+      - '454'
       content-type:
       - application/json
       date:
-      - Tue, 28 Feb 2023 22:12:08 GMT
+      - Mon, 17 Jul 2023 21:43:20 GMT
       vary:
       - origin
       - access-control-request-method

@@ -40,7 +40,7 @@ def test_get_user_fills():
 def test_get_info():
     info = Info(skip_ws=True)
     response = info.meta()
-    assert len(response["universe"]) == 12
+    assert len(response["universe"]) == 28
     assert response["universe"][0]["name"] == "BTC"
     assert response["universe"][0]["szDecimals"] == 5
 
