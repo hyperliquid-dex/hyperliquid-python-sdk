@@ -1,6 +1,10 @@
+import eth_account
 import logging
+import secrets
 
+from eth_abi import encode
 from eth_account.signers.local import LocalAccount
+from eth_utils import keccak, to_hex
 
 from hyperliquid.api import API
 from hyperliquid.info import Info
@@ -18,8 +22,9 @@ from hyperliquid.utils.signing import (
     order_spec_to_order_wire,
     sign_l1_action,
     sign_usd_transfer_action,
+    sign_agent,
 )
-from hyperliquid.utils.types import Any, List, Literal, Meta, Optional
+from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple
 
 
 class Exchange(API):
@@ -189,4 +194,29 @@ class Exchange(API):
             },
             signature,
             timestamp,
+        )
+
+    def approve_agent(self) -> Tuple[Any, str]:
+        agent_key = "0x" + secrets.token_hex(32)
+        account = eth_account.Account.from_key(agent_key)
+        agent = {
+            "source": "https://hyperliquid.xyz",
+            "connectionId": keccak(encode(["address"], [account.address])),
+        }
+        timestamp = get_timestamp_ms()
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_agent(self.wallet, agent, is_mainnet)
+        agent["connectionId"] = to_hex(agent["connectionId"])
+        return (
+            self._post_action(
+                {
+                    "chain": "Arbitrum" if is_mainnet else "ArbitrumGoerli",
+                    "agent": agent,
+                    "agentAddress": account.address,
+                    "type": "connect",
+                },
+                signature,
+                timestamp,
+            ),
+            agent_key,
         )
