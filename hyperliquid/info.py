@@ -42,7 +42,8 @@ class Info(API):
                     }
                 ],
                 crossMarginSummary: MarginSummary,
-                marginSummary: MarginSummary
+                marginSummary: MarginSummary,
+                withdrawable: float string,
             }
 
             where MarginSummary is {
@@ -50,7 +51,6 @@ class Info(API):
                     totalMarginUsed: float string,
                     totalNtlPos: float string,
                     totalRawUsd: float string,
-                    withdrawable: float string,
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})

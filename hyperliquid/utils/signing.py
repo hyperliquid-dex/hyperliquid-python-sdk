@@ -107,13 +107,13 @@ def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
     }
 
 
-def construct_phantom_agent(signature_types, signature_data):
+def construct_phantom_agent(signature_types, signature_data, is_mainnet):
     connection_id = encode(signature_types, signature_data)
 
-    return {"source": "a", "connectionId": keccak(connection_id)}
+    return {"source": "a" if is_mainnet else "b", "connectionId": keccak(connection_id)}
 
 
-def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce):
+def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce, is_mainnet):
     signature_types.append("address")
     signature_types.append("uint64")
     if active_pool is None:
@@ -122,7 +122,7 @@ def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce):
         signature_data.append(active_pool)
     signature_data.append(nonce)
 
-    phantom_agent = construct_phantom_agent(signature_types, signature_data)
+    phantom_agent = construct_phantom_agent(signature_types, signature_data, is_mainnet)
 
     data = {
         "domain": {

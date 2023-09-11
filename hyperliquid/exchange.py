@@ -95,6 +95,7 @@ class Exchange(API):
             [[order_spec_preprocessing(order_spec) for order_spec in order_specs], order_grouping_to_number(grouping)],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
+            self.base_url == MAINNET_API_URL,
         )
 
         return self._post_action(
@@ -118,6 +119,7 @@ class Exchange(API):
             [[(self.coin_to_asset[cancel["coin"]], cancel["oid"]) for cancel in cancel_requests]],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
+            self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
             {
@@ -143,6 +145,7 @@ class Exchange(API):
             [asset, is_cross, leverage],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
+            self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
             {
@@ -165,6 +168,7 @@ class Exchange(API):
             [asset, True, amount],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
+            self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
             {
