@@ -225,7 +225,7 @@ def float_to_usd_int(x: float) -> int:
 
 def float_to_int(x: float, power: int) -> int:
     with_decimals = x * 10**power
-    if abs(round(with_decimals) - with_decimals) >= 1e-4:
+    if abs(round(with_decimals) - with_decimals) >= 1e-3:
         raise ValueError("float_to_int causes rounding", x)
     return round(with_decimals)
 
