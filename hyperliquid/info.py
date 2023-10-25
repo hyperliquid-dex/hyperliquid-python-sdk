@@ -32,7 +32,6 @@ class Info(API):
                             },
                             liquidationPx: Optional[float string]
                             marginUsed: float string,
-                            maxTradeSzs: List[float string],
                             positionValue: float string,
                             returnOnEquity: float string,
                             szi: float string,
