@@ -30,7 +30,7 @@ def main():
 
     # Place an order that should rest by setting the price very low
     exchange = Exchange(account, constants.TESTNET_API_URL)
-    order_result = exchange.order("ETH", True, 0.2, 100, {"limit": {"tif": "Gtc"}})
+    order_result = exchange.order("ETH", True, 0.2, 100, {"limit": {"tif": "Gtc"}}, cloid="0x00000000000000000000000000000001")
     print(order_result)
 
     # Cancel the order
