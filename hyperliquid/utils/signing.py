@@ -62,9 +62,6 @@ Order = TypedDict("Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz":
 OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
 
 
-
-
-
 def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
     order = order_spec["order"]
     order_type_array = order_type_to_tuple(order_spec["orderType"])
@@ -272,6 +269,3 @@ def order_request_to_order_spec(order: OrderRequest, asset) -> OrderSpec:
     if "cloid" in order:
         order_spec["order"]["cloid"] = order["cloid"]
     return order_spec
-
-
-
