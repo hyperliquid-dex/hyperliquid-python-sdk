@@ -17,7 +17,15 @@ OrderType = TypedDict("OrderType", {"limit": LimitOrderType, "trigger": TriggerO
 OrderTypeWire = TypedDict("OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False)
 OrderRequest = TypedDict(
     "OrderRequest",
-    {"coin": str, "is_buy": bool, "sz": float, "limit_px": float, "order_type": OrderType, "reduce_only": bool, "cloid": Option[str]},
+    {
+        "coin": str,
+        "is_buy": bool,
+        "sz": float,
+        "limit_px": float,
+        "order_type": OrderType,
+        "reduce_only": bool,
+        "cloid": Option[str],
+    },
 )
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": str})
@@ -58,7 +66,9 @@ def order_grouping_to_number(grouping: Grouping) -> int:
         return 2
 
 
-Order = TypedDict("Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Option[str]})
+Order = TypedDict(
+    "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Option[str]}
+)
 OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
 
 
@@ -90,7 +100,15 @@ def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
 
 OrderWire = TypedDict(
     "OrderWire",
-    {"asset": int, "isBuy": bool, "limitPx": str, "sz": str, "reduceOnly": bool, "orderType": OrderTypeWire, "cloid": Option[str]},
+    {
+        "asset": int,
+        "isBuy": bool,
+        "limitPx": str,
+        "sz": str,
+        "reduceOnly": bool,
+        "orderType": OrderTypeWire,
+        "cloid": Option[str],
+    },
 )
 
 
@@ -247,7 +265,7 @@ def float_to_int(x: float, power: int) -> int:
 
 
 def str_to_bytes16(x: str) -> bytearray:
-    assert x.startswith('0x')
+    assert x.startswith("0x")
     return bytearray.fromhex(x[2:])
 
 

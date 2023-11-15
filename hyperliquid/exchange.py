@@ -59,7 +59,14 @@ class Exchange(API):
         return self.post("/exchange", payload)
 
     def order(
-        self, coin: str, is_buy: bool, sz: float, limit_px: float, order_type: OrderType, reduce_only: bool = False, cloid: Optional[str] = None
+        self,
+        coin: str,
+        is_buy: bool,
+        sz: float,
+        limit_px: float,
+        order_type: OrderType,
+        reduce_only: bool = False,
+        cloid: Optional[str] = None,
     ) -> Any:
         if cloid is None:
             return self.bulk_orders(
@@ -89,11 +96,9 @@ class Exchange(API):
                 ]
             )
 
-
     def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
         order_specs: List[OrderSpec] = [
-            order_request_to_order_spec(order, self.coin_to_asset[order["coin"]])
-            for order in order_requests
+            order_request_to_order_spec(order, self.coin_to_asset[order["coin"]]) for order in order_requests
         ]
 
         timestamp = get_timestamp_ms()
@@ -183,7 +188,6 @@ class Exchange(API):
             signature,
             timestamp,
         )
-
 
     def update_leverage(self, leverage: int, coin: str, is_cross: bool = True) -> Any:
         timestamp = get_timestamp_ms()
