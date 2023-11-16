@@ -16,6 +16,13 @@ def test_get_open_orders():
     info = Info(skip_ws=True)
     response = info.open_orders("0x5e9ee1089755c3435139848e47e6635505d5a13a")
     assert len(response) == 196
+    
+
+@pytest.mark.vcr()
+def test_get_frontend_open_orders():
+    info = Info(skip_ws=True)
+    response = info.frontend_open_orders("0xCB331197E84f135AB9Ed6FB51Cd9757c0bd29d0D")
+    assert len(response) == 3   
 
 
 @pytest.mark.vcr()
