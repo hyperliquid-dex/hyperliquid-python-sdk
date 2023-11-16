@@ -1,6 +1,7 @@
 import json
 import logging
 import threading
+import time
 from collections import defaultdict
 
 import websocket
@@ -22,7 +23,9 @@ def subscription_to_identifier(subscription: Subscription) -> str:
 
 
 def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
-    if ws_msg["channel"] == "allMids":
+    if ws_msg["channel"] == "pong":
+        return "pong"
+    elif ws_msg["channel"] == "allMids":
         return "allMids"
     elif ws_msg["channel"] == "l2Book":
         return f'l2Book:{ws_msg["data"]["coin"].lower()}'
@@ -45,9 +48,17 @@ class WebsocketManager(threading.Thread):
         self.active_subscriptions: Dict[str, List[ActiveSubscription]] = defaultdict(list)
         ws_url = "ws" + base_url[len("http") :] + "/ws"
         self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
+        self.ping_sender = threading.Thread(target=self.send_ping)
 
     def run(self):
+        self.ping_sender.start()
         self.ws.run_forever()
+
+    def send_ping(self):
+        while True:
+            time.sleep(50)
+            logging.debug("Websocket sending ping")
+            self.ws.send(json.dumps({"method": "ping"}))
 
     def on_message(self, _ws, message):
         if message == "Websocket connection established.":
@@ -56,6 +67,9 @@ class WebsocketManager(threading.Thread):
         logging.debug(f"on_message {message}")
         ws_msg: WsMsg = json.loads(message)
         identifier = ws_msg_to_identifier(ws_msg)
+        if identifier == "pong":
+            logging.debug("Websocket received pong")
+            return
         if identifier is None:
             logging.debug("Websocket not handling empty message")
             return
