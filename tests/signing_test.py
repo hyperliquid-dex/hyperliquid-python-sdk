@@ -14,6 +14,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
 )
+from hyperliquid.utils.types import Cloid
 
 
 def test_phantom_agent_creation_matches_production():
@@ -25,6 +26,7 @@ def test_phantom_agent_creation_matches_production():
             "reduceOnly": False,
             "limitPx": 1670.1,
             "sz": 0.0147,
+            "cloid": None,
         },
         "orderType": {"limit": {"tif": "Ioc"}},
     }
@@ -59,6 +61,7 @@ def test_l1_action_signing_order_matches():
             "reduceOnly": False,
             "limitPx": 100,
             "sz": 100,
+            "cloid": None,
         },
         "orderType": {"limit": {"tif": "Gtc"}},
     }
@@ -90,6 +93,47 @@ def test_l1_action_signing_order_matches():
     assert signature_testnet["v"] == 27
 
 
+def test_l1_action_signing_order_with_cloid_matches():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    order_spec: OrderSpec = {
+        "order": {
+            "asset": 1,
+            "isBuy": True,
+            "reduceOnly": False,
+            "limitPx": 100,
+            "sz": 100,
+            "cloid": Cloid.from_str("0x00000000000000000000000000000001"),
+        },
+        "orderType": {"limit": {"tif": "Gtc"}},
+    }
+    timestamp = 0
+    grouping: Literal["na"] = "na"
+
+    signature_mainnet = sign_l1_action(
+        wallet,
+        ["(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]", "uint8"],
+        [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+        ZERO_ADDRESS,
+        timestamp,
+        True,
+    )
+    assert signature_mainnet["r"] == "0x8518bb4fbdb9ed4bda8d9ea984bc963d73d203ae2c0523f366855ac042d11ee5"
+    assert signature_mainnet["s"] == "0x235c634764f08b4b98762de579ed13bbed731cc1e8574b8a3044cd4eff03ed76"
+    assert signature_mainnet["v"] == 28
+
+    signature_testnet = sign_l1_action(
+        wallet,
+        ["(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]", "uint8"],
+        [[order_spec_preprocessing(order_spec)], order_grouping_to_number(grouping)],
+        ZERO_ADDRESS,
+        timestamp,
+        False,
+    )
+    assert signature_testnet["r"] == "0x83bf34efdce3ee70bfff7ec8e45a1c547aa7ea950646bd599c4bc990bc1e87d8"
+    assert signature_testnet["s"] == "0x5ac67572090d73a15538734b72e8c7037c6cbe363424e623501184ebb5b68d55"
+    assert signature_testnet["v"] == 28
+
+
 def test_l1_action_signing_matches_with_vault():
     wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
     signature_mainnet = sign_l1_action(
@@ -115,6 +159,7 @@ def test_l1_action_signing_tpsl_order_matches():
             "reduceOnly": False,
             "limitPx": 100,
             "sz": 100,
+            "cloid": None,
         },
         "orderType": {"trigger": {"triggerPx": 103, "isMarket": True, "tpsl": "sl"}},
     }

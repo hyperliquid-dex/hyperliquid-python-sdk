@@ -4,7 +4,7 @@ from eth_abi import encode
 from eth_account.messages import encode_structured_data
 from eth_utils import keccak, to_hex
 
-from hyperliquid.utils.types import Any, Literal, Tuple, TypedDict, Union
+from hyperliquid.utils.types import Any, Literal, Optional, Tuple, TypedDict, Union, Cloid
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
@@ -17,9 +17,19 @@ OrderType = TypedDict("OrderType", {"limit": LimitOrderType, "trigger": TriggerO
 OrderTypeWire = TypedDict("OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False)
 OrderRequest = TypedDict(
     "OrderRequest",
-    {"coin": str, "is_buy": bool, "sz": float, "limit_px": float, "order_type": OrderType, "reduce_only": bool},
+    {
+        "coin": str,
+        "is_buy": bool,
+        "sz": float,
+        "limit_px": float,
+        "order_type": OrderType,
+        "reduce_only": bool,
+        "cloid": Optional[Cloid],
+    },
+    total=False,
 )
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
+CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": Cloid})
 
 
 def order_type_to_tuple(order_type: OrderType) -> Tuple[int, float]:
@@ -57,14 +67,16 @@ def order_grouping_to_number(grouping: Grouping) -> int:
         return 2
 
 
-Order = TypedDict("Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool})
+Order = TypedDict(
+    "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
+)
 OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
 
 
 def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
     order = order_spec["order"]
     order_type_array = order_type_to_tuple(order_spec["orderType"])
-    return (
+    res = (
         order["asset"],
         order["isBuy"],
         float_to_int_for_hashing(order["limitPx"]),
@@ -73,11 +85,22 @@ def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
         order_type_array[0],
         float_to_int_for_hashing(order_type_array[1]),
     )
+    if "cloid" in order and order["cloid"]:
+        res += (str_to_bytes16(order["cloid"].to_raw()),)
+    return res
 
 
 OrderWire = TypedDict(
     "OrderWire",
-    {"asset": int, "isBuy": bool, "limitPx": str, "sz": str, "reduceOnly": bool, "orderType": OrderTypeWire},
+    {
+        "asset": int,
+        "isBuy": bool,
+        "limitPx": str,
+        "sz": str,
+        "reduceOnly": bool,
+        "orderType": OrderTypeWire,
+        "cloid": Optional[Cloid],
+    },
 )
 
 
@@ -97,6 +120,9 @@ def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
 
 def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
     order = order_spec["order"]
+    cloid = None
+    if "cloid" in order and order["cloid"]:
+        cloid = order["cloid"].to_raw()
     return {
         "asset": order["asset"],
         "isBuy": order["isBuy"],
@@ -104,6 +130,7 @@ def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
         "sz": float_to_wire(order["sz"]),
         "reduceOnly": order["reduceOnly"],
         "orderType": order_type_to_wire(order_spec["orderType"]),
+        "cloid": cloid,
     }
 
 
@@ -230,5 +257,27 @@ def float_to_int(x: float, power: int) -> int:
     return round(with_decimals)
 
 
+def str_to_bytes16(x: str) -> bytearray:
+    assert x.startswith("0x")
+    return bytearray.fromhex(x[2:])
+
+
 def get_timestamp_ms() -> int:
     return int(time.time() * 1000)
+
+
+def order_request_to_order_spec(order: OrderRequest, asset: int) -> OrderSpec:
+    cloid = None
+    if "cloid" in order:
+        cloid = order["cloid"]
+    return {
+        "order": {
+            "asset": asset,
+            "isBuy": order["is_buy"],
+            "reduceOnly": order["reduce_only"],
+            "limitPx": order["limit_px"],
+            "sz": order["sz"],
+            "cloid": cloid,
+        },
+        "orderType": order["order_type"],
+    }

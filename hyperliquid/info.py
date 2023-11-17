@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast
+from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -220,6 +220,12 @@ class Info(API):
         """
         req = {"coin": coin, "interval": interval, "startTime": startTime, "endTime": endTime}
         return self.post("/info", {"type": "candleSnapshot", "req": req})
+
+    def query_order_by_oid(self, user: str, oid: int) -> Any:
+        return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
+
+    def query_order_by_cloid(self, user: str, cloid: Cloid) -> Any:
+        return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw()})
 
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if self.ws_manager is None:
