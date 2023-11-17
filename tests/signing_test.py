@@ -14,6 +14,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
 )
+from hyperliquid.utils.types import Cloid
 
 
 def test_phantom_agent_creation_matches_production():
@@ -25,6 +26,7 @@ def test_phantom_agent_creation_matches_production():
             "reduceOnly": False,
             "limitPx": 1670.1,
             "sz": 0.0147,
+            "cloid": None,
         },
         "orderType": {"limit": {"tif": "Ioc"}},
     }
@@ -59,6 +61,7 @@ def test_l1_action_signing_order_matches():
             "reduceOnly": False,
             "limitPx": 100,
             "sz": 100,
+            "cloid": None,
         },
         "orderType": {"limit": {"tif": "Gtc"}},
     }
@@ -99,7 +102,7 @@ def test_l1_action_signing_order_with_cloid_matches():
             "reduceOnly": False,
             "limitPx": 100,
             "sz": 100,
-            "cloid": "0x00000000000000000000000000000001",
+            "cloid": Cloid.from_str("0x00000000000000000000000000000001"),
         },
         "orderType": {"limit": {"tif": "Gtc"}},
     }
@@ -156,6 +159,7 @@ def test_l1_action_signing_tpsl_order_matches():
             "reduceOnly": False,
             "limitPx": 100,
             "sz": 100,
+            "cloid": None,
         },
         "orderType": {"trigger": {"triggerPx": 103, "isMarket": True, "tpsl": "sl"}},
     }

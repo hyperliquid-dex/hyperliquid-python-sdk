@@ -30,10 +30,15 @@ def main():
 
     # Place an order that should rest by setting the price very low
     exchange = Exchange(account, constants.TESTNET_API_URL)
-    order_result = exchange.order(
-        "ETH", True, 0.2, 100, {"limit": {"tif": "Gtc"}}, cloid="0x00000000000000000000000000000001"
-    )
+    order_result = exchange.order("ETH", True, 0.2, 1100, {"limit": {"tif": "Gtc"}})
     print(order_result)
+
+    # Query the order status by oid
+    if order_result["status"] == "ok":
+        status = order_result["response"]["data"]["statuses"][0]
+        if "resting" in status:
+            order_status = info.query_order_by_oid(account.address, status["resting"]["oid"])
+            print("Order status by oid:", order_status)
 
     # Cancel the order
     if order_result["status"] == "ok":

@@ -27,7 +27,7 @@ from hyperliquid.utils.signing import (
     sign_agent,
     str_to_bytes16,
 )
-from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple
+from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple, Cloid
 
 
 class Exchange(API):
@@ -66,35 +66,19 @@ class Exchange(API):
         limit_px: float,
         order_type: OrderType,
         reduce_only: bool = False,
-        cloid: Optional[str] = None,
+        cloid: Optional[Cloid] = None,
     ) -> Any:
-        if cloid is None:
-            return self.bulk_orders(
-                [
-                    {
-                        "coin": coin,
-                        "is_buy": is_buy,
-                        "sz": sz,
-                        "limit_px": limit_px,
-                        "order_type": order_type,
-                        "reduce_only": reduce_only,
-                    }
-                ]
-            )
-        else:
-            return self.bulk_orders(
-                [
-                    {
-                        "coin": coin,
-                        "is_buy": is_buy,
-                        "sz": sz,
-                        "limit_px": limit_px,
-                        "order_type": order_type,
-                        "reduce_only": reduce_only,
-                        "cloid": cloid,
-                    }
-                ]
-            )
+        order = {
+            "coin": coin,
+            "is_buy": is_buy,
+            "sz": sz,
+            "limit_px": limit_px,
+            "order_type": order_type,
+            "reduce_only": reduce_only,
+        }
+        if cloid:
+            order["cloid"] = cloid
+        return self.bulk_orders([order])
 
     def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
         order_specs: List[OrderSpec] = [
@@ -106,8 +90,13 @@ class Exchange(API):
 
         has_cloid = False
         for order_spec in order_specs:
-            if "cloid" in order_spec["order"]:
+            if "cloid" in order_spec["order"] and order_spec["order"]["cloid"]:
                 has_cloid = True
+
+        if has_cloid:
+            for order_spec in order_specs:
+                if "cloid" not in order_spec["order"] or not order_spec["order"]["cloid"]:
+                    raise ValueError("all orders must have cloids if at least one has a cloid")
 
         if has_cloid:
             signature_types = ["(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]", "uint8"]
@@ -136,7 +125,7 @@ class Exchange(API):
     def cancel(self, coin: str, oid: int) -> Any:
         return self.bulk_cancel([{"coin": coin, "oid": oid}])
 
-    def cancel_by_cloid(self, coin: str, cloid: str) -> Any:
+    def cancel_by_cloid(self, coin: str, cloid: Cloid) -> Any:
         return self.bulk_cancel_by_cloid([{"coin": coin, "cloid": cloid}])
 
     def bulk_cancel(self, cancel_requests: List[CancelRequest]) -> Any:
@@ -169,7 +158,12 @@ class Exchange(API):
         signature = sign_l1_action(
             self.wallet,
             ["(uint32,bytes16)[]"],
-            [[(self.coin_to_asset[cancel["coin"]], str_to_bytes16(cancel["cloid"])) for cancel in cancel_requests]],
+            [
+                [
+                    (self.coin_to_asset[cancel["coin"]], str_to_bytes16(cancel["cloid"].to_raw()))
+                    for cancel in cancel_requests
+                ]
+            ],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
