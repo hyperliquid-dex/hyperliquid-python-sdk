@@ -75,6 +75,39 @@ class Info(API):
         """
         return self.post("/info", {"type": "openOrders", "user": address})
 
+    def frontend_open_orders(self, address: str) -> Any:
+        """Retrieve a user's open orders with additional frontend info.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns: [
+            {
+                children:
+                    [
+                        dict of frontend orders
+                    ]
+                coin: str,
+                isPositoinTpsl: bool,
+                isTrigger: bool,
+                limitPx: float string,
+                oid: int,
+                orderType: str,
+                origSz: float string,
+                reduceOnly: bool,
+                side: "A" | "B",
+                sz: float string,
+                tif: str,
+                timestamp: int,
+                triggerCondition: str,
+                triggerPx: float str
+            }
+        ]
+        """
+        return self.post("/info", {"type": "frontendOpenOrders", "user": address})
+
     def all_mids(self) -> Any:
         """Retrieve all mids for all actively traded coins.
 

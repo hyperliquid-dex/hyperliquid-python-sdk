@@ -239,7 +239,7 @@ class Exchange(API):
         signature = sign_usd_transfer_action(self.wallet, payload, is_mainnet)
         return self._post_action(
             {
-                "chain": "Arbitrum" if is_mainnet else "ArbitrumGoerli",
+                "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
                 "payload": payload,
                 "type": "usdTransfer",
             },
@@ -247,25 +247,32 @@ class Exchange(API):
             timestamp,
         )
 
-    def approve_agent(self) -> Tuple[Any, str]:
+    def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str]:
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
+        if name is not None:
+            connection_id = keccak(encode(["address", "string"], [account.address, name]))
+        else:
+            connection_id = keccak(encode(["address"], [account.address]))
         agent = {
             "source": "https://hyperliquid.xyz",
-            "connectionId": keccak(encode(["address"], [account.address])),
+            "connectionId": connection_id,
         }
         timestamp = get_timestamp_ms()
         is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_agent(self.wallet, agent, is_mainnet)
         agent["connectionId"] = to_hex(agent["connectionId"])
+        action = {
+            "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
+            "agent": agent,
+            "agentAddress": account.address,
+            "type": "connect",
+        }
+        if name is not None:
+            action["extraAgentName"] = name
         return (
             self._post_action(
-                {
-                    "chain": "Arbitrum" if is_mainnet else "ArbitrumGoerli",
-                    "agent": agent,
-                    "agentAddress": account.address,
-                    "type": "connect",
-                },
+                action,
                 signature,
                 timestamp,
             ),

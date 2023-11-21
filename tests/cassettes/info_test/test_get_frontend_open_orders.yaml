@@ -1,0 +1,48 @@
+interactions:
+  - request:
+      body: '{"type": "frontendOpenOrders", "user": "0xCB331197E84f135AB9Ed6FB51Cd9757c0bd29d0D"}'
+      headers:
+        Accept:
+          - '*/*'
+        Accept-Encoding:
+          - gzip, deflate
+        Connection:
+          - keep-alive
+        Content-Length:
+          - '84'
+        Content-Type:
+          - application/json
+        User-Agent:
+          - python-requests/2.31.0
+      method: POST
+      uri: https://api.hyperliquid.xyz/info
+    response:
+      body:
+        string: '[{"children":[],"coin":"INJ","isPositionTpsl":false,"isTrigger":true,"limitPx":"9.2037","oid":3184595907,"orderType":"Take
+        Profit Market","origSz":"12.5","reduceOnly":true,"side":"A","sz":"12.5","tif":null,"timestamp":1700126022555,"triggerCondition":"Price
+        above 10.004","triggerPx":"10.004"},{"children":[],"coin":"INJ","isPositionTpsl":false,"isTrigger":true,"limitPx":"9.1954","oid":3184595906,"orderType":"Stop
+        Market","origSz":"12.5","reduceOnly":true,"side":"A","sz":"12.5","tif":null,"timestamp":1700126022555,"triggerCondition":"Price
+        below 9.995","triggerPx":"9.995"},{"children":[{"children":[],"coin":"INJ","isPositionTpsl":false,"isTrigger":true,"limitPx":"9.1954","oid":3184595906,"orderType":"Stop
+        Market","origSz":"12.5","reduceOnly":true,"side":"A","sz":"12.5","tif":null,"timestamp":1700126022555,"triggerCondition":"Price
+        below 9.995","triggerPx":"9.995"},{"children":[],"coin":"INJ","isPositionTpsl":false,"isTrigger":true,"limitPx":"9.2037","oid":3184595907,"orderType":"Take
+        Profit Market","origSz":"12.5","reduceOnly":true,"side":"A","sz":"12.5","tif":null,"timestamp":1700126022555,"triggerCondition":"Price
+        above 10.004","triggerPx":"10.004"}],"coin":"INJ","isPositionTpsl":false,"isTrigger":false,"limitPx":"10.0","oid":3184595905,"orderType":"Limit","origSz":"12.5","reduceOnly":false,"side":"B","sz":"12.5","tif":"Gtc","timestamp":1700126022555,"triggerCondition":"N/A","triggerPx":"0.0"}]'
+      headers:
+        access-control-allow-origin:
+          - '*'
+        access-control-expose-headers:
+          - '*'
+        content-length:
+          - '1417'
+        content-type:
+          - application/json
+        date:
+          - Thu, 16 Nov 2023 09:16:00 GMT
+        vary:
+          - origin
+          - access-control-request-method
+          - access-control-request-headers
+      status:
+        code: 200
+        message: OK
+version: 1

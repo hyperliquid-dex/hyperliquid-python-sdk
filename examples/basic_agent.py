@@ -23,7 +23,7 @@ def main():
 
     # Place an order that should rest by setting the price very low
     agent_account: LocalAccount = eth_account.Account.from_key(agent_key)
-    print("Running with agent address:", account.address)
+    print("Running with agent address:", agent_account.address)
     exchange = Exchange(agent_account, constants.TESTNET_API_URL)
     order_result = exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
     print(order_result)
@@ -32,6 +32,28 @@ def main():
     if order_result["status"] == "ok":
         status = order_result["response"]["data"]["statuses"][0]
         if "resting" in status:
+            cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
+            print(cancel_result)
+
+    # Create an extra named agent
+    exchange = Exchange(account, constants.TESTNET_API_URL)
+    approve_result, extra_agent_key = exchange.approve_agent("persist")
+    if approve_result["status"] != "ok":
+        print("approving extra agent failed", approve_result)
+        return
+
+    extra_agent_account: LocalAccount = eth_account.Account.from_key(extra_agent_key)
+    print("Running with extra agent address:", extra_agent_account.address)
+
+    print("Placing order with original agent")
+    order_result = exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
+    print(order_result)
+
+    if order_result["status"] == "ok":
+        status = order_result["response"]["data"]["statuses"][0]
+        if "resting" in status:
+            print("Canceling order with extra agent")
+            exchange = Exchange(extra_agent_account, constants.TESTNET_API_URL)
             cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
             print(cancel_result)
 

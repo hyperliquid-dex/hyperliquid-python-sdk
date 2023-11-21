@@ -19,6 +19,13 @@ def test_get_open_orders():
 
 
 @pytest.mark.vcr()
+def test_get_frontend_open_orders():
+    info = Info(skip_ws=True)
+    response = info.frontend_open_orders("0xCB331197E84f135AB9Ed6FB51Cd9757c0bd29d0D")
+    assert len(response) == 3
+
+
+@pytest.mark.vcr()
 def test_get_all_mids():
     info = Info(skip_ws=True)
     response = info.all_mids()
