@@ -4,9 +4,9 @@ from json import JSONDecodeError
 
 import requests
 
-from hyperliquid.utils.constants import MAINNET_API_URL
-from hyperliquid.utils.error import ClientError, ServerError
-from hyperliquid.utils.types import Any
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.constants import MAINNET_API_URL
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.error import ClientError, ServerError
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.types import Any
 
 
 class API:

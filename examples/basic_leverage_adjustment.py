@@ -4,9 +4,9 @@ import eth_account
 import utils
 from eth_account.signers.local import LocalAccount
 
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
-from hyperliquid.utils import constants
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.exchange import Exchange
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.info import Info
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils import constants
 
 
 def main():
@@ -19,7 +19,12 @@ def main():
     # Get the user state and print out leverage information for ETH
     user_state = info.user_state(account.address)
     print("Current leverage for ETH:")
-    print(json.dumps(user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"], indent=2))
+    print(
+        json.dumps(
+            user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"],
+            indent=2,
+        )
+    )
 
     # Set the ETH leverage to 21x (cross margin)
     print(exchange.update_leverage(21, "ETH"))
@@ -33,7 +38,12 @@ def main():
     # Get the user state and print out the final leverage information after our changes
     user_state = info.user_state(account.address)
     print("Current leverage for ETH:")
-    print(json.dumps(user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"], indent=2))
+    print(
+        json.dumps(
+            user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"],
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

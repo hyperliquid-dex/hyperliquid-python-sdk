@@ -1,6 +1,14 @@
-from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast, Cloid
-from hyperliquid.websocket_manager import WebsocketManager
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.api import API
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.types import (
+    Any,
+    Callable,
+    Meta,
+    Optional,
+    Subscription,
+    cast,
+    Cloid,
+)
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.websocket_manager import WebsocketManager
 
 
 class Info(API):
@@ -159,7 +167,13 @@ class Info(API):
         """
         if endTime is not None:
             return self.post(
-                "/info", {"type": "fundingHistory", "coin": coin, "startTime": startTime, "endTime": endTime}
+                "/info",
+                {
+                    "type": "fundingHistory",
+                    "coin": coin,
+                    "startTime": startTime,
+                    "endTime": endTime,
+                },
             )
         return self.post("/info", {"type": "fundingHistory", "coin": coin, "startTime": startTime})
 

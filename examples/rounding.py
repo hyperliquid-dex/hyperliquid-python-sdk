@@ -13,9 +13,9 @@ import eth_account
 import utils
 from eth_account.signers.local import LocalAccount
 
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
-from hyperliquid.utils import constants
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.exchange import Exchange
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.info import Info
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils import constants
 
 
 def main():

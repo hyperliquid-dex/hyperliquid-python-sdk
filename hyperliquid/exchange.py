@@ -6,10 +6,10 @@ from eth_abi import encode
 from eth_account.signers.local import LocalAccount
 from eth_utils import keccak, to_hex
 
-from hyperliquid.api import API
-from hyperliquid.info import Info
-from hyperliquid.utils.constants import MAINNET_API_URL
-from hyperliquid.utils.signing import (
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.api import API
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.info import Info
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.constants import MAINNET_API_URL
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.signing import (
     ZERO_ADDRESS,
     CancelRequest,
     CancelByCloidRequest,
@@ -27,7 +27,15 @@ from hyperliquid.utils.signing import (
     sign_agent,
     str_to_bytes16,
 )
-from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple, Cloid
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.types import (
+    Any,
+    List,
+    Literal,
+    Meta,
+    Optional,
+    Tuple,
+    Cloid,
+)
 
 
 class Exchange(API):
@@ -46,7 +54,9 @@ class Exchange(API):
             self.meta = info.meta()
         else:
             self.meta = meta
-        self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])}
+        self.coin_to_asset = {
+            asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])
+        }
 
     def _post_action(self, action, signature, nonce):
         payload = {
@@ -82,7 +92,8 @@ class Exchange(API):
 
     def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
         order_specs: List[OrderSpec] = [
-            order_request_to_order_spec(order, self.coin_to_asset[order["coin"]]) for order in order_requests
+            order_request_to_order_spec(order, self.coin_to_asset[order["coin"]])
+            for order in order_requests
         ]
 
         timestamp = get_timestamp_ms()
@@ -106,7 +117,10 @@ class Exchange(API):
         signature = sign_l1_action(
             self.wallet,
             signature_types,
-            [[order_spec_preprocessing(order_spec) for order_spec in order_specs], order_grouping_to_number(grouping)],
+            [
+                [order_spec_preprocessing(order_spec) for order_spec in order_specs],
+                order_grouping_to_number(grouping),
+            ],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,

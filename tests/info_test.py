@@ -1,6 +1,6 @@
 import pytest
 
-from hyperliquid.info import Info
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.info import Info
 
 
 @pytest.mark.vcr()
@@ -76,7 +76,9 @@ def test_get_l2_snapshot():
 @pytest.mark.vcr()
 def test_get_candles_snapshot():
     info = Info(skip_ws=True)
-    response = info.candles_snapshot(coin="kPEPE", interval="1h", startTime=1684702007000, endTime=1684784807000)
+    response = info.candles_snapshot(
+        coin="kPEPE", interval="1h", startTime=1684702007000, endTime=1684784807000
+    )
     assert len(response) == 24
     for key in ["T", "c", "h", "i", "l", "n", "o", "s", "t", "v"]:
         assert key in response[0].keys()

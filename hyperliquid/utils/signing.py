@@ -4,17 +4,33 @@ from eth_abi import encode
 from eth_account.messages import encode_structured_data
 from eth_utils import keccak, to_hex
 
-from hyperliquid.utils.types import Any, Literal, Optional, Tuple, TypedDict, Union, Cloid
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.types import (
+    Any,
+    Literal,
+    Optional,
+    Tuple,
+    TypedDict,
+    Union,
+    Cloid,
+)
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 Tif = Union[Literal["Alo"], Literal["Ioc"], Literal["Gtc"]]
 Tpsl = Union[Literal["tp"], Literal["sl"]]
 LimitOrderType = TypedDict("LimitOrderType", {"tif": Tif})
-TriggerOrderType = TypedDict("TriggerOrderType", {"triggerPx": float, "isMarket": bool, "tpsl": Tpsl})
-TriggerOrderTypeWire = TypedDict("TriggerOrderTypeWire", {"triggerPx": str, "isMarket": bool, "tpsl": Tpsl})
-OrderType = TypedDict("OrderType", {"limit": LimitOrderType, "trigger": TriggerOrderType}, total=False)
-OrderTypeWire = TypedDict("OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False)
+TriggerOrderType = TypedDict(
+    "TriggerOrderType", {"triggerPx": float, "isMarket": bool, "tpsl": Tpsl}
+)
+TriggerOrderTypeWire = TypedDict(
+    "TriggerOrderTypeWire", {"triggerPx": str, "isMarket": bool, "tpsl": Tpsl}
+)
+OrderType = TypedDict(
+    "OrderType", {"limit": LimitOrderType, "trigger": TriggerOrderType}, total=False
+)
+OrderTypeWire = TypedDict(
+    "OrderTypeWire", {"limit": LimitOrderType, "trigger": TriggerOrderTypeWire}, total=False
+)
 OrderRequest = TypedDict(
     "OrderRequest",
     {
@@ -68,7 +84,15 @@ def order_grouping_to_number(grouping: Grouping) -> int:
 
 
 Order = TypedDict(
-    "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
+    "Order",
+    {
+        "asset": int,
+        "isBuy": bool,
+        "limitPx": float,
+        "sz": float,
+        "reduceOnly": bool,
+        "cloid": Optional[Cloid],
+    },
 )
 OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
 

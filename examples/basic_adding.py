@@ -8,11 +8,11 @@ import eth_account
 import utils
 from eth_account.signers.local import LocalAccount
 
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
-from hyperliquid.utils import constants
-from hyperliquid.utils.signing import get_timestamp_ms
-from hyperliquid.utils.types import (
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.exchange import Exchange
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.info import Info
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils import constants
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.signing import get_timestamp_ms
+from perp_dex_mm.hyperliquid_python_sdk.hyperliquid.utils.types import (
     SIDES,
     Dict,
     L2BookMsg,
@@ -102,7 +102,9 @@ class BasicAdder:
                         print(f"Failed to cancel order {provide_state} {side}", response)
             elif provide_state["type"] == "in_flight_order":
                 if get_timestamp_ms() - provide_state["time"] > 10000:
-                    print("Order is still in flight after 10s treating as cancelled", provide_state)
+                    print(
+                        "Order is still in flight after 10s treating as cancelled", provide_state
+                    )
                     self.provide_state[side] = {"type": "cancelled"}
 
             # If we aren't providing, maybe place a new order
@@ -118,14 +120,23 @@ class BasicAdder:
                 px = float(f"{ideal_price:.5g}")  # prices should have at most 5 significant digits
                 print(f"placing order sz:{sz} px:{px} side:{side}")
                 self.provide_state[side] = {"type": "in_flight_order", "time": get_timestamp_ms()}
-                response = self.exchange.order(COIN, side == "B", sz, px, {"limit": {"tif": "Alo"}})
+                response = self.exchange.order(
+                    COIN, side == "B", sz, px, {"limit": {"tif": "Alo"}}
+                )
                 print("placed order", response)
                 if response["status"] == "ok":
                     status = response["response"]["data"]["statuses"][0]
                     if "resting" in status:
-                        self.provide_state[side] = {"type": "resting", "px": px, "oid": status["resting"]["oid"]}
+                        self.provide_state[side] = {
+                            "type": "resting",
+                            "px": px,
+                            "oid": status["resting"]["oid"],
+                        }
                     else:
-                        print("Unexpected response from placing order. Setting position to None.", response)
+                        print(
+                            "Unexpected response from placing order. Setting position to None.",
+                            response,
+                        )
                         self.provide_state[side] = {"type": "cancelled"}
                         self.position = None
 
