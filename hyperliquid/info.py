@@ -204,6 +204,14 @@ class Info(API):
         """
         return self.post("/info", {"type": "l2Book", "coin": coin})
 
+    def asset_contexts(self) -> Any:
+        """retrieve asset contexts includes mark price, current funding, open interest, etc
+
+        Returns:
+            Any: _description_
+        """
+        return self.post("/info", {"type": "metaAndAssetCtxs"})
+
     def candles_snapshot(self, coin: str, interval: str, startTime: int, endTime: int) -> Any:
         """Retrieve candles snapshot for a given coin
 
