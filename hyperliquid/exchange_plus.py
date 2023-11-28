@@ -38,16 +38,6 @@ class ExchangePlus(Exchange):
         # We round px to 5 significant figures and 6 decimals
         return round(float(f"{px:.5g}"), 6) 
 
-    def __market_order(
-        self,
-        coin: str,
-        is_buy: bool,
-        sz: float,
-        reduce_only: bool = False,
-        cloid: Optional[Cloid] = None,
-    ) -> Any:
-        pass
-
     def __slippage_price(
         self,
         coin: str, 
@@ -73,6 +63,7 @@ class ExchangePlus(Exchange):
 
         # Get aggressive Market Price
         px = self.__slippage_price(coin, is_buy, slippage)
+        sz = self.__round_sz(coin, sz)
         # Market Order is an aggressive Limit Order IoC
         return super().order(
             coin, 
@@ -102,7 +93,7 @@ class ExchangePlus(Exchange):
             is_buy = True if szi < 0 else False
             # Get aggressive Market Price
             px = self.__slippage_price(coin, is_buy, slippage)
-
+            sz = self.__round_sz(coin, sz)
             # Market Order is an aggressive Limit Order IoC
             return super().order(
                 coin, 
