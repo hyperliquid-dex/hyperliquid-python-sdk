@@ -59,7 +59,7 @@ class ExchangePlus(Exchange):
         sz: float,
         slippage: Optional[float] = DEFAULT_SLIPPAGE,            
         cloid: Optional[Cloid] = None,        
-    ):
+    ) -> Any:
 
         # Get aggressive Market Price
         px = self.__slippage_price(coin, is_buy, slippage)
