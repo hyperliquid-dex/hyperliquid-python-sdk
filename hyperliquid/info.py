@@ -90,7 +90,7 @@ class Info(API):
                         dict of frontend orders
                     ]
                 coin: str,
-                isPositoinTpsl: bool,
+                isPositionTpsl: bool,
                 isTrigger: bool,
                 limitPx: float string,
                 oid: int,

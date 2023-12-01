@@ -76,7 +76,7 @@ OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
 def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
     order = order_spec["order"]
     order_type_array = order_type_to_tuple(order_spec["orderType"])
-    res = (
+    res: Any = (
         order["asset"],
         order["isBuy"],
         float_to_int_for_hashing(order["limitPx"]),
@@ -85,7 +85,7 @@ def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
         order_type_array[0],
         float_to_int_for_hashing(order_type_array[1]),
     )
-    if "cloid" in order and order["cloid"]:
+    if "cloid" in order and order["cloid"] is not None:
         res += (str_to_bytes16(order["cloid"].to_raw()),)
     return res
 
@@ -121,7 +121,7 @@ def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
 def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
     order = order_spec["order"]
     cloid = None
-    if "cloid" in order and order["cloid"]:
+    if "cloid" in order and order["cloid"] is not None:
         cloid = order["cloid"].to_raw()
     return {
         "asset": order["asset"],
@@ -254,7 +254,8 @@ def float_to_int(x: float, power: int) -> int:
     with_decimals = x * 10**power
     if abs(round(with_decimals) - with_decimals) >= 1e-3:
         raise ValueError("float_to_int causes rounding", x)
-    return round(with_decimals)
+    res: int = round(with_decimals)
+    return res
 
 
 def str_to_bytes16(x: str) -> bytearray:

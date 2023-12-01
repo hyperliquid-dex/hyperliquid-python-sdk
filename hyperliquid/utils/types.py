@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 
 if sys.version_info >= (3, 8):
@@ -64,11 +66,11 @@ class Cloid:
         assert len(self._raw_cloid[2:]) == 32, "cloid is not 16 bytes"
 
     @staticmethod
-    def from_int(cloid: int):
+    def from_int(cloid: int) -> Cloid:
         return Cloid(f"{cloid:#034x}")
 
     @staticmethod
-    def from_str(cloid: str):
+    def from_str(cloid: str) -> Cloid:
         return Cloid(cloid)
 
     def to_raw(self):

@@ -31,6 +31,10 @@ from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple, C
 
 
 class Exchange(API):
+
+    # Default Max Slippage for Market Orders 5%
+    DEFAULT_SLIPPAGE = 0.05
+
     def __init__(
         self,
         wallet: LocalAccount,
@@ -41,9 +45,9 @@ class Exchange(API):
         super().__init__(base_url)
         self.wallet = wallet
         self.vault_address = vault_address
+        self.info = Info(base_url, skip_ws=True)
         if meta is None:
-            info = Info(base_url, skip_ws=True)
-            self.meta = info.meta()
+            self.meta = self.info.meta()
         else:
             self.meta = meta
         self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])}
@@ -58,6 +62,22 @@ class Exchange(API):
         logging.debug(payload)
         return self.post("/exchange", payload)
 
+    def _slippage_price(
+        self,
+        coin: str,
+        is_buy: bool,
+        slippage: float,
+        px: Optional[float] = None,
+    ) -> float:
+
+        if not px:
+            # Get midprice
+            px = float(self.info.all_mids()[coin])
+        # Calculate Slippage
+        px *= (1 + slippage) if is_buy else (1 - slippage)
+        # We round px to 5 significant figures and 6 decimals
+        return round(float(f"{px:.5g}"), 6)
+
     def order(
         self,
         coin: str,
@@ -68,7 +88,7 @@ class Exchange(API):
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
     ) -> Any:
-        order = {
+        order: OrderRequest = {
             "coin": coin,
             "is_buy": is_buy,
             "sz": sz,
@@ -121,6 +141,93 @@ class Exchange(API):
             signature,
             timestamp,
         )
+
+    def modify_order(
+        self,
+        oid: int,
+        coin: str,
+        is_buy: bool,
+        sz: float,
+        limit_px: float,
+        order_type: OrderType,
+        reduce_only: bool = False,
+        cloid: Optional[Cloid] = None,
+    ) -> Any:
+        order: OrderRequest = {
+            "coin": coin,
+            "is_buy": is_buy,
+            "sz": sz,
+            "limit_px": limit_px,
+            "order_type": order_type,
+            "reduce_only": reduce_only,
+        }
+        if cloid:
+            order["cloid"] = cloid
+
+        order_spec = order_request_to_order_spec(order, self.coin_to_asset[order["coin"]])
+
+        timestamp = get_timestamp_ms()
+
+        if cloid:
+            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)"]
+        else:
+            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64)"]
+
+        signature = sign_l1_action(
+            self.wallet,
+            signature_types,
+            [oid, order_spec_preprocessing(order_spec)],
+            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            {
+                "type": "modify",
+                "oid": oid,
+                "order": order_spec_to_order_wire(order_spec),
+            },
+            signature,
+            timestamp,
+        )
+
+    def market_open(
+        self,
+        coin: str,
+        is_buy: bool,
+        sz: float,
+        px: Optional[float] = None,
+        slippage: float = DEFAULT_SLIPPAGE,
+        cloid: Optional[Cloid] = None,
+    ) -> Any:
+
+        # Get aggressive Market Price
+        px = self._slippage_price(coin, is_buy, slippage, px)
+        # Market Order is an aggressive Limit Order IoC
+        return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid)
+
+    def market_close(
+        self,
+        coin: str,
+        sz: Optional[float] = None,
+        px: Optional[float] = None,
+        slippage: float = DEFAULT_SLIPPAGE,
+        cloid: Optional[Cloid] = None,
+    ) -> Any:
+        positions = self.info.user_state(self.wallet.address)["assetPositions"]
+        for position in positions:
+            item = position["position"]
+            if coin != item["coin"]:
+                continue
+            szi = float(item["szi"])
+            if not sz:
+                sz = szi
+            is_buy = True if szi < 0 else False
+            # Get aggressive Market Price
+            px = self._slippage_price(coin, is_buy, slippage, px)
+            # Market Order is an aggressive Limit Order IoC
+            return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=True, cloid=cloid)
 
     def cancel(self, coin: str, oid: int) -> Any:
         return self.bulk_cancel([{"coin": coin, "oid": oid}])
