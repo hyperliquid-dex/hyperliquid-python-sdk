@@ -11,10 +11,10 @@ def main():
     account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
     print("Running with account address:", account.address)
 
-    # Transfer 1 usd to the zero address for demonstration purposes
+    # Withdraw 1 usd
     exchange = Exchange(account, constants.TESTNET_API_URL)
-    transfer_result = exchange.usd_transfer(1, "0x0000000000000000000000000000000000000000")
-    print(transfer_result)
+    withdraw_result = exchange.withdraw_from_bridge(1, account.address)
+    print(withdraw_result)
 
 
 if __name__ == "__main__":

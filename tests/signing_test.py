@@ -13,6 +13,7 @@ from hyperliquid.utils.signing import (
     order_spec_preprocessing,
     sign_l1_action,
     sign_usd_transfer_action,
+    sign_withdraw_from_bridge_action,
 )
 from hyperliquid.utils.types import Cloid
 
@@ -209,4 +210,17 @@ def test_sign_usd_transfer_action():
     signature = sign_usd_transfer_action(wallet, message, False)
     assert signature["r"] == "0x283ca602ac69be536bd2272f050eddf8d250ed3eef083d1fc26989e57f891759"
     assert signature["s"] == "0x9bc743cf95042269236bc7f48c06ab8a6a9ee53e04f3336c6cfd1b22783aa74"
+    assert signature["v"] == 28
+
+
+def test_sign_withdraw_from_bridge_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    message = {
+        "destination": "0x5e9ee1089755c3435139848e47e6635505d5a13a",
+        "usd": "1",
+        "time": 1687816341423,
+    }
+    signature = sign_withdraw_from_bridge_action(wallet, message, False)
+    assert signature["r"] == "0xd60816bf99a00645aa81b9ade23f03bf15994cd2c6d06fc3740a4c74530e36d9"
+    assert signature["s"] == "0x4552f30419166a6e9d8dbd49b14aeef1e7606fe9e0caec8c0211608d79ce43a3"
     assert signature["v"] == 28

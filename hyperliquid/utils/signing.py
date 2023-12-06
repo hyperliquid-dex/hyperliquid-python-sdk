@@ -203,6 +203,33 @@ def sign_usd_transfer_action(wallet, message, is_mainnet):
     return sign_inner(wallet, data)
 
 
+def sign_withdraw_from_bridge_action(wallet, message, is_mainnet):
+    data = {
+        "domain": {
+            "name": "Exchange",
+            "version": "1",
+            "chainId": 42161 if is_mainnet else 421614,
+            "verifyingContract": "0x0000000000000000000000000000000000000000",
+        },
+        "types": {
+            "WithdrawFromBridge2SignPayload": [
+                {"name": "destination", "type": "string"},
+                {"name": "usd", "type": "string"},
+                {"name": "time", "type": "uint64"},
+            ],
+            "EIP712Domain": [
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
+            ],
+        },
+        "primaryType": "WithdrawFromBridge2SignPayload",
+        "message": message,
+    }
+    return sign_inner(wallet, data)
+
+
 def sign_agent(wallet, agent, is_mainnet):
     data = {
         "domain": {

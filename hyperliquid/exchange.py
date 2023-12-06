@@ -24,6 +24,7 @@ from hyperliquid.utils.signing import (
     order_spec_to_order_wire,
     sign_l1_action,
     sign_usd_transfer_action,
+    sign_withdraw_from_bridge_action,
     sign_agent,
     str_to_bytes16,
 )
@@ -335,7 +336,7 @@ class Exchange(API):
             timestamp,
         )
 
-    def usd_tranfer(self, amount: float, destination: str) -> Any:
+    def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         payload = {
             "destination": destination,
@@ -349,6 +350,25 @@ class Exchange(API):
                 "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
                 "payload": payload,
                 "type": "usdTransfer",
+            },
+            signature,
+            timestamp,
+        )
+
+    def withdraw_from_bridge(self, usd: float, destination: str) -> Any:
+        timestamp = get_timestamp_ms()
+        payload = {
+            "destination": destination,
+            "usd": str(usd),
+            "time": timestamp,
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_withdraw_from_bridge_action(self.wallet, payload, is_mainnet)
+        return self._post_action(
+            {
+                "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
+                "payload": payload,
+                "type": "withdraw2",
             },
             signature,
             timestamp,
