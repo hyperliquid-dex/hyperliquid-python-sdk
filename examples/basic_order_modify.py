@@ -42,7 +42,7 @@ def main():
             print("Order status by oid:", order_status)
 
             modify_result = exchange.modify_order(oid, "ETH", True, 0.1, 1105, {"limit": {"tif": "Gtc"}})
-            print(modify_result)
+            print("modify result:", modify_result)
 
 
 if __name__ == "__main__":

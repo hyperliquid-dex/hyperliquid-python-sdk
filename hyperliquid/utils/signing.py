@@ -28,6 +28,14 @@ OrderRequest = TypedDict(
     },
     total=False,
 )
+ModifyRequest = TypedDict(
+    "ModifyRequest",
+    {
+        "oid": int,
+        "order": OrderRequest,
+    },
+    total=False,
+)
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": Cloid})
 
@@ -71,6 +79,7 @@ Order = TypedDict(
     "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
 )
 OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
+ModifySpec = TypedDict("ModifySpec", {"oid": int, "order": OrderSpec, "orderType": OrderType})
 
 
 def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
@@ -90,6 +99,15 @@ def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
     return res
 
 
+def modify_spec_preprocessing(modify_spec: ModifySpec) -> Any:
+    res: Any = (modify_spec["oid"],)
+    res += order_spec_preprocessing(modify_spec["order"])
+    order = modify_spec["order"]["order"]
+    if "cloid" not in order or order["cloid"] is None:
+        res += (bytearray(16),)
+    return res
+
+
 OrderWire = TypedDict(
     "OrderWire",
     {
@@ -100,6 +118,14 @@ OrderWire = TypedDict(
         "reduceOnly": bool,
         "orderType": OrderTypeWire,
         "cloid": Optional[Cloid],
+    },
+)
+
+ModifyWire = TypedDict(
+    "ModifyWire",
+    {
+        "oid": int,
+        "order": OrderWire,
     },
 )
 
@@ -134,13 +160,20 @@ def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
     }
 
 
+def modify_spec_to_modify_wire(modify_spec: ModifySpec) -> ModifyWire:
+    return {
+        "oid": modify_spec["oid"],
+        "order": order_spec_to_order_wire(modify_spec["order"]),
+    }
+
+
 def construct_phantom_agent(signature_types, signature_data, is_mainnet):
     connection_id = encode(signature_types, signature_data)
 
     return {"source": "a" if is_mainnet else "b", "connectionId": keccak(connection_id)}
 
 
-def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce, is_mainnet):
+def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce, is_mainnet, action_type_code=None):
     signature_types.append("address")
     signature_types.append("uint64")
     if active_pool is None:
@@ -148,6 +181,10 @@ def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce, 
     else:
         signature_data.append(active_pool)
     signature_data.append(nonce)
+
+    if action_type_code is not None:
+        signature_types.append("uint16")
+        signature_data.append(action_type_code)
 
     phantom_agent = construct_phantom_agent(signature_types, signature_data, is_mainnet)
 

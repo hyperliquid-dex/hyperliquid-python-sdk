@@ -13,11 +13,15 @@ from hyperliquid.utils.signing import (
     ZERO_ADDRESS,
     CancelRequest,
     CancelByCloidRequest,
+    ModifyRequest,
+    ModifySpec,
     OrderRequest,
     OrderSpec,
     OrderType,
     float_to_usd_int,
     get_timestamp_ms,
+    modify_spec_preprocessing,
+    modify_spec_to_modify_wire,
     order_grouping_to_number,
     order_request_to_order_spec,
     order_spec_preprocessing,
@@ -154,40 +158,49 @@ class Exchange(API):
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
     ) -> Any:
-        order: OrderRequest = {
-            "coin": coin,
-            "is_buy": is_buy,
-            "sz": sz,
-            "limit_px": limit_px,
-            "order_type": order_type,
-            "reduce_only": reduce_only,
-        }
-        if cloid:
-            order["cloid"] = cloid
 
-        order_spec = order_request_to_order_spec(order, self.coin_to_asset[order["coin"]])
+        modify: ModifyRequest = {
+            "oid": oid,
+            "order": {
+                "coin": coin,
+                "is_buy": is_buy,
+                "sz": sz,
+                "limit_px": limit_px,
+                "order_type": order_type,
+                "reduce_only": reduce_only,
+                "cloid": cloid,
+            },
+        }
+        return self.bulk_modify_orders([modify])
+
+    def bulk_modify_orders(self, modify_requests: List[ModifyRequest]) -> Any:
+        modify_specs: List[ModifySpec] = [
+            {
+                "oid": modify["oid"],
+                "order": order_request_to_order_spec(modify["order"], self.coin_to_asset[modify["order"]["coin"]]),
+                "orderType": modify["order"]["order_type"],
+            }
+            for modify in modify_requests
+        ]
 
         timestamp = get_timestamp_ms()
 
-        if cloid:
-            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)"]
-        else:
-            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64)"]
+        signature_types = ["(uint64,uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]"]
 
         signature = sign_l1_action(
             self.wallet,
             signature_types,
-            [oid, order_spec_preprocessing(order_spec)],
+            [[modify_spec_preprocessing(modify_spec) for modify_spec in modify_specs]],
             ZERO_ADDRESS if self.vault_address is None else self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
+            action_type_code=40,
         )
 
         return self._post_action(
             {
-                "type": "modify",
-                "oid": oid,
-                "order": order_spec_to_order_wire(order_spec),
+                "type": "batchModify",
+                "modifies": [modify_spec_to_modify_wire(modify_spec) for modify_spec in modify_specs],
             },
             signature,
             timestamp,
