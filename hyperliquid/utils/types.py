@@ -72,7 +72,6 @@ AssetCtx = TypedDict(
 )
 MetaAndAssetCtxs = Union[Meta,List[AssetCtx]]
 
-
 # TODO: handle other types of user events
 UserEventsData = TypedDict("UserEventsData", {"fills": List[Fill]}, total=False)
 UserEventsMsg = TypedDict("UserEventsMsg", {"channel": Literal["user"], "data": UserEventsData})
