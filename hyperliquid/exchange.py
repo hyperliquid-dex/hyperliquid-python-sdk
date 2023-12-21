@@ -136,6 +136,57 @@ class Exchange(API):
             timestamp,
         )
 
+    def modify_order(
+        self,
+        oid: int,
+        coin: str,
+        is_buy: bool,
+        sz: float,
+        limit_px: float,
+        order_type: OrderType,
+        reduce_only: bool = False,
+        cloid: Optional[Cloid] = None,
+    ) -> Any:
+        order: OrderRequest = {
+            "coin": coin,
+            "is_buy": is_buy,
+            "sz": sz,
+            "limit_px": limit_px,
+            "order_type": order_type,
+            "reduce_only": reduce_only,
+        }
+        if cloid:
+            order["cloid"] = cloid
+
+        order_spec = order_request_to_order_spec(order, self.coin_to_asset[order["coin"]])
+
+        timestamp = get_timestamp_ms()
+
+        if cloid:
+            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)"]
+        else:
+            signature_types = ["uint64", "(uint32,bool,uint64,uint64,bool,uint8,uint64)"]
+
+        signature = sign_l1_action(
+            self.wallet,
+            signature_types,
+            [oid, order_spec_preprocessing(order_spec)],
+            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            {
+                "type": "modify",
+                "oid": oid,
+                "order": order_spec_to_order_wire(order_spec),
+            },
+            signature,
+            timestamp,
+        )
+
+
     def cancel(self, coin: str, oid: int) -> Any:
         return self.bulk_cancel([{"coin": coin, "oid": oid}])
 
