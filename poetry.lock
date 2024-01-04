@@ -23,7 +23,7 @@ wrapt = ">=1.11,<2"
 name = "attrs"
 version = "23.1.0"
 description = "Classes Without Boilerplate"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -339,7 +339,7 @@ files = [
 name = "click"
 version = "8.1.5"
 description = "Composable command line interface toolkit"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -355,7 +355,7 @@ importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 files = [
@@ -367,7 +367,7 @@ files = [
 name = "commonmark"
 version = "0.9.1"
 description = "Python parser for the CommonMark Markdown spec"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -820,7 +820,7 @@ test = ["hypothesis (>=4.43.0)", "mypy (==0.971)", "pytest (>=7.0.0)", "pytest-x
 name = "exceptiongroup"
 version = "1.1.2"
 description = "Backport of PEP 654 (exception groups)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -927,7 +927,7 @@ files = [
 name = "importlib-metadata"
 version = "4.13.0"
 description = "Read metadata from Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -948,7 +948,7 @@ testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packag
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1039,7 +1039,7 @@ files = [
 name = "multidict"
 version = "6.0.4"
 description = "multidict implementation"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1192,7 +1192,7 @@ setuptools = "*"
 name = "packaging"
 version = "23.1"
 description = "Core utilities for Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1261,7 +1261,7 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-
 name = "pluggy"
 version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1361,7 +1361,7 @@ toml = ["tomli (>=1.2.3)"]
 name = "pygments"
 version = "2.15.1"
 description = "Pygments is a syntax highlighting package written in Python."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1401,7 +1401,7 @@ testutil = ["gitpython (>3)"]
 name = "pytest"
 version = "7.4.0"
 description = "pytest: simple powerful testing with Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1444,7 +1444,7 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 name = "pytest-recording"
 version = "0.12.2"
 description = "A pytest plugin that allows you recording of network interactions via VCR.py"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -1476,7 +1476,7 @@ tokenize-rt = "<5"
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -1548,7 +1548,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 name = "rich"
 version = "10.16.2"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.2,<4.0.0"
 files = [
@@ -1622,18 +1622,6 @@ files = [
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
 testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-ruff", "pytest-timeout", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
-
-[[package]]
-name = "shellingham"
-version = "1.5.0.post1"
-description = "Tool to Detect Surrounding Shell"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "shellingham-1.5.0.post1-py2.py3-none-any.whl", hash = "sha256:368bf8c00754fd4f55afb7bbb86e272df77e4dc76ac29dbcbb81a59e9fc15744"},
-    {file = "shellingham-1.5.0.post1.tar.gz", hash = "sha256:823bc5fb5c34d60f285b624e7264f4dda254bc803a3774a147bf99c0e3004a28"},
-]
 
 [[package]]
 name = "six"
@@ -1715,7 +1703,7 @@ files = [
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1776,33 +1764,10 @@ files = [
 ]
 
 [[package]]
-name = "typer"
-version = "0.4.2"
-description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "typer-0.4.2-py3-none-any.whl", hash = "sha256:023bae00d1baf358a6cc7cea45851639360bb716de687b42b0a4641cd99173f1"},
-    {file = "typer-0.4.2.tar.gz", hash = "sha256:b8261c6c0152dd73478b5ba96ba677e5d6948c715c310f7c91079f311f62ec03"},
-]
-
-[package.dependencies]
-click = ">=7.1.1,<9.0.0"
-colorama = {version = ">=0.4.3,<0.5.0", optional = true, markers = "extra == \"all\""}
-shellingham = {version = ">=1.3.0,<2.0.0", optional = true, markers = "extra == \"all\""}
-
-[package.extras]
-all = ["colorama (>=0.4.3,<0.5.0)", "shellingham (>=1.3.0,<2.0.0)"]
-dev = ["autoflake (>=1.3.1,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)", "pre-commit (>=2.17.0,<3.0.0)"]
-doc = ["mdx-include (>=1.4.1,<2.0.0)", "mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)"]
-test = ["black (>=22.3.0,<23.0.0)", "coverage (>=5.2,<6.0)", "isort (>=5.0.6,<6.0.0)", "mypy (==0.910)", "pytest (>=4.4.0,<5.4.0)", "pytest-cov (>=2.10.0,<3.0.0)", "pytest-sugar (>=0.9.4,<0.10.0)", "pytest-xdist (>=1.32.0,<2.0.0)", "shellingham (>=1.3.0,<2.0.0)"]
-
-[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1831,7 +1796,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "vcrpy"
 version = "4.4.0"
 description = "Automatically mock your HTTP interactions to simplify and speed up testing"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1889,7 +1854,7 @@ test = ["websockets"]
 name = "wrapt"
 version = "1.15.0"
 description = "Module for decorators, wrappers and monkey patching."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 files = [
@@ -1974,7 +1939,7 @@ files = [
 name = "yarl"
 version = "1.9.2"
 description = "Yet another URL library"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2063,7 +2028,7 @@ typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 name = "zipp"
 version = "3.15.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2078,4 +2043,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "62e6304f2750c7952e8443a3de52ebb105aa1f161ba7141b80bb5755d18a8c3d"
+content-hash = "8f89b85de855c3a23a3a3a1bb9f0896027dd5af60df08998881614092be37af1"

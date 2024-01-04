@@ -295,7 +295,7 @@ class Exchange(API):
                 "cancels": [
                     {
                         "asset": self.coin_to_asset[cancel["coin"]],
-                        "cloid": cancel["cloid"],
+                        "cloid": cancel["cloid"].to_raw(),
                     }
                     for cancel in cancel_requests
                 ],

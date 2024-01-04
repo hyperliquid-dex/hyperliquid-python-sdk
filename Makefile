@@ -6,7 +6,7 @@ PYTHONPATH := `pwd`
 #* Installation
 .PHONY: install
 install:
-	poetry lock -n && poetry export --without-hashes > requirements.txt
+	poetry lock -n --no-update && poetry export --without-hashes > requirements.txt
 	poetry install -n
 	-poetry run mypy --install-types --non-interactive ./
 
