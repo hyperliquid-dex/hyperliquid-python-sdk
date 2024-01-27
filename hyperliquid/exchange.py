@@ -236,7 +236,7 @@ class Exchange(API):
                 continue
             szi = float(item["szi"])
             if not sz:
-                sz = szi
+                sz = abs(szi)
             is_buy = True if szi < 0 else False
             # Get aggressive Market Price
             px = self._slippage_price(coin, is_buy, slippage, px)
