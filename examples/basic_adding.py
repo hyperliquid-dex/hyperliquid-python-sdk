@@ -4,10 +4,6 @@ import logging
 import threading
 import time
 
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
 from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
@@ -24,6 +20,7 @@ from hyperliquid.utils.types import (
     Union,
     UserEventsMsg,
 )
+import example_utils
 
 # How far from the best bid and offer this strategy ideally places orders. Currently set to .3%
 # i.e. if the best bid is $1000, this strategy will place a resting bid at $997
@@ -56,12 +53,12 @@ def side_to_uint(side: Side) -> int:
 
 
 class BasicAdder:
-    def __init__(self, wallet: LocalAccount, api_url: str):
-        self.info = Info(api_url)
-        self.exchange = Exchange(wallet, api_url)
+    def __init__(self, address: str, info: Info, exchange: Exchange):
+        self.info = info
+        self.exchange = exchange
         subscription: L2BookSubscription = {"type": "l2Book", "coin": COIN}
         self.info.subscribe(subscription, self.on_book_update)
-        self.info.subscribe({"type": "userEvents", "user": wallet.address}, self.on_user_events)
+        self.info.subscribe({"type": "userEvents", "user": address}, self.on_user_events)
         self.position: Optional[float] = None
         self.provide_state: Dict[Side, ProvideState] = {
             "A": {"type": "cancelled"},
@@ -175,10 +172,8 @@ class BasicAdder:
 def main():
     # Setting this to logging.DEBUG can be helpful for debugging websocket callback issues
     logging.basicConfig(level=logging.ERROR)
-    config = utils.get_config()
-    account = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
-    BasicAdder(account, constants.TESTNET_API_URL)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL)
+    BasicAdder(address, info, exchange)
 
 
 if __name__ == "__main__":

@@ -1,18 +1,14 @@
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
-from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
+import example_utils
 
 
 def main():
-    config = utils.get_config()
-    account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+
+    if exchange.account_address != exchange.wallet.address:
+        raise Exception("Agents do not have permission to perform internal transfers")
 
     # Transfer 1 usd to the zero address for demonstration purposes
-    exchange = Exchange(account, constants.TESTNET_API_URL)
     transfer_result = exchange.usd_transfer(1, "0x0000000000000000000000000000000000000000")
     print(transfer_result)
 

@@ -1,25 +1,17 @@
 import json
 
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
 from hyperliquid.utils import constants
+import example_utils
 
 
 def main():
-    config = utils.get_config()
-    account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
-    info = Info(constants.TESTNET_API_URL, skip_ws=True)
-    exchange = Exchange(account, constants.TESTNET_API_URL)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
     # Get the user state and print out leverage information for ETH
-    user_state = info.user_state(account.address)
-    print("Current leverage for ETH:")
-    print(json.dumps(user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"], indent=2))
+    user_state = info.user_state(address)
+    for asset_position in user_state["assetPositions"]:
+        if asset_position["position"]["coin"] == "ETH":
+            print("Current leverage for ETH:", json.dumps(asset_position["position"]["leverage"], indent=2))
 
     # Set the ETH leverage to 21x (cross margin)
     print(exchange.update_leverage(21, "ETH"))
@@ -31,9 +23,10 @@ def main():
     print(exchange.update_isolated_margin(1, "ETH"))
 
     # Get the user state and print out the final leverage information after our changes
-    user_state = info.user_state(account.address)
-    print("Current leverage for ETH:")
-    print(json.dumps(user_state["assetPositions"][exchange.coin_to_asset["ETH"]]["position"]["leverage"], indent=2))
+    user_state = info.user_state(address)
+    for asset_position in user_state["assetPositions"]:
+        if asset_position["position"]["coin"] == "ETH":
+            print("Current leverage for ETH:", json.dumps(asset_position["position"]["leverage"], indent=2))
 
 
 if __name__ == "__main__":

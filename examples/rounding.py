@@ -9,20 +9,12 @@ You can find the szDecimals for an asset by making a meta request to the info en
 """
 import json
 
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
 from hyperliquid.utils import constants
+import example_utils
 
 
 def main():
-    config = utils.get_config()
-    account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
-    info = Info(constants.TESTNET_API_URL, skip_ws=True)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
     # Get the exchange's metadata and print it out
     meta = info.meta()
@@ -46,7 +38,6 @@ def main():
     sz = round(sz, sz_decimals[coin])
 
     print(f"placing order with px {px} and sz {sz}")
-    exchange = Exchange(account, constants.TESTNET_API_URL)
     order_result = exchange.order(coin, True, sz, px, {"limit": {"tif": "Gtc"}})
     print(order_result)
 

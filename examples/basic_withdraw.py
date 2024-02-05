@@ -1,19 +1,14 @@
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
-from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
+import example_utils
 
 
 def main():
-    config = utils.get_config()
-    account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+    if exchange.account_address != exchange.wallet.address:
+        raise Exception("Agents do not have permission to perform withdrawals")
 
-    # Withdraw 1 usd
-    exchange = Exchange(account, constants.TESTNET_API_URL)
-    withdraw_result = exchange.withdraw_from_bridge(1, account.address)
+    # Withdraw 2 usd (note the amount received will be reduced by the fee)
+    withdraw_result = exchange.withdraw_from_bridge(2, address)
     print(withdraw_result)
 
 

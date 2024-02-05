@@ -1,26 +1,17 @@
 import json
 
-import eth_account
-import utils
-from eth_account.signers.local import LocalAccount
-
-from hyperliquid.exchange import Exchange
-from hyperliquid.info import Info
 from hyperliquid.utils import constants
+import example_utils
 
 
 def main():
-    config = utils.get_config()
-    account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
-    print("Running with account address:", account.address)
-    info = Info(constants.TESTNET_API_URL, skip_ws=True)
+    address, info, exchange = example_utils.setup(base_url=constants.TESTNET_API_URL, skip_ws=True)
 
     # Get the user state and print out position information
-    user_state = info.user_state(account.address)
+    user_state = info.user_state(address)
     positions = []
     for position in user_state["assetPositions"]:
-        if float(position["position"]["szi"]) != 0:
-            positions.append(position["position"])
+        positions.append(position["position"])
     if len(positions) > 0:
         print("positions:")
         for position in positions:
@@ -29,7 +20,6 @@ def main():
         print("no open positions")
 
     # Place an order that should rest by setting the price very low
-    exchange = Exchange(account, constants.TESTNET_API_URL)
     order_result = exchange.order("ETH", True, 0.2, 1100, {"limit": {"tif": "Gtc"}})
     print(order_result)
 
@@ -37,7 +27,7 @@ def main():
     if order_result["status"] == "ok":
         status = order_result["response"]["data"]["statuses"][0]
         if "resting" in status:
-            order_status = info.query_order_by_oid(account.address, status["resting"]["oid"])
+            order_status = info.query_order_by_oid(address, status["resting"]["oid"])
             print("Order status by oid:", order_status)
 
     # Cancel the order

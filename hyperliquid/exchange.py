@@ -46,10 +46,12 @@ class Exchange(API):
         base_url: Optional[str] = None,
         meta: Optional[Meta] = None,
         vault_address: Optional[str] = None,
+        account_address: Optional[str] = None,
     ):
         super().__init__(base_url)
         self.wallet = wallet
         self.vault_address = vault_address
+        self.account_address = account_address
         self.info = Info(base_url, skip_ws=True)
         if meta is None:
             self.meta = self.info.meta()
@@ -229,7 +231,12 @@ class Exchange(API):
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
     ) -> Any:
-        positions = self.info.user_state(self.wallet.address)["assetPositions"]
+        address = self.wallet.address
+        if self.account_address:
+            address = self.account_address
+        if self.vault_address:
+            address = self.vault_address
+        positions = self.info.user_state(address)["assetPositions"]
         for position in positions:
             item = position["position"]
             if coin != item["coin"]:
