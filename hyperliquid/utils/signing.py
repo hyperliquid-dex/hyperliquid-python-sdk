@@ -1,12 +1,11 @@
 import time
 
-from eth_abi import encode
+from decimal import Decimal
 from eth_account.messages import encode_structured_data
 from eth_utils import keccak, to_hex
+import msgpack
 
-from hyperliquid.utils.types import Any, Literal, Optional, Tuple, TypedDict, Union, Cloid
-
-ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+from hyperliquid.utils.types import Literal, Optional, TypedDict, Union, Cloid, NotRequired
 
 Tif = Union[Literal["Alo"], Literal["Ioc"], Literal["Gtc"]]
 Tpsl = Union[Literal["tp"], Literal["sl"]]
@@ -24,7 +23,7 @@ OrderRequest = TypedDict(
         "limit_px": float,
         "order_type": OrderType,
         "reduce_only": bool,
-        "cloid": Optional[Cloid],
+        "cloid": NotRequired[Optional[Cloid]],
     },
     total=False,
 )
@@ -39,85 +38,22 @@ ModifyRequest = TypedDict(
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": Cloid})
 
-
-def order_type_to_tuple(order_type: OrderType) -> Tuple[int, float]:
-    if "limit" in order_type:
-        tif = order_type["limit"]["tif"]
-        if tif == "Gtc":
-            return 2, 0
-        elif tif == "Alo":
-            return 1, 0
-        elif tif == "Ioc":
-            return 3, 0
-    elif "trigger" in order_type:
-        trigger = order_type["trigger"]
-        trigger_px = trigger["triggerPx"]
-        if trigger["isMarket"] and trigger["tpsl"] == "tp":
-            return 4, trigger_px
-        elif not trigger["isMarket"] and trigger["tpsl"] == "tp":
-            return 5, trigger_px
-        elif trigger["isMarket"] and trigger["tpsl"] == "sl":
-            return 6, trigger_px
-        elif not trigger["isMarket"] and trigger["tpsl"] == "sl":
-            return 7, trigger_px
-    raise ValueError("Invalid order type", order_type)
-
-
 Grouping = Union[Literal["na"], Literal["normalTpsl"], Literal["positionTpsl"]]
-
-
-def order_grouping_to_number(grouping: Grouping) -> int:
-    if grouping == "na":
-        return 0
-    elif grouping == "normalTpsl":
-        return 1
-    elif grouping == "positionTpsl":
-        return 2
-
-
 Order = TypedDict(
     "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
 )
-OrderSpec = TypedDict("OrderSpec", {"order": Order, "orderType": OrderType})
-ModifySpec = TypedDict("ModifySpec", {"oid": int, "order": OrderSpec, "orderType": OrderType})
-
-
-def order_spec_preprocessing(order_spec: OrderSpec) -> Any:
-    order = order_spec["order"]
-    order_type_array = order_type_to_tuple(order_spec["orderType"])
-    res: Any = (
-        order["asset"],
-        order["isBuy"],
-        float_to_int_for_hashing(order["limitPx"]),
-        float_to_int_for_hashing(order["sz"]),
-        order["reduceOnly"],
-        order_type_array[0],
-        float_to_int_for_hashing(order_type_array[1]),
-    )
-    if "cloid" in order and order["cloid"] is not None:
-        res += (str_to_bytes16(order["cloid"].to_raw()),)
-    return res
-
-
-def modify_spec_preprocessing(modify_spec: ModifySpec) -> Any:
-    res: Any = (modify_spec["oid"],)
-    res += order_spec_preprocessing(modify_spec["order"])
-    order = modify_spec["order"]["order"]
-    if "cloid" not in order or order["cloid"] is None:
-        res += (bytearray(16),)
-    return res
 
 
 OrderWire = TypedDict(
     "OrderWire",
     {
-        "asset": int,
-        "isBuy": bool,
-        "limitPx": str,
-        "sz": str,
-        "reduceOnly": bool,
-        "orderType": OrderTypeWire,
-        "cloid": Optional[Cloid],
+        "a": int,
+        "b": bool,
+        "p": str,
+        "s": str,
+        "r": bool,
+        "t": OrderTypeWire,
+        "c": NotRequired[Optional[str]],
     },
 )
 
@@ -144,50 +80,28 @@ def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     raise ValueError("Invalid order type", order_type)
 
 
-def order_spec_to_order_wire(order_spec: OrderSpec) -> OrderWire:
-    order = order_spec["order"]
-    cloid = None
-    if "cloid" in order and order["cloid"] is not None:
-        cloid = order["cloid"].to_raw()
-    return {
-        "asset": order["asset"],
-        "isBuy": order["isBuy"],
-        "limitPx": float_to_wire(order["limitPx"]),
-        "sz": float_to_wire(order["sz"]),
-        "reduceOnly": order["reduceOnly"],
-        "orderType": order_type_to_wire(order_spec["orderType"]),
-        "cloid": cloid,
-    }
+def address_to_bytes(address):
+    return bytes.fromhex(address[2:] if address.startswith("0x") else address)
 
 
-def modify_spec_to_modify_wire(modify_spec: ModifySpec) -> ModifyWire:
-    return {
-        "oid": modify_spec["oid"],
-        "order": order_spec_to_order_wire(modify_spec["order"]),
-    }
-
-
-def construct_phantom_agent(signature_types, signature_data, is_mainnet):
-    connection_id = encode(signature_types, signature_data)
-
-    return {"source": "a" if is_mainnet else "b", "connectionId": keccak(connection_id)}
-
-
-def sign_l1_action(wallet, signature_types, signature_data, active_pool, nonce, is_mainnet, action_type_code=None):
-    signature_types.append("address")
-    signature_types.append("uint64")
-    if active_pool is None:
-        signature_data.append(ZERO_ADDRESS)
+def action_hash(action, vault_address, nonce):
+    data = msgpack.packb(action)
+    data += nonce.to_bytes(8, "big")
+    if vault_address is None:
+        data += b"\x00"
     else:
-        signature_data.append(active_pool)
-    signature_data.append(nonce)
+        data += b"\x01"
+        data += address_to_bytes(vault_address)
+    return keccak(data)
 
-    if action_type_code is not None:
-        signature_types.append("uint16")
-        signature_data.append(action_type_code)
 
-    phantom_agent = construct_phantom_agent(signature_types, signature_data, is_mainnet)
+def construct_phantom_agent(hash, is_mainnet):
+    return {"source": "a" if is_mainnet else "b", "connectionId": hash}
 
+
+def sign_l1_action(wallet, action, active_pool, nonce, is_mainnet):
+    hash = action_hash(action, active_pool, nonce)
+    phantom_agent = construct_phantom_agent(hash, is_mainnet)
     data = {
         "domain": {
             "chainId": 1337,
@@ -303,7 +217,10 @@ def float_to_wire(x: float) -> str:
     rounded = "{:.8f}".format(x)
     if abs(float(rounded) - x) >= 1e-12:
         raise ValueError("float_to_wire causes rounding", x)
-    return rounded
+    if rounded == "-0":
+        rounded = "0"
+    normalized = Decimal(rounded).normalize()
+    return f"{normalized:f}"
 
 
 def float_to_int_for_hashing(x: float) -> int:
@@ -322,27 +239,27 @@ def float_to_int(x: float, power: int) -> int:
     return res
 
 
-def str_to_bytes16(x: str) -> bytearray:
-    assert x.startswith("0x")
-    return bytearray.fromhex(x[2:])
-
-
 def get_timestamp_ms() -> int:
     return int(time.time() * 1000)
 
 
-def order_request_to_order_spec(order: OrderRequest, asset: int) -> OrderSpec:
-    cloid = None
-    if "cloid" in order:
-        cloid = order["cloid"]
+def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
+    order_wire: OrderWire = {
+        "a": asset,
+        "b": order["is_buy"],
+        "p": float_to_wire(order["limit_px"]),
+        "s": float_to_wire(order["sz"]),
+        "r": order["reduce_only"],
+        "t": order_type_to_wire(order["order_type"]),
+    }
+    if "cloid" in order and order["cloid"] is not None:
+        order_wire["c"] = order["cloid"].to_raw()
+    return order_wire
+
+
+def order_wires_to_order_action(order_wires):
     return {
-        "order": {
-            "asset": asset,
-            "isBuy": order["is_buy"],
-            "reduceOnly": order["reduce_only"],
-            "limitPx": order["limit_px"],
-            "sz": order["sz"],
-            "cloid": cloid,
-        },
-        "orderType": order["order_type"],
+        "type": "order",
+        "orders": order_wires,
+        "grouping": "na",
     }

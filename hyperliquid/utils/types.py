@@ -4,8 +4,9 @@ import sys
 
 if sys.version_info >= (3, 8):
     from typing import Literal, TypedDict
+    from typing_extensions import NotRequired
 else:
-    from typing_extensions import TypedDict, Literal
+    from typing_extensions import TypedDict, Literal, NotRequired
 
 from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union, cast
 
@@ -14,6 +15,7 @@ Option = Optional
 cast = cast
 Callable = Callable
 NamedTuple = NamedTuple
+NotRequired = NotRequired
 
 AssetInfo = TypedDict("AssetInfo", {"name": str, "szDecimals": int})
 Meta = TypedDict("Meta", {"universe": List[AssetInfo]})

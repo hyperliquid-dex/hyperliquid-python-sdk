@@ -10,29 +10,22 @@ from hyperliquid.api import API
 from hyperliquid.info import Info
 from hyperliquid.utils.constants import MAINNET_API_URL
 from hyperliquid.utils.signing import (
-    ZERO_ADDRESS,
     CancelRequest,
     CancelByCloidRequest,
     ModifyRequest,
-    ModifySpec,
     OrderRequest,
-    OrderSpec,
     OrderType,
+    OrderWire,
     float_to_usd_int,
     get_timestamp_ms,
-    modify_spec_preprocessing,
-    modify_spec_to_modify_wire,
-    order_grouping_to_number,
-    order_request_to_order_spec,
-    order_spec_preprocessing,
-    order_spec_to_order_wire,
+    order_request_to_order_wire,
+    order_wires_to_order_action,
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_agent,
-    str_to_bytes16,
 )
-from hyperliquid.utils.types import Any, List, Literal, Meta, Optional, Tuple, Cloid
+from hyperliquid.utils.types import Any, List, Meta, Optional, Tuple, Cloid
 
 
 class Exchange(API):
@@ -108,43 +101,23 @@ class Exchange(API):
         return self.bulk_orders([order])
 
     def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
-        order_specs: List[OrderSpec] = [
-            order_request_to_order_spec(order, self.coin_to_asset[order["coin"]]) for order in order_requests
+        order_wires: List[OrderWire] = [
+            order_request_to_order_wire(order, self.coin_to_asset[order["coin"]]) for order in order_requests
         ]
-
         timestamp = get_timestamp_ms()
-        grouping: Literal["na"] = "na"
 
-        has_cloid = False
-        for order_spec in order_specs:
-            if "cloid" in order_spec["order"] and order_spec["order"]["cloid"]:
-                has_cloid = True
-
-        if has_cloid:
-            for order_spec in order_specs:
-                if "cloid" not in order_spec["order"] or not order_spec["order"]["cloid"]:
-                    raise ValueError("all orders must have cloids if at least one has a cloid")
-
-        if has_cloid:
-            signature_types = ["(uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]", "uint8"]
-        else:
-            signature_types = ["(uint32,bool,uint64,uint64,bool,uint8,uint64)[]", "uint8"]
+        order_action = order_wires_to_order_action(order_wires)
 
         signature = sign_l1_action(
             self.wallet,
-            signature_types,
-            [[order_spec_preprocessing(order_spec) for order_spec in order_specs], order_grouping_to_number(grouping)],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            order_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
         )
 
         return self._post_action(
-            {
-                "type": "order",
-                "grouping": grouping,
-                "orders": [order_spec_to_order_wire(order_spec) for order_spec in order_specs],
-            },
+            order_action,
             signature,
             timestamp,
         )
@@ -173,37 +146,33 @@ class Exchange(API):
                 "cloid": cloid,
             },
         }
-        return self.bulk_modify_orders([modify])
+        return self.bulk_modify_orders_new([modify])
 
-    def bulk_modify_orders(self, modify_requests: List[ModifyRequest]) -> Any:
-        modify_specs: List[ModifySpec] = [
+    def bulk_modify_orders_new(self, modify_requests: List[ModifyRequest]) -> Any:
+        timestamp = get_timestamp_ms()
+        modify_wires = [
             {
                 "oid": modify["oid"],
-                "order": order_request_to_order_spec(modify["order"], self.coin_to_asset[modify["order"]["coin"]]),
-                "orderType": modify["order"]["order_type"],
+                "order": order_request_to_order_wire(modify["order"], self.coin_to_asset[modify["order"]["coin"]]),
             }
             for modify in modify_requests
         ]
 
-        timestamp = get_timestamp_ms()
-
-        signature_types = ["(uint64,uint32,bool,uint64,uint64,bool,uint8,uint64,bytes16)[]"]
+        modify_action = {
+            "type": "batchModify",
+            "modifies": modify_wires,
+        }
 
         signature = sign_l1_action(
             self.wallet,
-            signature_types,
-            [[modify_spec_preprocessing(modify_spec) for modify_spec in modify_specs]],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            modify_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
-            action_type_code=40,
         )
 
         return self._post_action(
-            {
-                "type": "batchModify",
-                "modifies": [modify_spec_to_modify_wire(modify_spec) for modify_spec in modify_specs],
-            },
+            modify_action,
             signature,
             timestamp,
         )
@@ -258,55 +227,53 @@ class Exchange(API):
 
     def bulk_cancel(self, cancel_requests: List[CancelRequest]) -> Any:
         timestamp = get_timestamp_ms()
+        cancel_action = {
+            "type": "cancel",
+            "cancels": [
+                {
+                    "a": self.coin_to_asset[cancel["coin"]],
+                    "o": cancel["oid"],
+                }
+                for cancel in cancel_requests
+            ],
+        }
         signature = sign_l1_action(
             self.wallet,
-            ["(uint32,uint64)[]"],
-            [[(self.coin_to_asset[cancel["coin"]], cancel["oid"]) for cancel in cancel_requests]],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            cancel_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
         )
+
         return self._post_action(
-            {
-                "type": "cancel",
-                "cancels": [
-                    {
-                        "asset": self.coin_to_asset[cancel["coin"]],
-                        "oid": cancel["oid"],
-                    }
-                    for cancel in cancel_requests
-                ],
-            },
+            cancel_action,
             signature,
             timestamp,
         )
 
     def bulk_cancel_by_cloid(self, cancel_requests: List[CancelByCloidRequest]) -> Any:
         timestamp = get_timestamp_ms()
+
+        cancel_action = {
+            "type": "cancelByCloid",
+            "cancels": [
+                {
+                    "asset": self.coin_to_asset[cancel["coin"]],
+                    "cloid": cancel["cloid"].to_raw(),
+                }
+                for cancel in cancel_requests
+            ],
+        }
         signature = sign_l1_action(
             self.wallet,
-            ["(uint32,bytes16)[]"],
-            [
-                [
-                    (self.coin_to_asset[cancel["coin"]], str_to_bytes16(cancel["cloid"].to_raw()))
-                    for cancel in cancel_requests
-                ]
-            ],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            cancel_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
         )
+
         return self._post_action(
-            {
-                "type": "cancelByCloid",
-                "cancels": [
-                    {
-                        "asset": self.coin_to_asset[cancel["coin"]],
-                        "cloid": cancel["cloid"].to_raw(),
-                    }
-                    for cancel in cancel_requests
-                ],
-            },
+            cancel_action,
             signature,
             timestamp,
         )
@@ -314,21 +281,21 @@ class Exchange(API):
     def update_leverage(self, leverage: int, coin: str, is_cross: bool = True) -> Any:
         timestamp = get_timestamp_ms()
         asset = self.coin_to_asset[coin]
+        update_leverage_action = {
+            "type": "updateLeverage",
+            "asset": asset,
+            "isCross": is_cross,
+            "leverage": leverage,
+        }
         signature = sign_l1_action(
             self.wallet,
-            ["uint32", "bool", "uint32"],
-            [asset, is_cross, leverage],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            update_leverage_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
-            {
-                "type": "updateLeverage",
-                "asset": asset,
-                "isCross": is_cross,
-                "leverage": leverage,
-            },
+            update_leverage_action,
             signature,
             timestamp,
         )
@@ -337,21 +304,21 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
         asset = self.coin_to_asset[coin]
         amount = float_to_usd_int(amount)
+        update_isolated_margin_action = {
+            "type": "updateIsolatedMargin",
+            "asset": asset,
+            "isBuy": True,
+            "ntli": amount,
+        }
         signature = sign_l1_action(
             self.wallet,
-            ["uint32", "bool", "int64"],
-            [asset, True, amount],
-            ZERO_ADDRESS if self.vault_address is None else self.vault_address,
+            update_isolated_margin_action,
+            self.vault_address,
             timestamp,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
-            {
-                "type": "updateIsolatedMargin",
-                "asset": asset,
-                "isBuy": True,
-                "ntli": amount,
-            },
+            update_isolated_margin_action,
             signature,
             timestamp,
         )
