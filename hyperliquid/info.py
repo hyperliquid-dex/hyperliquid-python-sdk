@@ -260,6 +260,9 @@ class Info(API):
     def query_order_by_cloid(self, user: str, cloid: Cloid) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw()})
 
+    def query_referral_state(self, user: str) -> Any:
+        return self.post("/info", {"type": "referral", "user": user})
+
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if self.ws_manager is None:
             raise RuntimeError("Cannot call subscribe since skip_ws was used")

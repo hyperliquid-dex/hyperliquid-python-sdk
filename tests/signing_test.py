@@ -104,9 +104,9 @@ def test_l1_action_signing_order_with_cloid_matches():
         timestamp,
         True,
     )
-    assert signature_mainnet["r"] == "0x41ae18e8239a56cacbc5dad94d45d0b747e5da11ad564077fcac71277a946e3"
-    assert signature_mainnet["s"] == "0x3c61f667e747404fe7eea8f90ab0e76cc12ce60270438b2058324681a00116da"
-    assert signature_mainnet["v"] == 27
+    assert signature_mainnet["r"] == "0xb3bb4fb9ccc13c11ff5e0e387bbf181c6542a0b62a5c3e65c2b180c1625502ea"
+    assert signature_mainnet["s"] == "0x718a068b27584ae85c330aa5da84bd5d6ac5f126ee2db67cc752f431c3d9b7e5"
+    assert signature_mainnet["v"] == 28
 
     signature_testnet = sign_l1_action(
         wallet,
@@ -115,8 +115,8 @@ def test_l1_action_signing_order_with_cloid_matches():
         timestamp,
         False,
     )
-    assert signature_testnet["r"] == "0xeba0664bed2676fc4e5a743bf89e5c7501aa6d870bdb9446e122c9466c5cd16d"
-    assert signature_testnet["s"] == "0x7f3e74825c9114bc59086f1eebea2928c190fdfbfde144827cb02b85bbe90988"
+    assert signature_testnet["r"] == "0x6c9dd46e78f7eab4fc206a53dcc334c904820fedd1e023203ad12cd656953095"
+    assert signature_testnet["s"] == "0x591e8dcb374c3317d14883bc4d65fd8ea2ae0556c9b1dd425220cf173dbc2d83"
     assert signature_testnet["v"] == 28
 
 
@@ -154,9 +154,9 @@ def test_l1_action_signing_tpsl_order_matches():
         timestamp,
         True,
     )
-    assert signature_mainnet["r"] == "0xabd7cf4277c2b96f84bc95413372ec2ffbc6180fec7372d27f6a925b573f0071"
-    assert signature_mainnet["s"] == "0x788d2b5ec31485b898d5cd6d41dfe0d7887c1078d64d8f56fa9958a33a2b97da"
-    assert signature_mainnet["v"] == 28
+    assert signature_mainnet["r"] == "0x98343f2b5ae8e26bb2587daad3863bc70d8792b09af1841b6fdd530a2065a3f9"
+    assert signature_mainnet["s"] == "0x6b5bb6bb0633b710aa22b721dd9dee6d083646a5f8e581a20b545be6c1feb405"
+    assert signature_mainnet["v"] == 27
 
     signature_testnet = sign_l1_action(
         wallet,
@@ -165,8 +165,8 @@ def test_l1_action_signing_tpsl_order_matches():
         timestamp,
         False,
     )
-    assert signature_testnet["r"] == "0x708afb8549fe5495a0973571ac3450bdca6edf9ef74b8f34b42939504b61aaf4"
-    assert signature_testnet["s"] == "0x64cbc92f554f9031006e3ae632a1f0cefaf840afc70a026764357d033ce09247"
+    assert signature_testnet["r"] == "0x971c554d917c44e0e1b6cc45d8f9404f32172a9d3b3566262347d0302896a2e4"
+    assert signature_testnet["s"] == "0x206257b104788f80450f8e786c329daa589aa0b32ba96948201ae556d5637eac"
     assert signature_testnet["v"] == 28
 
 

@@ -323,6 +323,25 @@ class Exchange(API):
             timestamp,
         )
 
+    def set_referrer(self, code: str) -> Any:
+        timestamp = get_timestamp_ms()
+        set_referrer_action = {
+            "type": "setReferrer",
+            "code": code,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            set_referrer_action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            set_referrer_action,
+            signature,
+            timestamp,
+        )
+
     def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         payload = {
