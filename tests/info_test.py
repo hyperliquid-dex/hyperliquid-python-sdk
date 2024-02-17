@@ -87,3 +87,39 @@ def test_get_candles_snapshot():
     assert len(response) == 24
     for key in ["T", "c", "h", "i", "l", "n", "o", "s", "t", "v"]:
         assert key in response[0].keys()
+
+
+@pytest.mark.vcr()
+def test_user_funding_history_with_end_time():
+    info = Info(skip_ws=True)
+    response = info.user_funding_history(
+        user="0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2",
+        startTime=1681923833000,
+        endTime=1682010233000
+    )
+    assert isinstance(response, list), "The answer should be a list"
+    for record in response:
+        assert 'delta' in record, "There must be a key 'delta'"
+        assert 'hash' in record, "There must be a key 'hash'"
+        assert 'time' in record, "There must be a key 'time'"
+        delta = record['delta']
+        for key in ['coin', 'fundingRate', 'szi', 'type', 'usdc']:
+            assert key in delta, f"В 'delta' There must be a key '{key}'"
+        assert delta['type'] == 'funding', "The type must be 'funding'"
+
+@pytest.mark.vcr()
+def test_user_funding_history_without_end_time():
+    info = Info(skip_ws=True)
+    response = info.user_funding_history(
+        user="0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2",
+        startTime=1681923833000
+    )
+    assert isinstance(response, list), "The answer must be a list"
+    for record in response:
+        assert 'delta' in record, "There must be a key 'delta'"
+        assert 'hash' in record, "There must be a key 'hash'"
+        assert 'time' in record, "There must be a key 'time'"
+        delta = record['delta']
+        for key in ['coin', 'fundingRate', 'szi', 'type', 'usdc']:
+            assert key in delta, f"В 'delta' There must be a '{key}'"
+        assert delta['type'] == 'funding', "The type must be 'funding'"
