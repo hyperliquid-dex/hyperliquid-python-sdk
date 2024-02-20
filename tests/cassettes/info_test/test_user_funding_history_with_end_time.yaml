@@ -1,0 +1,41 @@
+interactions:
+- request:
+    body: '{"type": "userFunding", "user": "0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2",
+      "startTime": 1681923833000, "endTime": 1682010233000}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '131'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.31.0
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"delta":{"coin":"APE","fundingRate":"-0.00029319","nSamples":3,"szi":"40.13333333","type":"funding","usdc":"0.145796"},"hash":"0xe3f4c682738ae2ee62510a7282db05c55f1b2032b6a366be9af99d6c809ac899","time":1681948800000},{"delta":{"coin":"ARB","fundingRate":"0.0001","nSamples":3,"szi":"-6091.03333333","type":"funding","usdc":"2.694388"},"hash":"0x9c8402aa5bf03018d1985574aa4e0624e3e7a6e17356ca443cc52f156809f2f7","time":1681948800000},{"delta":{"coin":"ATOM","fundingRate":"0.00001378","nSamples":3,"szi":"-115.77333333","type":"funding","usdc":"0.056134"},"hash":"0xb3e8c970a166343922cf6da328116923ccda63699202c8659e8f31f50ae4e7c5","time":1681948800000},{"delta":{"coin":"AVAX","fundingRate":"0.0001","nSamples":3,"szi":"100.86333333","type":"funding","usdc":"-0.572915"},"hash":"0x5babee5f9e95b33e153dd81fbc4bb82a887687eac7cc8dce24a65107d17774d2","time":1681948800000},{"delta":{"coin":"BNB","fundingRate":"0.0001","nSamples":3,"szi":"0.31933333","type":"funding","usdc":"-0.030851"},"hash":"0x07006d552b857cf807ef0f29b2985708803b95b64bdeff6b94ca2f8baa476a7d","time":1681948800000},{"delta":{"coin":"BTC","fundingRate":"0.00010081","nSamples":3,"szi":"-0.68582","type":"funding","usdc":"5.950454"},"hash":"0xabf969efeb47a3a53180729ca55352862084d5842f8dc7f0d73806a308adf773","time":1681948800000},{"delta":{"coin":"DOGE","fundingRate":"0.00000201","nSamples":3,"szi":"18286.33333333","type":"funding","usdc":"-0.007328"},"hash":"0x0a285d0126678751b3601bee2d2ada8bff9bdc1b2a51fd9a2b31b74f83564066","time":1681948800000},{"delta":{"coin":"DYDX","fundingRate":"0.00009324","nSamples":3,"szi":"237.26666667","type":"funding","usdc":"-0.184592"},"hash":"0x1859f2bc14318c889d55dfc2e5f3b2fcc8263566f5eaa0ddef2c810d27e6c920","time":1681948800000},{"delta":{"coin":"ETH","fundingRate":"0.0001","nSamples":3,"szi":"-5.8509","type":"funding","usdc":"3.414774"},"hash":"0x79a992fa66478b7bed080097eeef0992141cc220080c85372432221e4d9a76d3","time":1681948800000},{"delta":{"coin":"LTC","fundingRate":"0.00003905","nSamples":3,"szi":"-3.72","type":"funding","usdc":"0.039392"},"hash":"0x8a541f3fbdeaf92edfcd6e8739f45a4c8ce8137d393dd651b3d6515a9571bfaa","time":1681948800000},{"delta":{"coin":"MATIC","fundingRate":"-0.00005673","nSamples":3,"szi":"2553.1","type":"funding","usdc":"0.462944"},"hash":"0x848a9722fd2fc6a99a374ff2f4b03c154c4a1e4b459fbef3f130ebe2cf97018d","time":1681948800000},{"delta":{"coin":"OP","fundingRate":"0.0001","nSamples":3,"szi":"124.83333333","type":"funding","usdc":"-0.094193"},"hash":"0xae9c1bb01e34281c1550e4619fb587141f1015786150c4e859a464a7ef07aed1","time":1681948800000},{"delta":{"coin":"SOL","fundingRate":"0.0001","nSamples":3,"szi":"-3.48","type":"funding","usdc":"0.023856"},"hash":"0x19f78c806cdd1b1e298899a52e9ff1b66e4d151f2973d42220dd3bebe7043dcf","time":1681948800000}]'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      content-length:
+      - '2796'
+      content-type:
+      - application/json
+      date:
+      - Tue, 20 Feb 2024 17:42:28 GMT
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

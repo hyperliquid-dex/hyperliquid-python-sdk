@@ -104,9 +104,9 @@ def test_l1_action_signing_order_with_cloid_matches():
         timestamp,
         True,
     )
-    assert signature_mainnet["r"] == "0xb3bb4fb9ccc13c11ff5e0e387bbf181c6542a0b62a5c3e65c2b180c1625502ea"
-    assert signature_mainnet["s"] == "0x718a068b27584ae85c330aa5da84bd5d6ac5f126ee2db67cc752f431c3d9b7e5"
-    assert signature_mainnet["v"] == 28
+    assert signature_mainnet["r"] == "0x41ae18e8239a56cacbc5dad94d45d0b747e5da11ad564077fcac71277a946e3"
+    assert signature_mainnet["s"] == "0x3c61f667e747404fe7eea8f90ab0e76cc12ce60270438b2058324681a00116da"
+    assert signature_mainnet["v"] == 27
 
     signature_testnet = sign_l1_action(
         wallet,
@@ -115,8 +115,8 @@ def test_l1_action_signing_order_with_cloid_matches():
         timestamp,
         False,
     )
-    assert signature_testnet["r"] == "0x6c9dd46e78f7eab4fc206a53dcc334c904820fedd1e023203ad12cd656953095"
-    assert signature_testnet["s"] == "0x591e8dcb374c3317d14883bc4d65fd8ea2ae0556c9b1dd425220cf173dbc2d83"
+    assert signature_testnet["r"] == "0xeba0664bed2676fc4e5a743bf89e5c7501aa6d870bdb9446e122c9466c5cd16d"
+    assert signature_testnet["s"] == "0x7f3e74825c9114bc59086f1eebea2928c190fdfbfde144827cb02b85bbe90988"
     assert signature_testnet["v"] == 28
 
 
