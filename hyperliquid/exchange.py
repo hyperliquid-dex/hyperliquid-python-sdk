@@ -16,6 +16,7 @@ from hyperliquid.utils.signing import (
     OrderRequest,
     OrderType,
     OrderWire,
+    ScheduleCancelAction,
     float_to_usd_int,
     get_timestamp_ms,
     order_request_to_order_wire,
@@ -274,6 +275,33 @@ class Exchange(API):
 
         return self._post_action(
             cancel_action,
+            signature,
+            timestamp,
+        )
+
+    def schedule_cancel(self, time: Optional[int]) -> Any:
+        """Schedules a time (in UTC millis) to cancel all open orders. The time must be at least 5 seconds after the current time.
+        Once the time comes, all open orders will be canceled and a trigger count will be incremented. The max number of triggers
+        per day is 10. This trigger count is reset at 00:00 UTC.
+
+        Args:
+            time (int): if time is not None, then set the cancel time in the future. If None, then unsets any cancel time in the future.
+        """
+        timestamp = get_timestamp_ms()
+        schedule_cancel_action: ScheduleCancelAction = {
+            "type": "scheduleCancel",
+        }
+        if time is not None:
+            schedule_cancel_action["time"] = time
+        signature = sign_l1_action(
+            self.wallet,
+            schedule_cancel_action,
+            self.vault_address,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            schedule_cancel_action,
             signature,
             timestamp,
         )

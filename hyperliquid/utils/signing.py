@@ -65,6 +65,14 @@ ModifyWire = TypedDict(
     },
 )
 
+ScheduleCancelAction = TypedDict(
+    "ScheduleCancelAction",
+    {
+        "type": Literal["scheduleCancel"],
+        "time": NotRequired[Optional[int]],
+    },
+)
+
 
 def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     if "limit" in order_type:

@@ -5,6 +5,7 @@ from eth_utils import to_hex
 from hyperliquid.utils.signing import (
     action_hash,
     OrderRequest,
+    ScheduleCancelAction,
     construct_phantom_agent,
     float_to_int_for_hashing,
     order_request_to_order_wire,
@@ -236,3 +237,31 @@ def test_sub_account_transfer_action():
     assert signature_testnet["r"] == "0xe26574013395ad55ee2f4e0575310f003c5bb3351b5425482e2969fa51543927"
     assert signature_testnet["s"] == "0xefb08999196366871f919fd0e138b3a7f30ee33e678df7cfaf203e25f0a4278"
     assert signature_testnet["v"] == 28
+
+
+def test_schedule_cancel_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    action: ScheduleCancelAction = {
+        "type": "scheduleCancel",
+    }
+    signature_mainnet = sign_l1_action(wallet, action, None, 0, True)
+    assert signature_mainnet["r"] == "0x6cdfb286702f5917e76cd9b3b8bf678fcc49aec194c02a73e6d4f16891195df9"
+    assert signature_mainnet["s"] == "0x6557ac307fa05d25b8d61f21fb8a938e703b3d9bf575f6717ba21ec61261b2a0"
+    assert signature_mainnet["v"] == 27
+    signature_testnet = sign_l1_action(wallet, action, None, 0, False)
+    assert signature_testnet["r"] == "0xc75bb195c3f6a4e06b7d395acc20bbb224f6d23ccff7c6a26d327304e6efaeed"
+    assert signature_testnet["s"] == "0x342f8ede109a29f2c0723bd5efb9e9100e3bbb493f8fb5164ee3d385908233df"
+    assert signature_testnet["v"] == 28
+
+    action = {
+        "type": "scheduleCancel",
+        "time": 123456789,
+    }
+    signature_mainnet = sign_l1_action(wallet, action, None, 0, True)
+    assert signature_mainnet["r"] == "0x609cb20c737945d070716dcc696ba030e9976fcf5edad87afa7d877493109d55"
+    assert signature_mainnet["s"] == "0x16c685d63b5c7a04512d73f183b3d7a00da5406ff1f8aad33f8ae2163bab758b"
+    assert signature_mainnet["v"] == 28
+    signature_testnet = sign_l1_action(wallet, action, None, 0, False)
+    assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
+    assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
+    assert signature_testnet["v"] == 27
