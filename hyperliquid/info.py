@@ -281,6 +281,9 @@ class Info(API):
     def query_referral_state(self, user: str) -> Any:
         return self.post("/info", {"type": "referral", "user": user})
 
+    def query_sub_accounts(self, user: str) -> Any:
+        return self.post("/info", {"type": "subAccounts", "user": user})
+
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if self.ws_manager is None:
             raise RuntimeError("Cannot call subscribe since skip_ws was used")

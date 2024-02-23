@@ -342,6 +342,46 @@ class Exchange(API):
             timestamp,
         )
 
+    def create_sub_account(self, name: str) -> Any:
+        timestamp = get_timestamp_ms()
+        create_sub_account_action = {
+            "type": "createSubAccount",
+            "name": name,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            create_sub_account_action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            create_sub_account_action,
+            signature,
+            timestamp,
+        )
+
+    def sub_account_transfer(self, sub_account_user: str, is_deposit: bool, usd: int) -> Any:
+        timestamp = get_timestamp_ms()
+        sub_account_transfer_action = {
+            "type": "subAccountTransfer",
+            "subAccountUser": sub_account_user,
+            "isDeposit": is_deposit,
+            "usd": usd,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            sub_account_transfer_action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            sub_account_transfer_action,
+            signature,
+            timestamp,
+        )
+
     def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         payload = {

@@ -202,3 +202,37 @@ def test_sign_withdraw_from_bridge_action():
     assert signature["r"] == "0xd60816bf99a00645aa81b9ade23f03bf15994cd2c6d06fc3740a4c74530e36d9"
     assert signature["s"] == "0x4552f30419166a6e9d8dbd49b14aeef1e7606fe9e0caec8c0211608d79ce43a3"
     assert signature["v"] == 28
+
+
+def test_create_sub_account_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    action = {
+        "type": "createSubAccount",
+        "name": "example",
+    }
+    signature_mainnet = sign_l1_action(wallet, action, None, 0, True)
+    assert signature_mainnet["r"] == "0x51096fe3239421d16b671e192f574ae24ae14329099b6db28e479b86cdd6caa7"
+    assert signature_mainnet["s"] == "0xb71f7d293af92d3772572afb8b102d167a7cef7473388286bc01f52a5c5b423"
+    assert signature_mainnet["v"] == 27
+    signature_testnet = sign_l1_action(wallet, action, None, 0, False)
+    assert signature_testnet["r"] == "0xa699e3ed5c2b89628c746d3298b5dc1cca604694c2c855da8bb8250ec8014a5b"
+    assert signature_testnet["s"] == "0x53f1b8153a301c72ecc655b1c315d64e1dcea3ee58921fd7507e35818fcc1584"
+    assert signature_testnet["v"] == 28
+
+
+def test_sub_account_transfer_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    action = {
+        "type": "subAccountTransfer",
+        "subAccountUser": "0x1d9470d4b963f552e6f671a81619d395877bf409",
+        "isDeposit": True,
+        "usd": 10,
+    }
+    signature_mainnet = sign_l1_action(wallet, action, None, 0, True)
+    assert signature_mainnet["r"] == "0x43592d7c6c7d816ece2e206f174be61249d651944932b13343f4d13f306ae602"
+    assert signature_mainnet["s"] == "0x71a926cb5c9a7c01c3359ec4c4c34c16ff8107d610994d4de0e6430e5cc0f4c9"
+    assert signature_mainnet["v"] == 28
+    signature_testnet = sign_l1_action(wallet, action, None, 0, False)
+    assert signature_testnet["r"] == "0xe26574013395ad55ee2f4e0575310f003c5bb3351b5425482e2969fa51543927"
+    assert signature_testnet["s"] == "0xefb08999196366871f919fd0e138b3a7f30ee33e678df7cfaf203e25f0a4278"
+    assert signature_testnet["v"] == 28
