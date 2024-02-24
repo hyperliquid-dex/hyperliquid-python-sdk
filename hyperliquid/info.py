@@ -180,8 +180,10 @@ class Info(API):
                 {
                     universe: [
                         {
-                            name: str,
-                            szDecimals: int
+                            'maxLeverage': int,
+                            'name': str,
+                            'onlyIsolated': bool,
+                            'szDecimals': int
                         },
                         ...
                     ]
