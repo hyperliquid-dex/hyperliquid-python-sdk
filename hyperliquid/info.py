@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import Any, Callable, Meta, MetaAndAssetCtxs, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -168,6 +168,43 @@ class Info(API):
             }
         """
         return cast(Meta, self.post("/info", {"type": "meta"}))
+
+
+        def metaAndAssetCtxs(self) -> MetaAndAssetCtxs:
+        """Retrieve exchange MetaAndAssetCtxs
+        POST /info
+        Returns:
+            [
+                {
+                    universe: [
+                        {
+                            name: str,
+                            szDecimals: int
+                        },
+                        ...
+                    ]
+                },
+            [
+                {
+                    "dayNtlVlm": str,
+                    "funding": str,
+                    "impactPxs":
+                        [
+                         str,
+                         str
+                            ],
+                    "markPx": str,
+                    "midPx": str,
+                    "openInterest": str,
+                    "oraclePx": str,
+                    "premium": str,
+                    "prevDayPx": str
+                },
+                ...
+            ]
+        """
+        return cast(MetaAndAssetCtxs, self.post("/info", {"type": "metaAndAssetCtxs"}))
+
 
     def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin
