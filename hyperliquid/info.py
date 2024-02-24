@@ -172,7 +172,9 @@ class Info(API):
 
         def metaAndAssetCtxs(self) -> MetaAndAssetCtxs:
         """Retrieve exchange MetaAndAssetCtxs
+        
         POST /info
+        
         Returns:
             [
                 {
