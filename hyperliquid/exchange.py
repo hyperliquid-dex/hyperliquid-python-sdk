@@ -26,7 +26,7 @@ from hyperliquid.utils.signing import (
     sign_withdraw_from_bridge_action,
     sign_agent,
 )
-from hyperliquid.utils.types import Any, List, Meta, Optional, Tuple, Cloid
+from hyperliquid.utils.types import Any, List, Meta, MetaAndAssetCtxs, Optional, Tuple, Cloid
 
 
 class Exchange(API):
