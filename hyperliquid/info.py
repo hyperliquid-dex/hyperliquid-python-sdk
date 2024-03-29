@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -53,6 +53,9 @@ class Info(API):
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})
+
+    def spot_user_state(self, address: str) -> Any:
+        return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
     def open_orders(self, address: str) -> Any:
         """Retrieve a user's open orders.
@@ -152,7 +155,7 @@ class Info(API):
         return self.post("/info", {"type": "userFills", "user": address})
 
     def meta(self) -> Meta:
-        """Retrieve exchange metadata
+        """Retrieve exchange perp metadata
 
         POST /info
 
@@ -168,6 +171,32 @@ class Info(API):
             }
         """
         return cast(Meta, self.post("/info", {"type": "meta"}))
+
+    def spot_meta(self) -> SpotMeta:
+        """Retrieve exchange spot metadata
+
+        POST /info
+
+        Returns:
+            {
+                tokens: [
+                    {
+                        name: str,
+                        szDecimals: int,
+                        weiDecimals: int
+                    },
+                    ...
+                ],
+                universe: [
+                    {
+                        name: str,
+                        tokens: [int, int]
+                    },
+                    ...
+                ]
+            }
+        """
+        return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
 
     def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin

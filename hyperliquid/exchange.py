@@ -26,7 +26,7 @@ from hyperliquid.utils.signing import (
     sign_withdraw_from_bridge_action,
     sign_agent,
 )
-from hyperliquid.utils.types import Any, List, Meta, Optional, Tuple, Cloid
+from hyperliquid.utils.types import Any, List, Meta, SpotMeta, Optional, Tuple, Cloid
 
 
 class Exchange(API):
@@ -41,6 +41,7 @@ class Exchange(API):
         meta: Optional[Meta] = None,
         vault_address: Optional[str] = None,
         account_address: Optional[str] = None,
+        spot_meta: Optional[SpotMeta] = None,
     ):
         super().__init__(base_url)
         self.wallet = wallet
@@ -51,7 +52,17 @@ class Exchange(API):
             self.meta = self.info.meta()
         else:
             self.meta = meta
+
+        if spot_meta is None:
+            self.spot_meta = self.info.spot_meta()
+        else:
+            self.spot_meta = spot_meta
+
         self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])}
+
+        # spot assets start at 10000
+        for i, spot_pair in enumerate(self.spot_meta["universe"]):
+            self.coin_to_asset[spot_pair["name"]] = i + 10000
 
     def _post_action(self, action, signature, nonce):
         payload = {
@@ -385,6 +396,29 @@ class Exchange(API):
         )
         return self._post_action(
             create_sub_account_action,
+            signature,
+            timestamp,
+        )
+
+    def user_spot_transfer(self, usdc: float, to_perp: bool) -> Any:
+        usdc = int(round(usdc, 2) * 1e6)
+        timestamp = get_timestamp_ms()
+        spot_user_action = {
+            "type": "spotUser",
+            "classTransfer": {
+                "usdc": usdc,
+                "toPerp": to_perp,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            spot_user_action,
+            self.vault_address,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            spot_user_action,
             signature,
             timestamp,
         )
