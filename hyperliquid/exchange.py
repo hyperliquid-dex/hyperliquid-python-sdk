@@ -29,7 +29,6 @@ from hyperliquid.utils.signing import (
 from hyperliquid.utils.types import Any, List, Meta, SpotMeta, MetaAndAssetCtxs, Optional, Tuple, Cloid
 
 
-
 class Exchange(API):
 
     # Default Max Slippage for Market Orders 5%
