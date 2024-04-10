@@ -26,7 +26,6 @@ from hyperliquid.utils.signing import (
     sign_withdraw_from_bridge_action,
     sign_agent,
 )
-
 from hyperliquid.utils.types import Any, List, Meta, SpotMeta, MetaAndAssetCtxs, Optional, Tuple, Cloid
 
 
