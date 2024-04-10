@@ -60,19 +60,19 @@ Fill = TypedDict(
 AssetCtx = TypedDict(
     "AssetCtx",
     {
-        "dayNtlVlm": str,
-        "funding": str,
+        "dayNtlVlm": float,
+        "funding": float,
         "impactPxs":Union
             [
-                str,
-                str
+                float,
+                float
                 ],
-        "markPx": str,
-        "midPx": str,
-        "openInterest": str,
-        "oraclePx": str,
-        "premium": str,
-        "prevDayPx": str
+        "markPx": float,
+        "midPx": float,
+        "openInterest": float,
+        "oraclePx": float,
+        "premium": float,
+        "prevDayPx": float
     }
 )
 MetaAndAssetCtxs = Union[Meta,List[AssetCtx]]
