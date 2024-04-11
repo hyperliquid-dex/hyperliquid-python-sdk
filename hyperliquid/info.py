@@ -220,11 +220,7 @@ class Info(API):
                 {
                     "dayNtlVlm": str,
                     "funding": str,
-                    "impactPxs":
-                        [
-                         str,
-                         str
-                            ],
+                    "impactPxs": [str, str],
                     "markPx": str,
                     "midPx": str,
                     "openInterest": str,
