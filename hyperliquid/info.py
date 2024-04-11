@@ -198,7 +198,7 @@ class Info(API):
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
   
-   def metaAndAssetCtxs(self) -> MetaAndAssetCtxs:
+    def metaAndAssetCtxs(self) -> MetaAndAssetCtxs:
         """Retrieve exchange MetaAndAssetCtxs
         
         POST /info
