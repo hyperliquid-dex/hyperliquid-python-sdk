@@ -54,55 +54,6 @@ class Info(API):
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})
     
-    def user_fees(self, address: str) -> Any:
-        """Retrieve the volume of trading activity associated with a user.
-
-        POST /info
-
-        Args:
-            address (str): Onchain address in 42-character hexadecimal format;
-                            e.g. 0x0000000000000000000000000000000000000000.
-
-        Returns:
-            {
-                activeReferralDiscount: str,
-                dailyUserVlm: [
-                    {
-                        date: str,
-                        exchange: str,
-                        userAdd: str,
-                        userCross: str
-                    },
-                    ...
-                ],
-                feeSchedule: {
-                    add: str,
-                    cross: str,
-                    referralDiscount: str,
-                    tiers: {
-                        mm: [
-                            {
-                                add: str,
-                                makerFractionCutoff: float
-                            },
-                            ...
-                        ],
-                        vip: [
-                            {
-                                add: str,
-                                cross: str,
-                                ntlCutoff: float
-                            },
-                            ...
-                        ]
-                    }
-                },
-                userAddRate: str,
-                userCrossRate: str
-            }
-        """
-        return self.post("/info", {"type": "userFees", "user": address})
-
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
@@ -349,6 +300,54 @@ class Info(API):
         """
         req = {"coin": coin, "interval": interval, "startTime": startTime, "endTime": endTime}
         return self.post("/info", {"type": "candleSnapshot", "req": req})
+
+    def user_fees(self, address: str) -> Any:
+        """Retrieve the volume of trading activity associated with a user.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+
+        Returns:
+            {
+                activeReferralDiscount: str,
+                dailyUserVlm: [
+                    {
+                        date: float string,
+                        exchange: float string,
+                        userAdd: float string,
+                        userCross: str
+                    },
+                ],
+                feeSchedule: {
+                    add: str,
+                    cross: str,
+                    referralDiscount: str,
+                    tiers: {
+                        mm: [
+                            {
+                                add: float string,
+                                makerFractionCutoff: float string
+                            },
+                            ...
+                        ],
+                        vip: [
+                            {
+                                add: str,
+                                cross: str,
+                                ntlCutoff: float
+                            },
+                            ...
+                        ]
+                    }
+                },
+                userAddRate: str,
+                userCrossRate: str
+            }
+        """
+        return self.post("/info", {"type": "userFees", "user": address})
 
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
