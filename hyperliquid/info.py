@@ -312,39 +312,37 @@ class Info(API):
 
         Returns:
             {
-                activeReferralDiscount: str,
+                activeReferralDiscount: float string,
                 dailyUserVlm: [
                     {
-                        date: float string,
-                        exchange: float string,
+                        date: str,
+                        exchange: str,
                         userAdd: float string,
-                        userCross: str
+                        userCross: float string
                     },
                 ],
                 feeSchedule: {
-                    add: str,
-                    cross: str,
-                    referralDiscount: str,
+                    add: float string,
+                    cross: float string,
+                    referralDiscount: float string,
                     tiers: {
                         mm: [
                             {
                                 add: float string,
                                 makerFractionCutoff: float string
                             },
-                            ...
                         ],
                         vip: [
                             {
-                                add: str,
-                                cross: str,
-                                ntlCutoff: float
+                                add: float string,
+                                cross: float string,
+                                ntlCutoff: float string
                             },
-                            ...
                         ]
                     }
                 },
-                userAddRate: str,
-                userCrossRate: str
+                userAddRate: float string,
+                userCrossRate: float string
             }
         """
         return self.post("/info", {"type": "userFees", "user": address})
