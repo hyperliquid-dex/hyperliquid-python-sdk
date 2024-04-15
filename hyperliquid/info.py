@@ -53,7 +53,7 @@ class Info(API):
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})
-
+    
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
@@ -300,6 +300,52 @@ class Info(API):
         """
         req = {"coin": coin, "interval": interval, "startTime": startTime, "endTime": endTime}
         return self.post("/info", {"type": "candleSnapshot", "req": req})
+
+    def user_fees(self, address: str) -> Any:
+        """Retrieve the volume of trading activity associated with a user.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+
+        Returns:
+            {
+                activeReferralDiscount: float string,
+                dailyUserVlm: [
+                    {
+                        date: str,
+                        exchange: str,
+                        userAdd: float string,
+                        userCross: float string
+                    },
+                ],
+                feeSchedule: {
+                    add: float string,
+                    cross: float string,
+                    referralDiscount: float string,
+                    tiers: {
+                        mm: [
+                            {
+                                add: float string,
+                                makerFractionCutoff: float string
+                            },
+                        ],
+                        vip: [
+                            {
+                                add: float string,
+                                cross: float string,
+                                ntlCutoff: float string
+                            },
+                        ]
+                    }
+                },
+                userAddRate: float string,
+                userCrossRate: float string
+            }
+        """
+        return self.post("/info", {"type": "userFees", "user": address})
 
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
