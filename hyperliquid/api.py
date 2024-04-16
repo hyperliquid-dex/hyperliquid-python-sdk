@@ -10,32 +10,17 @@ from hyperliquid.utils.types import Any
 
 
 class API:
-    def __init__(
-        self,
-        base_url=None,
-    ):
-        self.base_url = MAINNET_API_URL
+    def __init__(self, base_url=None):
+        self.base_url = base_url or MAINNET_API_URL
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "Content-Type": "application/json",
-            }
-        )
-
-        if base_url is not None:
-            self.base_url = base_url
-
+        self.session.headers.update({"Content-Type": "application/json"})
         self._logger = logging.getLogger(__name__)
-        return
 
     def post(self, url_path: str, payload: Any = None) -> Any:
-        if payload is None:
-            payload = {}
+        payload = payload or {}
         url = self.base_url + url_path
-
         response = self.session.post(url, json=payload)
         self._handle_exception(response)
-
         try:
             return response.json()
         except ValueError:
@@ -50,8 +35,6 @@ class API:
                 err = json.loads(response.text)
             except JSONDecodeError:
                 raise ClientError(status_code, None, response.text, None, response.headers)
-            error_data = None
-            if "data" in err:
-                error_data = err["data"]
+            error_data = err.get("data")
             raise ClientError(status_code, err["code"], err["msg"], response.headers, error_data)
         raise ServerError(status_code, response.text)

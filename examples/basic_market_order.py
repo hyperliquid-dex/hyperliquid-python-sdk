@@ -13,7 +13,7 @@ def main():
 
     print(f"We try to Market {'Buy' if is_buy else 'Sell'} {sz} {coin}.")
 
-    order_result = exchange.market_open("ETH", is_buy, sz, None, 0.01)
+    order_result = exchange.market_open(coin, is_buy, sz, None, 0.01)
     if order_result["status"] == "ok":
         for status in order_result["response"]["data"]["statuses"]:
             try:
