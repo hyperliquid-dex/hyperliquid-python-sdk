@@ -166,6 +166,8 @@ class BasicAdder:
                     self.position = float(position["position"]["szi"])
                     print(f"set position to {self.position}")
                     break
+            if self.position is None:
+                self.position = 0.0
             time.sleep(10)
 
 
