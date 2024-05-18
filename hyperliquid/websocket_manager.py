@@ -115,4 +115,4 @@ class WebsocketManager(threading.Thread):
         if len(new_active_subscriptions) == 0:
             self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
         self.active_subscriptions[identifier] = new_active_subscriptions
-        return len(active_subscriptions) != len(active_subscriptions)
+        return len(active_subscriptions) != len(new_active_subscriptions)
