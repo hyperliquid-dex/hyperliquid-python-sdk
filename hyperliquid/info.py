@@ -53,6 +53,7 @@ class Info(API):
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})
+    
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
