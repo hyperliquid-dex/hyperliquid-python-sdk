@@ -187,21 +187,21 @@ def test_sign_usd_transfer_action():
         "time": 1687816341423,
     }
     signature = sign_usd_transfer_action(wallet, message, False)
-    assert signature["r"] == "0x283ca602ac69be536bd2272f050eddf8d250ed3eef083d1fc26989e57f891759"
-    assert signature["s"] == "0x9bc743cf95042269236bc7f48c06ab8a6a9ee53e04f3336c6cfd1b22783aa74"
-    assert signature["v"] == 28
+    assert signature["r"] == "0x637b37dd731507cdd24f46532ca8ba6eec616952c56218baeff04144e4a77073"
+    assert signature["s"] == "0x11a6a24900e6e314136d2592e2f8d502cd89b7c15b198e1bee043c9589f9fad7"
+    assert signature["v"] == 27
 
 
 def test_sign_withdraw_from_bridge_action():
     wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
     message = {
         "destination": "0x5e9ee1089755c3435139848e47e6635505d5a13a",
-        "usd": "1",
+        "amount": "1",
         "time": 1687816341423,
     }
     signature = sign_withdraw_from_bridge_action(wallet, message, False)
-    assert signature["r"] == "0xd60816bf99a00645aa81b9ade23f03bf15994cd2c6d06fc3740a4c74530e36d9"
-    assert signature["s"] == "0x4552f30419166a6e9d8dbd49b14aeef1e7606fe9e0caec8c0211608d79ce43a3"
+    assert signature["r"] == "0x8363524c799e90ce9bc41022f7c39b4e9bdba786e5f9c72b20e43e1462c37cf9"
+    assert signature["s"] == "0x58b1411a775938b83e29182e8ef74975f9054c8e97ebf5ec2dc8d51bfc893881"
     assert signature["v"] == 28
 
 

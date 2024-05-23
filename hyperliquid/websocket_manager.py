@@ -83,7 +83,7 @@ class WebsocketManager(threading.Thread):
     def on_open(self, _ws):
         logging.debug("on_open")
         self.ws_ready = True
-        for (subscription, active_subscription) in self.queued_subscriptions:
+        for subscription, active_subscription in self.queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
 
     def subscribe(

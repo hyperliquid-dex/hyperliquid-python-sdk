@@ -53,7 +53,7 @@ class Info(API):
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address})
-    
+
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
@@ -303,13 +303,10 @@ class Info(API):
 
     def user_fees(self, address: str) -> Any:
         """Retrieve the volume of trading activity associated with a user.
-
         POST /info
-
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
-
         Returns:
             {
                 activeReferralDiscount: float string,

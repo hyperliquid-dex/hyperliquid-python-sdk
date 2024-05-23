@@ -2,9 +2,7 @@ import eth_account
 import logging
 import secrets
 
-from eth_abi import encode
 from eth_account.signers.local import LocalAccount
-from eth_utils import keccak, to_hex
 
 from hyperliquid.api import API
 from hyperliquid.info import Info
@@ -16,6 +14,7 @@ from hyperliquid.utils.signing import (
     OrderRequest,
     OrderType,
     OrderWire,
+    OidOrCloid,
     ScheduleCancelAction,
     float_to_usd_int,
     get_timestamp_ms,
@@ -30,7 +29,6 @@ from hyperliquid.utils.types import Any, List, Meta, SpotMeta, Optional, Tuple, 
 
 
 class Exchange(API):
-
     # Default Max Slippage for Market Orders 5%
     DEFAULT_SLIPPAGE = 0.05
 
@@ -81,7 +79,6 @@ class Exchange(API):
         slippage: float,
         px: Optional[float] = None,
     ) -> float:
-
         if not px:
             # Get midprice
             px = float(self.info.all_mids()[coin])
@@ -136,7 +133,7 @@ class Exchange(API):
 
     def modify_order(
         self,
-        oid: int,
+        oid: OidOrCloid,
         coin: str,
         is_buy: bool,
         sz: float,
@@ -145,7 +142,6 @@ class Exchange(API):
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
     ) -> Any:
-
         modify: ModifyRequest = {
             "oid": oid,
             "order": {
@@ -164,7 +160,7 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
         modify_wires = [
             {
-                "oid": modify["oid"],
+                "oid": modify["oid"].to_raw() if isinstance(modify["oid"], Cloid) else modify["oid"],
                 "order": order_request_to_order_wire(modify["order"], self.coin_to_asset[modify["order"]["coin"]]),
             }
             for modify in modify_requests
@@ -198,7 +194,6 @@ class Exchange(API):
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
     ) -> Any:
-
         # Get aggressive Market Price
         px = self._slippage_price(coin, is_buy, slippage, px)
         # Market Order is an aggressive Limit Order IoC
@@ -446,38 +441,22 @@ class Exchange(API):
 
     def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
-        payload = {
-            "destination": destination,
-            "amount": str(amount),
-            "time": timestamp,
-        }
+        action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "usdSend"}
         is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_usd_transfer_action(self.wallet, payload, is_mainnet)
+        signature = sign_usd_transfer_action(self.wallet, action, is_mainnet)
         return self._post_action(
-            {
-                "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
-                "payload": payload,
-                "type": "usdTransfer",
-            },
+            action,
             signature,
             timestamp,
         )
 
-    def withdraw_from_bridge(self, usd: float, destination: str) -> Any:
+    def withdraw_from_bridge(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
-        payload = {
-            "destination": destination,
-            "usd": str(usd),
-            "time": timestamp,
-        }
+        action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "withdraw3"}
         is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_withdraw_from_bridge_action(self.wallet, payload, is_mainnet)
+        signature = sign_withdraw_from_bridge_action(self.wallet, action, is_mainnet)
         return self._post_action(
-            {
-                "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
-                "payload": payload,
-                "type": "withdraw2",
-            },
+            action,
             signature,
             timestamp,
         )
@@ -485,26 +464,18 @@ class Exchange(API):
     def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str]:
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
-        if name is not None:
-            connection_id = keccak(encode(["address", "string"], [account.address, name]))
-        else:
-            connection_id = keccak(encode(["address"], [account.address]))
-        agent = {
-            "source": "https://hyperliquid.xyz",
-            "connectionId": connection_id,
-        }
         timestamp = get_timestamp_ms()
         is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_agent(self.wallet, agent, is_mainnet)
-        agent["connectionId"] = to_hex(agent["connectionId"])
         action = {
-            "chain": "Arbitrum" if is_mainnet else "ArbitrumTestnet",
-            "agent": agent,
+            "type": "approveAgent",
             "agentAddress": account.address,
-            "type": "connect",
+            "agentName": name or "",
+            "nonce": timestamp,
         }
-        if name is not None:
-            action["extraAgentName"] = name
+        signature = sign_agent(self.wallet, action, is_mainnet)
+        if name is None:
+            del action["agentName"]
+
         return (
             self._post_action(
                 action,
