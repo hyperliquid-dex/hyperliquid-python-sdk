@@ -22,8 +22,11 @@ Meta = TypedDict("Meta", {"universe": List[AssetInfo]})
 Side = Union[Literal["A"], Literal["B"]]
 SIDES: List[Side] = ["A", "B"]
 
-SpotAssetInfo = TypedDict("SpotAssetInfo", {"name": str, "tokens": List[int]})
-SpotTokenInfo = TypedDict("SpotTokenInfo", {"name": str, "szDecimals": int, "weiDecimals": int})
+SpotAssetInfo = TypedDict("SpotAssetInfo", {"name": str, "tokens": List[int], "index": int, "isCanonical": bool})
+SpotTokenInfo = TypedDict(
+    "SpotTokenInfo",
+    {"name": str, "szDecimals": int, "weiDecimals": int, "index": int, "tokenId": str, "isCanonical": bool},
+)
 SpotMeta = TypedDict("SpotMeta", {"universe": List[SpotAssetInfo], "tokens": List[SpotTokenInfo]})
 
 AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids"]})
