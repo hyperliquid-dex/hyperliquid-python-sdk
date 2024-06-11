@@ -82,10 +82,14 @@ class Exchange(API):
         if not px:
             # Get midprice
             px = float(self.info.all_mids()[coin])
+        
+        # spot assets start at 10000
+        is_spot = self.coin_to_asset.get(coin) >= 10_000
+
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)
-        # We round px to 5 significant figures and 6 decimals
-        return round(float(f"{px:.5g}"), 6)
+        # We round px to 5 significant figures and 6 decimals for perps, 8 decimals for spot
+        return round(float(f"{px:.5g}"), 6 if not is_spot else 8)
 
     def order(
         self,
