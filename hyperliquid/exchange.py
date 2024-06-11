@@ -78,14 +78,15 @@ class Exchange(API):
         is_buy: bool,
         slippage: float,
         px: Optional[float] = None,
+        is_spot: bool = False,
     ) -> float:
         if not px:
             # Get midprice
             px = float(self.info.all_mids()[coin])
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)
-        # We round px to 5 significant figures and 6 decimals
-        return round(float(f"{px:.5g}"), 6)
+        # We round px to 5 significant figures and 6 decimals for perps, 8 decimals for spot
+        return round(float(f"{px:.5g}"), 6 if not is_spot else 8)
 
     def order(
         self,
@@ -193,9 +194,10 @@ class Exchange(API):
         px: Optional[float] = None,
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
+        is_spot: bool = False,
     ) -> Any:
         # Get aggressive Market Price
-        px = self._slippage_price(coin, is_buy, slippage, px)
+        px = self._slippage_price(coin, is_buy, slippage, px, is_spot)
         # Market Order is an aggressive Limit Order IoC
         return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid)
 
@@ -206,6 +208,7 @@ class Exchange(API):
         px: Optional[float] = None,
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
+        is_spot: bool = False,
     ) -> Any:
         address = self.wallet.address
         if self.account_address:
@@ -222,7 +225,7 @@ class Exchange(API):
                 sz = abs(szi)
             is_buy = True if szi < 0 else False
             # Get aggressive Market Price
-            px = self._slippage_price(coin, is_buy, slippage, px)
+            px = self._slippage_price(coin, is_buy, slippage, px, is_spot)
             # Market Order is an aggressive Limit Order IoC
             return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=True, cloid=cloid)
 
