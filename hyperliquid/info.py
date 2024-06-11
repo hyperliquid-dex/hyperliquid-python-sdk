@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, MetaAndAssetCtxs, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -197,7 +197,45 @@ class Info(API):
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
+  
+    def metaAndAssetCtxs(self) -> MetaAndAssetCtxs:
+        """Retrieve exchange MetaAndAssetCtxs
+        
+        POST /info
+        
+        Returns:
+            [
+                {
+                    universe: [
+                        {
+                            'maxLeverage': int,
+                            'name': str,
+                            'onlyIsolated': bool,
+                            'szDecimals': int
+                        },
+                        ...
+                    ]
+                },
+            [
+                {
+                    "dayNtlVlm": str,
+                    "funding": str,
+                    "impactPxs": [str, str],
+                    "markPx": str,
+                    "midPx": str,
+                    "openInterest": str,
+                    "oraclePx": str,
+                    "premium": str,
+                    "prevDayPx": str
+                },
+                ...
+            ]
+        """
+        return cast(MetaAndAssetCtxs, self.post("/info", {"type": "metaAndAssetCtxs"}))
 
+    def spot_metaAndAssetCtxs(self) -> Any: 
+        return self.post("/info", {"type": "spotMetaAndAssetCtxs"})
+    
     def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin
 
@@ -343,7 +381,7 @@ class Info(API):
             }
         """
         return self.post("/info", {"type": "userFees", "user": address})
-
+    
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
 
