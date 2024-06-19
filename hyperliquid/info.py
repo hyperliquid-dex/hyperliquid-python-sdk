@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, SpotMetaAndAssetCtxs, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -197,6 +197,48 @@ class Info(API):
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
+    
+    def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
+        """Retrieve exchange spot asset contexts
+
+        POST /info
+
+        Returns:
+            [
+                {
+                    "tokens": [
+                        {
+                            "name": "USDC",
+                            "szDecimals": 8,
+                            "weiDecimals"8
+                        },
+                        {
+                            "name": "PURR",
+                            "szDecimals": 0,
+                            "weiDecimals": 5
+                        }
+                    ],
+                    "universe": [
+                        {
+                            "name": "PURR/USDC",
+                            "tokens": [
+                                1,
+                                0
+                            ]
+                        }
+                    ]
+                },
+                [
+                    {
+                        "dayNtlVlm": "8906.0",
+                        "markPx": "0.14",
+                        "midPx": "0.209265",
+                        "prevDayPx": "0.20432"
+                    }
+                ]
+            ]
+        """
+        return cast(SpotMetaAndAssetCtxs, self.post("/info", {"type": "spotMetaAndAssetCtxs"}))
 
     def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin

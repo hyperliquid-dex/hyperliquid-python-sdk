@@ -29,6 +29,14 @@ SpotTokenInfo = TypedDict(
 )
 SpotMeta = TypedDict("SpotMeta", {"universe": List[SpotAssetInfo], "tokens": List[SpotTokenInfo]})
 
+
+SpotdAssetCtxsTokenInfo = TypedDict("SpotdAssetCtxsTokenInfo", {"name": str, "szDecimals": int, "weiDecimals": int})
+SpotdAssetCtxsUniverseInfo = TypedDict("SpotdAssetCtxsUniverseInfo", {"name": str, "tokens": List[int]})
+SpotdAssetCtxsMarketDataInfo = TypedDict("SpotdAssetCtxsMarketDataInfo", {"dayNtlVlm": str, "markPx": str, "midPx": str, "prevDayPx": str})
+
+SpotMetaAndAssetCtxsDict = TypedDict("SpotMetaAndAssetCtxsDict", {"tokens": List[SpotdAssetCtxsTokenInfo], "universe": List[SpotdAssetCtxsUniverseInfo]})
+SpotMetaAndAssetCtxs = List[Union[SpotMetaAndAssetCtxsDict, List[SpotdAssetCtxsMarketDataInfo]]]
+
 AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids"]})
 L2BookSubscription = TypedDict("L2BookSubscription", {"type": Literal["l2Book"], "coin": str})
 TradesSubscription = TypedDict("TradesSubscription", {"type": Literal["trades"], "coin": str})
