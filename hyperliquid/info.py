@@ -183,14 +183,19 @@ class Info(API):
                     {
                         name: str,
                         szDecimals: int,
-                        weiDecimals: int
+                        weiDecimals: int,
+                        index: int,
+                        tokenId: str,
+                        isCanonical: bool
                     },
                     ...
                 ],
                 universe: [
                     {
                         name: str,
-                        tokens: [int, int]
+                        tokens: [int, int],
+                        index: int,
+                        isCanonical: bool
                     },
                     ...
                 ]
@@ -206,34 +211,27 @@ class Info(API):
         Returns:
             [
                 {
-                    "tokens": [
+                    tokens: [
                         {
-                            "name": "USDC",
-                            "szDecimals": 8,
-                            "weiDecimals"8
+                            name: str,
+                            szDecimals: int,
+                            weiDecimals int
                         },
-                        {
-                            "name": "PURR",
-                            "szDecimals": 0,
-                            "weiDecimals": 5
-                        }
+                        ...
                     ],
-                    "universe": [
+                    universe: [
                         {
-                            "name": "PURR/USDC",
-                            "tokens": [
-                                1,
-                                0
-                            ]
+                            name: str,
+                            tokens: [int, int]
                         }
                     ]
                 },
                 [
                     {
-                        "dayNtlVlm": "8906.0",
-                        "markPx": "0.14",
-                        "midPx": "0.209265",
-                        "prevDayPx": "0.20432"
+                        dayNtlVlm: float,
+                        markPx: float,
+                        midPx: float,
+                        prevDayPx: float
                     }
                 ]
             ]
