@@ -179,6 +179,15 @@ class Info(API):
 
         Returns:
             {
+                universe: [
+                    {
+                        tokens: [int, int],
+                        name: str,
+                        index: int,
+                        isCanonical: bool
+                    },
+                    ...
+                ]
                 tokens: [
                     {
                         name: str,
@@ -190,15 +199,6 @@ class Info(API):
                     },
                     ...
                 ],
-                universe: [
-                    {
-                        name: str,
-                        tokens: [int, int],
-                        index: int,
-                        isCanonical: bool
-                    },
-                    ...
-                ]
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
@@ -211,6 +211,13 @@ class Info(API):
         Returns:
             [
                 {
+                    universe: [
+                        {
+                            name: str,
+                            tokens: [int, int]
+                        }
+                        ...
+                    ],
                     tokens: [
                         {
                             name: str,
@@ -218,12 +225,6 @@ class Info(API):
                             weiDecimals int
                         },
                         ...
-                    ],
-                    universe: [
-                        {
-                            name: str,
-                            tokens: [int, int]
-                        }
                     ]
                 },
                 [
@@ -231,8 +232,11 @@ class Info(API):
                         dayNtlVlm: float,
                         markPx: float,
                         midPx: float,
-                        prevDayPx: float
+                        prevDayPx: float,
+                        circulatingSupply: float,
+                        coin: str
                     }
+                    ...
                 ]
             ]
         """
