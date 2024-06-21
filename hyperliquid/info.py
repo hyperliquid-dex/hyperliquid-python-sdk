@@ -1,5 +1,5 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, SpotMetaAndAssetCtxs, Optional, Subscription, cast, Cloid
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -179,24 +179,68 @@ class Info(API):
 
         Returns:
             {
+                universe: [
+                    {
+                        tokens: [int, int],
+                        name: str,
+                        index: int,
+                        isCanonical: bool
+                    },
+                    ...
+                ]
                 tokens: [
                     {
                         name: str,
                         szDecimals: int,
-                        weiDecimals: int
+                        weiDecimals: int,
+                        index: int,
+                        tokenId: str,
+                        isCanonical: bool
                     },
                     ...
                 ],
-                universe: [
-                    {
-                        name: str,
-                        tokens: [int, int]
-                    },
-                    ...
-                ]
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
+    
+    def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
+        """Retrieve exchange spot asset contexts
+
+        POST /info
+
+        Returns:
+            [
+                {
+                    universe: [
+                        {
+                            name: str,
+                            tokens: [int, int]
+                        }
+                        ...
+                    ],
+                    tokens: [
+                        {
+                            name: str,
+                            szDecimals: int,
+                            weiDecimals int
+                        },
+                        ...
+                    ]
+                },
+                [
+                    {
+                        dayNtlVlm: float,
+                        markPx: float,
+                        midPx: float,
+                        prevDayPx: float,
+                        circulatingSupply: float,
+                        coin: str
+                    }
+                    ...
+                ]
+            ]
+        """
+        return cast(SpotMetaAndAssetCtxs, self.post("/info", {"type": "spotMetaAndAssetCtxs"}))
 
     def funding_history(self, coin: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin
