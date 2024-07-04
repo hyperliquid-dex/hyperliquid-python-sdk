@@ -171,6 +171,41 @@ class Info(API):
             }
         """
         return cast(Meta, self.post("/info", {"type": "meta"}))
+    
+    def metaAndAssetCtxs(self) -> Any:
+        """Retrieve exchange MetaAndAssetCtxs
+        
+        POST /info
+        
+        Returns:
+            [
+                {
+                    universe: [
+                        {
+                            'maxLeverage': int,
+                            'name': str,
+                            'onlyIsolated': bool,
+                            'szDecimals': int
+                        },
+                        ...
+                    ]
+                },
+            [
+                {
+                    "dayNtlVlm": str,
+                    "funding": str,
+                    "impactPxs": [str, str],
+                    "markPx": str,
+                    "midPx": str,
+                    "openInterest": str,
+                    "oraclePx": str,
+                    "premium": str,
+                    "prevDayPx": str
+                },
+                ...
+            ]
+        """
+        return self.post("/info", {"type": "metaAndAssetCtxs"})
 
     def spot_meta(self) -> SpotMeta:
         """Retrieve exchange spot metadata
