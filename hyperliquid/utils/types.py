@@ -28,8 +28,10 @@ SpotTokenInfo = TypedDict(
     {"name": str, "szDecimals": int, "weiDecimals": int, "index": int, "tokenId": str, "isCanonical": bool},
 )
 SpotMeta = TypedDict("SpotMeta", {"universe": List[SpotAssetInfo], "tokens": List[SpotTokenInfo]})
-
-SpotAssetCtx = TypedDict("SpotAssetCtx", {"dayNtlVlm": str, "markPx": str, "midPx": Optional[str], "prevDayPx": str, "circulatingSupply": str, "coin": str})
+SpotAssetCtx = TypedDict(
+    "SpotAssetCtx",
+    {"dayNtlVlm": str, "markPx": str, "midPx": Optional[str], "prevDayPx": str, "circulatingSupply": str, "coin": str},
+)
 SpotMetaAndAssetCtxs = Tuple[SpotMeta, List[SpotAssetCtx]]
 
 AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids"]})

@@ -4,7 +4,8 @@ from hyperliquid.utils import constants
 import example_utils
 
 
-COIN = "PURR/USDC"
+PURR = "PURR/USDC"
+OTHER_COIN = "@8"
 
 
 def main():
@@ -20,7 +21,7 @@ def main():
         print("no available token balances")
 
     # Place an order that should rest by setting the price very low
-    order_result = exchange.order(COIN, True, 1200, 0.01, {"limit": {"tif": "Gtc"}})
+    order_result = exchange.order(PURR, True, 24, 0.5, {"limit": {"tif": "Gtc"}})
     print(order_result)
 
     # Query the order status by oid
@@ -34,7 +35,16 @@ def main():
     if order_result["status"] == "ok":
         status = order_result["response"]["data"]["statuses"][0]
         if "resting" in status:
-            cancel_result = exchange.cancel(COIN, status["resting"]["oid"])
+            cancel_result = exchange.cancel(PURR, status["resting"]["oid"])
+            print(cancel_result)
+
+    # For other spot assets other than PURR/USDC use @{index} e.g. on testnet @8 is KORILA/USDC
+    order_result = exchange.order(OTHER_COIN, True, 1, 12, {"limit": {"tif": "Gtc"}})
+    print(order_result)
+    if order_result["status"] == "ok":
+        status = order_result["response"]["data"]["statuses"][0]
+        if "resting" in status:
+            cancel_result = exchange.cancel(OTHER_COIN, status["resting"]["oid"])
             print(cancel_result)
 
 

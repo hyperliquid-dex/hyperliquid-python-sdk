@@ -59,8 +59,8 @@ class Exchange(API):
         self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])}
 
         # spot assets start at 10000
-        for i, spot_pair in enumerate(self.spot_meta["universe"]):
-            self.coin_to_asset[spot_pair["name"]] = i + 10000
+        for spot_info in self.spot_meta["universe"]:
+            self.coin_to_asset[spot_info["name"]] = spot_info["index"] + 10000
 
     def _post_action(self, action, signature, nonce):
         payload = {
@@ -82,9 +82,9 @@ class Exchange(API):
         if not px:
             # Get midprice
             px = float(self.info.all_mids()[coin])
-        
+
         # spot assets start at 10000
-        is_spot = self.coin_to_asset.get(coin) >= 10_000
+        is_spot = self.coin_to_asset[coin] >= 10_000
 
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)

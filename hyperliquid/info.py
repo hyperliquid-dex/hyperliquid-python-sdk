@@ -1,5 +1,15 @@
 from hyperliquid.api import API
-from hyperliquid.utils.types import Any, Callable, Meta, SpotMeta, SpotMetaAndAssetCtxs, Optional, Subscription, cast, Cloid
+from hyperliquid.utils.types import (
+    Any,
+    Callable,
+    Meta,
+    SpotMeta,
+    SpotMetaAndAssetCtxs,
+    Optional,
+    Subscription,
+    cast,
+    Cloid,
+)
 from hyperliquid.websocket_manager import WebsocketManager
 
 
@@ -171,36 +181,36 @@ class Info(API):
             }
         """
         return cast(Meta, self.post("/info", {"type": "meta"}))
-    
-    def metaAndAssetCtxs(self) -> Any:
+
+    def meta_and_asset_ctxs(self) -> Any:
         """Retrieve exchange MetaAndAssetCtxs
-        
+
         POST /info
-        
+
         Returns:
             [
                 {
                     universe: [
                         {
-                            'maxLeverage': int,
                             'name': str,
-                            'onlyIsolated': bool,
                             'szDecimals': int
+                            'maxLeverage': int,
+                            'onlyIsolated': bool,
                         },
                         ...
                     ]
                 },
             [
                 {
-                    "dayNtlVlm": str,
-                    "funding": str,
-                    "impactPxs": [str, str],
-                    "markPx": str,
-                    "midPx": str,
-                    "openInterest": str,
-                    "oraclePx": str,
-                    "premium": str,
-                    "prevDayPx": str
+                    "dayNtlVlm": float string,
+                    "funding": float string,
+                    "impactPxs": Optional([float string, float string]),
+                    "markPx": Optional(float string),
+                    "midPx": Optional(float string),
+                    "openInterest": float string,
+                    "oraclePx": float string,
+                    "premium": Optional(float string),
+                    "prevDayPx": float string
                 },
                 ...
             ]
@@ -216,13 +226,13 @@ class Info(API):
             {
                 universe: [
                     {
-                        tokens: [int, int],
+                        tokens: [int, int]
                         name: str,
                         index: int,
                         isCanonical: bool
                     },
                     ...
-                ]
+                ],
                 tokens: [
                     {
                         name: str,
@@ -233,42 +243,45 @@ class Info(API):
                         isCanonical: bool
                     },
                     ...
-                ],
+                ]
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
-    
+
     def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
         """Retrieve exchange spot asset contexts
-
         POST /info
-
         Returns:
             [
                 {
                     universe: [
                         {
-                            name: str,
                             tokens: [int, int]
-                        }
+                            name: str,
+                            index: int,
+                            isCanonical: bool
+                        },
                         ...
                     ],
                     tokens: [
                         {
                             name: str,
                             szDecimals: int,
-                            weiDecimals int
+                            weiDecimals: int,
+                            index: int,
+                            tokenId: str,
+                            isCanonical: bool
                         },
                         ...
                     ]
                 },
                 [
                     {
-                        dayNtlVlm: float,
-                        markPx: float,
-                        midPx: float,
-                        prevDayPx: float,
-                        circulatingSupply: float,
+                        dayNtlVlm: float string,
+                        markPx: float string,
+                        midPx: Optional(float string),
+                        prevDayPx: float string,
+                        circulatingSupply: float string,
                         coin: str
                     }
                     ...
