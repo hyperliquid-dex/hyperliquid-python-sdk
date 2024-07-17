@@ -46,19 +46,51 @@ class WebsocketManager(threading.Thread):
         self.ws_ready = False
         self.queued_subscriptions: List[Tuple[Subscription, ActiveSubscription]] = []
         self.active_subscriptions: Dict[str, List[ActiveSubscription]] = defaultdict(list)
-        ws_url = "ws" + base_url[len("http") :] + "/ws"
-        self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
-        self.ping_sender = threading.Thread(target=self.send_ping)
+        self.base_url = base_url
+        self.ws = None
+        self.reconnect_interval = 5
+        self.should_reconnect = True
+        self.ping_sender = None
+
+    def start_ping_sender(self):
+        if self.ping_sender is None or not self.ping_sender.is_alive():
+            self.ping_sender = threading.Thread(target=self.send_ping)
+            self.ping_sender.start()
+
+    def connect(self):
+        ws_url = "ws" + self.base_url[len("http") :] + "/ws"
+        self.ws = websocket.WebSocketApp(
+            ws_url, on_message=self.on_message, on_open=self.on_open, on_close=self.on_close, on_error=self.on_error
+        )
+
+    def reconnect(self):
+        while self.should_reconnect:
+            try:
+                self.connect()
+                self.ws.run_forever()
+            except Exception as e:
+                logging.error(f"WebSocket connection failed: {e}")
+
+            logging.info(f"Attempting to reconnect in {self.reconnect_interval} seconds...")
+            time.sleep(self.reconnect_interval)
+
+            self.start_ping_sender()
 
     def run(self):
-        self.ping_sender.start()
-        self.ws.run_forever()
+        self.start_ping_sender()
+        self.reconnect()
 
     def send_ping(self):
-        while True:
+        while self.should_reconnect:
             time.sleep(50)
-            logging.debug("Websocket sending ping")
-            self.ws.send(json.dumps({"method": "ping"}))
+            if self.ws and self.ws.sock and self.ws.sock.connected:
+                try:
+                    logging.debug("Websocket sending ping")
+                    self.ws.send(json.dumps({"method": "ping"}))
+                except websocket.WebSocketConnectionClosedException:
+                    logging.warning("Connection closed while trying to send ping. Triggering reconnect.")
+                    self.ws_ready = False
+                    break
 
     def on_message(self, _ws, message):
         if message == "Websocket connection established.":
@@ -85,6 +117,13 @@ class WebsocketManager(threading.Thread):
         self.ws_ready = True
         for subscription, active_subscription in self.queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
+
+    def on_close(self, _ws, close_status_code, close_msg):
+        logging.warning(f"WebSocket connection closed: {close_status_code} - {close_msg}")
+        self.ws_ready = False
+
+    def on_error(self, _ws, error):
+        logging.error(f"WebSocket error: {error}")
 
     def subscribe(
         self, subscription: Subscription, callback: Callable[[Any], None], subscription_id: Optional[int] = None
@@ -116,3 +155,10 @@ class WebsocketManager(threading.Thread):
             self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
         self.active_subscriptions[identifier] = new_active_subscriptions
         return len(active_subscriptions) != len(new_active_subscriptions)
+
+    def close(self):
+        self.should_reconnect = False
+        if self.ping_sender:
+            self.ping_sender.join()
+        if self.ws:
+            self.ws.close()
