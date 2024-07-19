@@ -123,6 +123,7 @@ class WebsocketManager(threading.Thread):
         self.ws_ready = False
 
     def on_error(self, _ws, error):
+        self.active_subscriptions = defaultdict(list)
         logging.error(f"WebSocket error: {error}")
 
     def subscribe(
