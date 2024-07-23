@@ -226,7 +226,7 @@ class Info(API):
             {
                 universe: [
                     {
-                        tokens: [int, int]
+                        tokens: [int, int],
                         name: str,
                         index: int,
                         isCanonical: bool
@@ -256,7 +256,7 @@ class Info(API):
                 {
                     universe: [
                         {
-                            tokens: [int, int]
+                            tokens: [int, int],
                             name: str,
                             index: int,
                             isCanonical: bool
