@@ -6,6 +6,7 @@ import example_utils
 
 PURR = "PURR/USDC"
 OTHER_COIN = "@8"
+OTHER_COIN_NAME = "KORILA/USDC"
 
 
 def main():
@@ -44,7 +45,8 @@ def main():
     if order_result["status"] == "ok":
         status = order_result["response"]["data"]["statuses"][0]
         if "resting" in status:
-            cancel_result = exchange.cancel(OTHER_COIN, status["resting"]["oid"])
+            # The sdk now also support using spot names, although be careful as they might not always be unique
+            cancel_result = exchange.cancel(OTHER_COIN_NAME, status["resting"]["oid"])
             print(cancel_result)
 
 

@@ -20,6 +20,16 @@ def subscription_to_identifier(subscription: Subscription) -> str:
         return f'trades:{subscription["coin"].lower()}'
     elif subscription["type"] == "userEvents":
         return "userEvents"
+    elif subscription["type"] == "userFills":
+        return f'userFills:{subscription["user"].lower()}'
+    elif subscription["type"] == "candle":
+        return f'candle:{subscription["coin"].lower()},{subscription["interval"]}'
+    elif subscription["type"] == "orderUpdates":
+        return "orderUpdates"
+    elif subscription["type"] == "userFundings":
+        return f'userFundings:{subscription["user"].lower()}'
+    elif subscription["type"] == "userNonFundingLedgerUpdates":
+        return f'userNonFundingLedgerUpdates:{subscription["user"].lower()}'
 
 
 def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
@@ -37,6 +47,16 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
             return f'trades:{trades[0]["coin"].lower()}'
     elif ws_msg["channel"] == "user":
         return "userEvents"
+    elif ws_msg["channel"] == "userFills":
+        return f'userFills:{ws_msg["data"]["user"].lower()}'
+    elif ws_msg["channel"] == "candle":
+        return f'candle:{ws_msg["data"]["s"].lower()},{ws_msg["data"]["i"]}'
+    elif ws_msg["channel"] == "orderUpdates":
+        return "orderUpdates"
+    elif ws_msg["channel"] == "userFundings":
+        return f'userFundings:{ws_msg["data"]["user"].lower()}'
+    elif ws_msg["channel"] == "userNonFundingLedgerUpdates":
+        return f'userNonFundingLedgerUpdates:{ws_msg["data"]["user"].lower()}'
 
 
 class WebsocketManager(threading.Thread):
@@ -98,10 +118,10 @@ class WebsocketManager(threading.Thread):
         else:
             logging.debug("subscribing")
             identifier = subscription_to_identifier(subscription)
-            if subscription["type"] == "userEvents":
-                # TODO: ideally the userEvent messages would include the user so that we can support multiplexing them
+            if identifier == "userEvents" or identifier == "orderUpdates":
+                # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
                 if len(self.active_subscriptions[identifier]) != 0:
-                    raise NotImplementedError("Cannot subscribe to UserEvents multiple times")
+                    raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
             self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id))
             self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
         return subscription_id

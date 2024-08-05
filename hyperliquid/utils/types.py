@@ -25,7 +25,16 @@ SIDES: List[Side] = ["A", "B"]
 SpotAssetInfo = TypedDict("SpotAssetInfo", {"name": str, "tokens": List[int], "index": int, "isCanonical": bool})
 SpotTokenInfo = TypedDict(
     "SpotTokenInfo",
-    {"name": str, "szDecimals": int, "weiDecimals": int, "index": int, "tokenId": str, "isCanonical": bool, "evmContract": Optional[str], "fullName": Optional[str]},
+    {
+        "name": str,
+        "szDecimals": int,
+        "weiDecimals": int,
+        "index": int,
+        "tokenId": str,
+        "isCanonical": bool,
+        "evmContract": Optional[str],
+        "fullName": Optional[str],
+    },
 )
 SpotMeta = TypedDict("SpotMeta", {"universe": List[SpotAssetInfo], "tokens": List[SpotTokenInfo]})
 SpotAssetCtx = TypedDict(
@@ -38,7 +47,25 @@ AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids
 L2BookSubscription = TypedDict("L2BookSubscription", {"type": Literal["l2Book"], "coin": str})
 TradesSubscription = TypedDict("TradesSubscription", {"type": Literal["trades"], "coin": str})
 UserEventsSubscription = TypedDict("UserEventsSubscription", {"type": Literal["userEvents"], "user": str})
-Subscription = Union[AllMidsSubscription, L2BookSubscription, TradesSubscription, UserEventsSubscription]
+UserFillsSubscription = TypedDict("UserFillsSubscription", {"type": Literal["userFills"], "user": str})
+CandleSubscription = TypedDict("CandleSubscription", {"type": Literal["candle"], "coin": str, "interval": str})
+OrderUpdatesSubscription = TypedDict("OrderUpdatesSubscription", {"type": Literal["orderUpdates"], "user": str})
+UserFundingsSubscription = TypedDict("UserFundingsSubscription", {"type": Literal["userFundings"], "user": str})
+UserNonFundingLedgerUpdatesSubscription = TypedDict(
+    "UserNonFundingLedgerUpdatesSubscription", {"type": Literal["userNonFundingLedgerUpdates"], "user": str}
+)
+# If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
+Subscription = Union[
+    AllMidsSubscription,
+    L2BookSubscription,
+    TradesSubscription,
+    UserEventsSubscription,
+    UserFillsSubscription,
+    CandleSubscription,
+    OrderUpdatesSubscription,
+    UserFundingsSubscription,
+    UserNonFundingLedgerUpdatesSubscription,
+]
 
 AllMidsData = TypedDict("AllMidsData", {"mids": Dict[str, str]})
 AllMidsMsg = TypedDict("AllMidsMsg", {"channel": Literal["allMids"], "data": AllMidsData})
@@ -62,12 +89,27 @@ Fill = TypedDict(
         "hash": str,
         "oid": int,
         "crossed": bool,
+        "fee": str,
+        "tid": int,
+        "feeToken": str,
     },
 )
 # TODO: handle other types of user events
 UserEventsData = TypedDict("UserEventsData", {"fills": List[Fill]}, total=False)
 UserEventsMsg = TypedDict("UserEventsMsg", {"channel": Literal["user"], "data": UserEventsData})
-WsMsg = Union[AllMidsMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg]
+UserFillsData = TypedDict("UserFillsData", {"user": str, "isSnapshot": bool, "fills": List[Fill]})
+UserFillsMsg = TypedDict("UserFillsMsg", {"channel": Literal["userFills"], "data": UserFillsData})
+OtherWsMsg = TypedDict(
+    "OtherWsMsg",
+    {
+        "channel": Union[
+            Literal["candle"], Literal["orderUpdates"], Literal["userFundings"], Literal["userNonFundingLedgerUpdates"]
+        ],
+        "data": Any,
+    },
+    total=False,
+)
+WsMsg = Union[AllMidsMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFillsMsg, OtherWsMsg]
 
 
 class Cloid:

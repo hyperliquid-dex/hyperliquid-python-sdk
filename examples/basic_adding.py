@@ -19,6 +19,7 @@ from hyperliquid.utils.types import (
     TypedDict,
     Union,
     UserEventsMsg,
+    UserEventsSubscription,
 )
 import example_utils
 
@@ -56,9 +57,10 @@ class BasicAdder:
     def __init__(self, address: str, info: Info, exchange: Exchange):
         self.info = info
         self.exchange = exchange
-        subscription: L2BookSubscription = {"type": "l2Book", "coin": COIN}
-        self.info.subscribe(subscription, self.on_book_update)
-        self.info.subscribe({"type": "userEvents", "user": address}, self.on_user_events)
+        l2_book_subscription: L2BookSubscription = {"type": "l2Book", "coin": COIN}
+        self.info.subscribe(l2_book_subscription, self.on_book_update)
+        user_events_subscription: UserEventsSubscription = {"type": "userEvents", "user": address}
+        self.info.subscribe(user_events_subscription, self.on_user_events)
         self.position: Optional[float] = None
         self.provide_state: Dict[Side, ProvideState] = {
             "A": {"type": "cancelled"},

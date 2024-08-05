@@ -1,5 +1,43 @@
 interactions:
 - request:
+    body: '{"type": "meta"}'
+    headers:
+      Accept:
+        - '*/*'
+      Accept-Encoding:
+        - gzip, deflate
+      Connection:
+        - keep-alive
+      Content-Length:
+        - '16'
+      Content-Type:
+        - application/json
+      User-Agent:
+        - python-requests/2.31.0
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '{"universe":[{"maxLeverage":50,"name":"BTC","szDecimals":5},{"maxLeverage":50,"name":"ETH","szDecimals":4},{"maxLeverage":50,"name":"ATOM","szDecimals":2},{"maxLeverage":50,"name":"MATIC","szDecimals":1},{"maxLeverage":50,"name":"DYDX","szDecimals":1},{"maxLeverage":50,"name":"SOL","szDecimals":2},{"maxLeverage":50,"name":"AVAX","szDecimals":2},{"maxLeverage":50,"name":"BNB","szDecimals":3},{"maxLeverage":50,"name":"APE","szDecimals":1},{"maxLeverage":50,"name":"OP","szDecimals":1},{"maxLeverage":50,"name":"LTC","szDecimals":2},{"maxLeverage":50,"name":"ARB","szDecimals":1},{"maxLeverage":50,"name":"DOGE","szDecimals":0},{"maxLeverage":50,"name":"INJ","szDecimals":1},{"maxLeverage":50,"name":"SUI","szDecimals":1},{"maxLeverage":50,"name":"kPEPE","szDecimals":0},{"maxLeverage":50,"name":"CRV","szDecimals":1},{"maxLeverage":50,"name":"LDO","szDecimals":1},{"maxLeverage":50,"name":"LINK","szDecimals":1},{"maxLeverage":50,"name":"STX","szDecimals":1},{"maxLeverage":50,"name":"RNDR","szDecimals":1},{"maxLeverage":50,"name":"CFX","szDecimals":0},{"maxLeverage":50,"name":"FTM","szDecimals":0},{"maxLeverage":50,"name":"GMX","szDecimals":2},{"maxLeverage":50,"name":"SNX","szDecimals":1},{"maxLeverage":50,"name":"XRP","szDecimals":0},{"maxLeverage":50,"name":"BCH","szDecimals":3},{"maxLeverage":50,"name":"APT","szDecimals":2}]}'
+    headers:
+      access-control-allow-origin:
+        - '*'
+      access-control-expose-headers:
+        - '*'
+      content-length:
+        - '1339'
+      content-type:
+        - application/json
+      date:
+        - Mon, 17 Jul 2023 21:43:21 GMT
+      vary:
+        - origin
+        - access-control-request-method
+        - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+- request:
     body: '{"type": "fundingHistory", "coin": "BTC", "startTime": 1681923833000, "endTime":
       1684811870000}'
     headers:

@@ -45,22 +45,7 @@ class Exchange(API):
         self.wallet = wallet
         self.vault_address = vault_address
         self.account_address = account_address
-        self.info = Info(base_url, skip_ws=True)
-        if meta is None:
-            self.meta = self.info.meta()
-        else:
-            self.meta = meta
-
-        if spot_meta is None:
-            self.spot_meta = self.info.spot_meta()
-        else:
-            self.spot_meta = spot_meta
-
-        self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(self.meta["universe"])}
-
-        # spot assets start at 10000
-        for spot_info in self.spot_meta["universe"]:
-            self.coin_to_asset[spot_info["name"]] = spot_info["index"] + 10000
+        self.info = Info(base_url, True, meta, spot_meta)
 
     def _post_action(self, action, signature, nonce):
         payload = {
@@ -74,17 +59,18 @@ class Exchange(API):
 
     def _slippage_price(
         self,
-        coin: str,
+        name: str,
         is_buy: bool,
         slippage: float,
         px: Optional[float] = None,
     ) -> float:
+        coin = self.info.name_to_coin[name]
         if not px:
             # Get midprice
             px = float(self.info.all_mids()[coin])
 
         # spot assets start at 10000
-        is_spot = self.coin_to_asset[coin] >= 10_000
+        is_spot = self.info.coin_to_asset[coin] >= 10_000
 
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)
@@ -93,7 +79,7 @@ class Exchange(API):
 
     def order(
         self,
-        coin: str,
+        name: str,
         is_buy: bool,
         sz: float,
         limit_px: float,
@@ -102,7 +88,7 @@ class Exchange(API):
         cloid: Optional[Cloid] = None,
     ) -> Any:
         order: OrderRequest = {
-            "coin": coin,
+            "coin": name,
             "is_buy": is_buy,
             "sz": sz,
             "limit_px": limit_px,
@@ -115,7 +101,7 @@ class Exchange(API):
 
     def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
         order_wires: List[OrderWire] = [
-            order_request_to_order_wire(order, self.coin_to_asset[order["coin"]]) for order in order_requests
+            order_request_to_order_wire(order, self.info.name_to_asset(order["coin"])) for order in order_requests
         ]
         timestamp = get_timestamp_ms()
 
@@ -138,7 +124,7 @@ class Exchange(API):
     def modify_order(
         self,
         oid: OidOrCloid,
-        coin: str,
+        name: str,
         is_buy: bool,
         sz: float,
         limit_px: float,
@@ -149,7 +135,7 @@ class Exchange(API):
         modify: ModifyRequest = {
             "oid": oid,
             "order": {
-                "coin": coin,
+                "coin": name,
                 "is_buy": is_buy,
                 "sz": sz,
                 "limit_px": limit_px,
@@ -165,7 +151,7 @@ class Exchange(API):
         modify_wires = [
             {
                 "oid": modify["oid"].to_raw() if isinstance(modify["oid"], Cloid) else modify["oid"],
-                "order": order_request_to_order_wire(modify["order"], self.coin_to_asset[modify["order"]["coin"]]),
+                "order": order_request_to_order_wire(modify["order"], self.info.name_to_asset(modify["order"]["coin"])),
             }
             for modify in modify_requests
         ]
@@ -191,7 +177,7 @@ class Exchange(API):
 
     def market_open(
         self,
-        coin: str,
+        name: str,
         is_buy: bool,
         sz: float,
         px: Optional[float] = None,
@@ -199,9 +185,9 @@ class Exchange(API):
         cloid: Optional[Cloid] = None,
     ) -> Any:
         # Get aggressive Market Price
-        px = self._slippage_price(coin, is_buy, slippage, px)
+        px = self._slippage_price(name, is_buy, slippage, px)
         # Market Order is an aggressive Limit Order IoC
-        return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid)
+        return self.order(name, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid)
 
     def market_close(
         self,
@@ -230,11 +216,11 @@ class Exchange(API):
             # Market Order is an aggressive Limit Order IoC
             return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=True, cloid=cloid)
 
-    def cancel(self, coin: str, oid: int) -> Any:
-        return self.bulk_cancel([{"coin": coin, "oid": oid}])
+    def cancel(self, name: str, oid: int) -> Any:
+        return self.bulk_cancel([{"coin": name, "oid": oid}])
 
-    def cancel_by_cloid(self, coin: str, cloid: Cloid) -> Any:
-        return self.bulk_cancel_by_cloid([{"coin": coin, "cloid": cloid}])
+    def cancel_by_cloid(self, name: str, cloid: Cloid) -> Any:
+        return self.bulk_cancel_by_cloid([{"coin": name, "cloid": cloid}])
 
     def bulk_cancel(self, cancel_requests: List[CancelRequest]) -> Any:
         timestamp = get_timestamp_ms()
@@ -242,7 +228,7 @@ class Exchange(API):
             "type": "cancel",
             "cancels": [
                 {
-                    "a": self.coin_to_asset[cancel["coin"]],
+                    "a": self.info.name_to_asset(cancel["coin"]),
                     "o": cancel["oid"],
                 }
                 for cancel in cancel_requests
@@ -269,7 +255,7 @@ class Exchange(API):
             "type": "cancelByCloid",
             "cancels": [
                 {
-                    "asset": self.coin_to_asset[cancel["coin"]],
+                    "asset": self.info.name_to_asset(cancel["coin"]),
                     "cloid": cancel["cloid"].to_raw(),
                 }
                 for cancel in cancel_requests
@@ -316,12 +302,11 @@ class Exchange(API):
             timestamp,
         )
 
-    def update_leverage(self, leverage: int, coin: str, is_cross: bool = True) -> Any:
+    def update_leverage(self, leverage: int, name: str, is_cross: bool = True) -> Any:
         timestamp = get_timestamp_ms()
-        asset = self.coin_to_asset[coin]
         update_leverage_action = {
             "type": "updateLeverage",
-            "asset": asset,
+            "asset": self.info.name_to_asset(name),
             "isCross": is_cross,
             "leverage": leverage,
         }
@@ -338,13 +323,12 @@ class Exchange(API):
             timestamp,
         )
 
-    def update_isolated_margin(self, amount: float, coin: str) -> Any:
+    def update_isolated_margin(self, amount: float, name: str) -> Any:
         timestamp = get_timestamp_ms()
-        asset = self.coin_to_asset[coin]
         amount = float_to_usd_int(amount)
         update_isolated_margin_action = {
             "type": "updateIsolatedMargin",
-            "asset": asset,
+            "asset": self.info.name_to_asset(name),
             "isBuy": True,
             "ntli": amount,
         }
