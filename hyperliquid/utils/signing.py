@@ -176,6 +176,22 @@ def sign_usd_transfer_action(wallet, action, is_mainnet):
     )
 
 
+def sign_spot_transfer_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "destination", "type": "string"},
+            {"name": "amount", "type": "string"},
+            {"name": "token", "type": "string"},
+            {"name": "time", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:SpotSend",
+        is_mainnet,
+    )
+
+
 def sign_withdraw_from_bridge_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,

@@ -22,6 +22,7 @@ from hyperliquid.utils.signing import (
     order_wires_to_order_action,
     sign_l1_action,
     sign_usd_transfer_action,
+    sign_spot_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_agent,
 )
@@ -432,6 +433,18 @@ class Exchange(API):
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "usdSend"}
         is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_usd_transfer_action(self.wallet, action, is_mainnet)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_transfer(self, amount: float, destination: str, token: str) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {"destination": destination, "amount": str(
+            amount), "token": token, "time": timestamp, "type": "spotSend"}
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_spot_transfer_action(self.wallet, action, is_mainnet)
         return self._post_action(
             action,
             signature,
