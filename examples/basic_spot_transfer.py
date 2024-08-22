@@ -11,7 +11,7 @@ def main():
             "Agents do not have permission to perform internal transfers")
 
     # Transfer 1 PURR token to the zero address for demonstration purposes
-    transfer_result = exchange.token_transfer(
+    transfer_result = exchange.spot_transfer(
         1,
         "0x0000000000000000000000000000000000000000",
         "PURR:0xc4bf3f870c0e9465323c0b6ed28096c2"
