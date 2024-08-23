@@ -183,8 +183,8 @@ def sign_spot_transfer_action(wallet, action, is_mainnet):
         [
             {"name": "hyperliquidChain", "type": "string"},
             {"name": "destination", "type": "string"},
-            {"name": "amount", "type": "string"},
             {"name": "token", "type": "string"},
+            {"name": "amount", "type": "string"},
             {"name": "time", "type": "uint64"},
         ],
         "HyperliquidTransaction:SpotSend",
