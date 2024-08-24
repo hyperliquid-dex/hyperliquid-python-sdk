@@ -39,7 +39,10 @@ classifiers = [  #! Update me
 [tool.poetry.dependencies]
 python = "^3.7"
 eth-utils = "^2.1.0"
-eth-abi = "^3.0.1"
+eth-abi = [
+  {version = "^3.0.1", python = ">=3.7,<3.8"},
+  {version = "^5.0.1", python = ">=3.8,<4"},
+]
 eth-account = "^0.8.0"
 websocket-client = "^1.5.1"
 requests = "^2.31.0"
