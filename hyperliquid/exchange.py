@@ -22,6 +22,7 @@ from hyperliquid.utils.signing import (
     order_wires_to_order_action,
     sign_l1_action,
     sign_usd_transfer_action,
+    sign_vault_transfer_action,
     sign_spot_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_agent,
@@ -424,6 +425,21 @@ class Exchange(API):
         )
         return self._post_action(
             sub_account_transfer_action,
+            signature,
+            timestamp,
+        )
+    
+    def vault_usd_transfer(self, vault_address: str, is_deposit: bool, usd: int) -> Any:
+        timestamp = get_timestamp_ms()
+        vault_transfer_action = {
+            "type": "vaultTransfer",
+            "vaultAddress": vault_address,
+            "isDeposit": is_deposit,
+            "usd": usd}
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_vault_transfer_action(self.wallet, vault_transfer_action, is_mainnet)
+        return self._post_action(
+            vault_transfer_action,
             signature,
             timestamp,
         )
