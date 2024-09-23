@@ -22,7 +22,6 @@ from hyperliquid.utils.signing import (
     order_wires_to_order_action,
     sign_l1_action,
     sign_usd_transfer_action,
-    sign_vault_transfer_action,
     sign_spot_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_agent,
@@ -437,11 +436,13 @@ class Exchange(API):
             "isDeposit": is_deposit,
             "usd": usd}
         is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_vault_transfer_action(self.wallet, vault_transfer_action, is_mainnet)
-        return self._post_action(
-            vault_transfer_action,
-            signature,
-            timestamp,
+        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, is_mainnet)
+        return (
+            self._post_action(
+                vault_transfer_action,
+                signature,
+                timestamp,
+            )
         )
 
     def usd_transfer(self, amount: float, destination: str) -> Any:
@@ -478,7 +479,7 @@ class Exchange(API):
             timestamp,
         )
 
-    def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str]:
+    def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str, str]:
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
         timestamp = get_timestamp_ms()

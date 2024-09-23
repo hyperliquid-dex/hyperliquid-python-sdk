@@ -175,20 +175,6 @@ def sign_usd_transfer_action(wallet, action, is_mainnet):
         is_mainnet,
     )
 
-def sign_vault_transfer_action(wallet, action, is_mainnet):
-    return sign_user_signed_action(
-        wallet,
-        action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "vaultAddress", "type": "string"},
-            {"name": "isDeposit", "type": "bool"},
-            {"name": "usd", "type": "int"},
-        ],
-        "HyperliquidTransaction:VaultTransfer",
-        is_mainnet,
-    )
-
 
 def sign_spot_transfer_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
