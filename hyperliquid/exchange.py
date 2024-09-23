@@ -479,7 +479,7 @@ class Exchange(API):
             timestamp,
         )
 
-    def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str, str]:
+    def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str]:
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
         timestamp = get_timestamp_ms()
