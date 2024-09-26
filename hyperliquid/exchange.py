@@ -427,6 +427,23 @@ class Exchange(API):
             signature,
             timestamp,
         )
+    
+    def vault_usd_transfer(self, vault_address: str, is_deposit: bool, usd: int) -> Any:
+        timestamp = get_timestamp_ms()
+        vault_transfer_action = {
+            "type": "vaultTransfer",
+            "vaultAddress": vault_address,
+            "isDeposit": is_deposit,
+            "usd": usd}
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, is_mainnet)
+        return (
+            self._post_action(
+                vault_transfer_action,
+                signature,
+                timestamp,
+            )
+        )
 
     def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
