@@ -1,14 +1,7 @@
 from __future__ import annotations
 
-import sys
-
-if sys.version_info >= (3, 8):
-    from typing import Literal, TypedDict
-    from typing_extensions import NotRequired
-else:
-    from typing_extensions import TypedDict, Literal, NotRequired
-
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union, cast
+from typing_extensions import NotRequired
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union, cast, Literal, TypedDict
 
 Any = Any
 Option = Optional
@@ -110,6 +103,9 @@ OtherWsMsg = TypedDict(
     total=False,
 )
 WsMsg = Union[AllMidsMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFillsMsg, OtherWsMsg]
+
+# b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
+BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
 
 
 class Cloid:

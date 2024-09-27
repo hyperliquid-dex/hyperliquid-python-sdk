@@ -207,6 +207,21 @@ def sign_withdraw_from_bridge_action(wallet, action, is_mainnet):
     )
 
 
+def sign_usd_class_transfer_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "amount", "type": "string"},
+            {"name": "toPerp", "type": "bool"},
+            {"name": "nonce", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:UsdClassTransfer",
+        is_mainnet,
+    )
+
+
 def sign_agent(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
@@ -218,6 +233,21 @@ def sign_agent(wallet, action, is_mainnet):
             {"name": "nonce", "type": "uint64"},
         ],
         "HyperliquidTransaction:ApproveAgent",
+        is_mainnet,
+    )
+
+
+def sign_approve_builder_fee(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "maxFeeRate", "type": "string"},
+            {"name": "builder", "type": "address"},
+            {"name": "nonce", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:ApproveBuilderFee",
         is_mainnet,
     )
 
@@ -272,9 +302,12 @@ def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
     return order_wire
 
 
-def order_wires_to_order_action(order_wires):
-    return {
+def order_wires_to_order_action(order_wires, builder=None):
+    action = {
         "type": "order",
         "orders": order_wires,
         "grouping": "na",
     }
+    if builder:
+        action["builder"] = builder
+    return action

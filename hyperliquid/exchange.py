@@ -20,13 +20,15 @@ from hyperliquid.utils.signing import (
     get_timestamp_ms,
     order_request_to_order_wire,
     order_wires_to_order_action,
+    sign_approve_builder_fee,
     sign_l1_action,
+    sign_usd_class_transfer_action,
     sign_usd_transfer_action,
     sign_spot_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_agent,
 )
-from hyperliquid.utils.types import Any, List, Meta, SpotMeta, Optional, Tuple, Cloid
+from hyperliquid.utils.types import Any, List, Meta, SpotMeta, Optional, Tuple, Cloid, BuilderInfo
 
 
 class Exchange(API):
@@ -87,6 +89,7 @@ class Exchange(API):
         order_type: OrderType,
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         order: OrderRequest = {
             "coin": name,
@@ -98,15 +101,15 @@ class Exchange(API):
         }
         if cloid:
             order["cloid"] = cloid
-        return self.bulk_orders([order])
+        return self.bulk_orders([order], builder)
 
-    def bulk_orders(self, order_requests: List[OrderRequest]) -> Any:
+    def bulk_orders(self, order_requests: List[OrderRequest], builder: Optional[BuilderInfo] = None) -> Any:
         order_wires: List[OrderWire] = [
             order_request_to_order_wire(order, self.info.name_to_asset(order["coin"])) for order in order_requests
         ]
         timestamp = get_timestamp_ms()
 
-        order_action = order_wires_to_order_action(order_wires)
+        order_action = order_wires_to_order_action(order_wires, builder)
 
         signature = sign_l1_action(
             self.wallet,
@@ -184,11 +187,14 @@ class Exchange(API):
         px: Optional[float] = None,
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         # Get aggressive Market Price
         px = self._slippage_price(name, is_buy, slippage, px)
         # Market Order is an aggressive Limit Order IoC
-        return self.order(name, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid)
+        return self.order(
+            name, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=False, cloid=cloid, builder=builder
+        )
 
     def market_close(
         self,
@@ -197,6 +203,7 @@ class Exchange(API):
         px: Optional[float] = None,
         slippage: float = DEFAULT_SLIPPAGE,
         cloid: Optional[Cloid] = None,
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         address = self.wallet.address
         if self.account_address:
@@ -215,7 +222,16 @@ class Exchange(API):
             # Get aggressive Market Price
             px = self._slippage_price(coin, is_buy, slippage, px)
             # Market Order is an aggressive Limit Order IoC
-            return self.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=True, cloid=cloid)
+            return self.order(
+                coin,
+                is_buy,
+                sz,
+                px,
+                order_type={"limit": {"tif": "Ioc"}},
+                reduce_only=True,
+                cloid=cloid,
+                builder=builder,
+            )
 
     def cancel(self, name: str, oid: int) -> Any:
         return self.bulk_cancel([{"coin": name, "oid": oid}])
@@ -384,6 +400,22 @@ class Exchange(API):
             timestamp,
         )
 
+    def usd_class_transfer(self, amount: float, to_perp: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "usdClassTransfer",
+            "amount": str(amount),
+            "toPerp": to_perp,
+            "nonce": timestamp,
+        }
+        signature = sign_usd_class_transfer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    # Deprecated in favor of usd_class_transfer
     def user_spot_transfer(self, usdc: float, to_perp: bool) -> Any:
         usdc = int(round(usdc, 2) * 1e6)
         timestamp = get_timestamp_ms()
@@ -427,22 +459,21 @@ class Exchange(API):
             signature,
             timestamp,
         )
-    
+
     def vault_usd_transfer(self, vault_address: str, is_deposit: bool, usd: int) -> Any:
         timestamp = get_timestamp_ms()
         vault_transfer_action = {
             "type": "vaultTransfer",
             "vaultAddress": vault_address,
             "isDeposit": is_deposit,
-            "usd": usd}
+            "usd": usd,
+        }
         is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, is_mainnet)
-        return (
-            self._post_action(
-                vault_transfer_action,
-                signature,
-                timestamp,
-            )
+        return self._post_action(
+            vault_transfer_action,
+            signature,
+            timestamp,
         )
 
     def usd_transfer(self, amount: float, destination: str) -> Any:
@@ -458,8 +489,13 @@ class Exchange(API):
 
     def spot_transfer(self, amount: float, destination: str, token: str) -> Any:
         timestamp = get_timestamp_ms()
-        action = {"destination": destination, "amount": str(
-            amount), "token": token, "time": timestamp, "type": "spotSend"}
+        action = {
+            "destination": destination,
+            "amount": str(amount),
+            "token": token,
+            "time": timestamp,
+            "type": "spotSend",
+        }
         is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_spot_transfer_action(self.wallet, action, is_mainnet)
         return self._post_action(
@@ -502,3 +538,10 @@ class Exchange(API):
             ),
             agent_key,
         )
+
+    def approve_builder_fee(self, builder: str, max_fee_rate: str) -> Any:
+        timestamp = get_timestamp_ms()
+
+        action = {"maxFeeRate": max_fee_rate, "builder": builder, "nonce": timestamp, "type": "approveBuilderFee"}
+        signature = sign_approve_builder_fee(self.wallet, action, self.base_url == MAINNET_API_URL)
+        return self._post_action(action, signature, timestamp)
