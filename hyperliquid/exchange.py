@@ -55,7 +55,7 @@ class Exchange(API):
             "action": action,
             "nonce": nonce,
             "signature": signature,
-            "vaultAddress": self.vault_address,
+            "vaultAddress": self.vault_address if action["type"] != "usdClassTransfer" else None,
         }
         logging.debug(payload)
         return self.post("/exchange", payload)
@@ -402,9 +402,13 @@ class Exchange(API):
 
     def usd_class_transfer(self, amount: float, to_perp: bool) -> Any:
         timestamp = get_timestamp_ms()
+        str_amount = str(amount)
+        if self.vault_address:
+            str_amount += f" subaccount:{self.vault_address}"
+
         action = {
             "type": "usdClassTransfer",
-            "amount": str(amount),
+            "amount": str_amount,
             "toPerp": to_perp,
             "nonce": timestamp,
         }
