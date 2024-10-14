@@ -2,13 +2,13 @@ from hyperliquid.api import API
 from hyperliquid.utils.types import (
     Any,
     Callable,
+    Cloid,
     Meta,
+    Optional,
     SpotMeta,
     SpotMetaAndAssetCtxs,
-    Optional,
     Subscription,
     cast,
-    Cloid,
 )
 from hyperliquid.websocket_manager import WebsocketManager
 

@@ -1,5 +1,6 @@
-from hyperliquid.utils import constants
 import example_utils
+
+from hyperliquid.utils import constants
 
 
 # This example shows how to create, query, and transfer funds to a subaccount.

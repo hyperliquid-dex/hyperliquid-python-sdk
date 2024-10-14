@@ -1,9 +1,9 @@
 import eth_account
+import example_utils
 from eth_account.signers.local import LocalAccount
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
-import example_utils
 
 
 def main():
