@@ -69,6 +69,12 @@ make install
 <summary>Codestyle</summary>
 <p>
 
+Add git pre-push hook to run codestyle checks:
+
+```
+git config --local core.hooksPath githooks
+```
+
 Automatic formatting uses `pyupgrade`, `isort` and `black`.
 
 ```bash
