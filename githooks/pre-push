@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Run make lint
+echo "Running code style checks..."
+make codestyle
+
+# Check the exit status of make lint
+if [ $? -ne 0 ]; then
+    echo "Codestyle checks failed. Please fix the issues before pushing."
+    exit 1
+fi
+
+# Check for unstaged changes
+if ! git diff --exit-code > /dev/null 2>&1; then
+    echo "Codestyle checks have modified files. Please review and stage the changes before pushing."
+    git status --short
+    exit 1
+fi
+
+# If we get here, linting passed and there are no unstaged changes
+echo "Codestyle passed and no unstaged changes. Proceeding with push."
+exit 0
