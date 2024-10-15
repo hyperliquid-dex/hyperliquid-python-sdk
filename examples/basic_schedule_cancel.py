@@ -1,8 +1,9 @@
 import time
 
+import example_utils
+
 from hyperliquid.utils import constants
 from hyperliquid.utils.signing import get_timestamp_ms
-import example_utils
 
 
 def main():

@@ -1,8 +1,8 @@
 import json
 
-from hyperliquid.utils import constants
 import example_utils
 
+from hyperliquid.utils import constants
 
 PURR = "PURR/USDC"
 OTHER_COIN = "@8"

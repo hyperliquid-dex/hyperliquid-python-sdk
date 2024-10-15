@@ -1,7 +1,8 @@
-import eth_account
-from eth_account.signers.local import LocalAccount
 import json
 import os
+
+import eth_account
+from eth_account.signers.local import LocalAccount
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info

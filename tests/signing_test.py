@@ -3,9 +3,9 @@ import pytest
 from eth_utils import to_hex
 
 from hyperliquid.utils.signing import (
-    action_hash,
     OrderRequest,
     ScheduleCancelAction,
+    action_hash,
     construct_phantom_agent,
     float_to_int_for_hashing,
     order_request_to_order_wire,

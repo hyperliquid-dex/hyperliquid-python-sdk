@@ -4,6 +4,8 @@ import logging
 import threading
 import time
 
+import example_utils
+
 from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
@@ -21,7 +23,6 @@ from hyperliquid.utils.types import (
     UserEventsMsg,
     UserEventsSubscription,
 )
-import example_utils
 
 # How far from the best bid and offer this strategy ideally places orders. Currently set to .3%
 # i.e. if the best bid is $1000, this strategy will place a resting bid at $997

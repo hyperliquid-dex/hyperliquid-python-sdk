@@ -1,6 +1,7 @@
+import example_utils
+
 from hyperliquid.utils import constants
 from hyperliquid.utils.types import Cloid
-import example_utils
 
 
 def main():

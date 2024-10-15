@@ -69,6 +69,12 @@ make install
 <summary>Codestyle</summary>
 <p>
 
+Install pre-commit hooks which will run isort, black and codestyle on your code:
+
+```bash
+make pre-commit-install
+```
+
 Automatic formatting uses `pyupgrade`, `isort` and `black`.
 
 ```bash
