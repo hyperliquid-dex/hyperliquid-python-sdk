@@ -26,7 +26,7 @@ pip install hyperliquid-python-sdk
 - See the example of loading the config in examples/example_utils.py
 
 ### [Optional] Generate a new API key for an API Wallet
-Generate and authorize a new API private key on https://app.hyperliquid.xyz/API, and use the public key and private here instead of your main wallet keys.
+Generate and authorize a new API private key on https://app.hyperliquid.xyz/API, and set the API wallet's private key as the `secret_key` in examples/config.json. Note that you must still set the public key of the main wallet *not* the API wallet as the `account_address` in examples/config.json
 
 ## Usage Examples
 ```python
