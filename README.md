@@ -69,10 +69,10 @@ make install
 <summary>Codestyle</summary>
 <p>
 
-Add git pre-push hook to run codestyle checks:
+Install pre-commit hooks which will run isort, black and codestyle on your code:
 
-```
-git config --local core.hooksPath githooks
+```bash
+make pre-commit-install
 ```
 
 Automatic formatting uses `pyupgrade`, `isort` and `black`.
