@@ -1,6 +1,7 @@
+import example_utils
+
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
-import example_utils
 
 
 def main():

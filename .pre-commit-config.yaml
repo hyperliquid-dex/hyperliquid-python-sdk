@@ -34,3 +34,11 @@ repos:
         entry: poetry run black --config pyproject.toml
         types: [python]
         language: system
+
+  - repo: local
+    hooks:
+      - id: codestyle
+        name: codestyle
+        entry: make codestyle
+        types: [python]
+        language: system

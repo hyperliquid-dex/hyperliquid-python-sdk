@@ -1,7 +1,8 @@
 import argparse
 
-from hyperliquid.utils import constants
 import example_utils
+
+from hyperliquid.utils import constants
 
 
 def main():

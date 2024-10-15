@@ -9,8 +9,9 @@ You can find the szDecimals for an asset by making a meta request to the info en
 """
 import json
 
-from hyperliquid.utils import constants
 import example_utils
+
+from hyperliquid.utils import constants
 
 
 def main():

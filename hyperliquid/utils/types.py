@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, Callable, Dict, List, Literal, NamedTuple, Optional, Tuple, TypedDict, Union, cast
 from typing_extensions import NotRequired
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union, cast, Literal, TypedDict
 
 Any = Any
 Option = Optional
