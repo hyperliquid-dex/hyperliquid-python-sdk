@@ -91,6 +91,19 @@ class Exchange(API):
         cloid: Optional[Cloid] = None,
         builder: Optional[BuilderInfo] = None,
     ) -> Any:
+        """
+        Places a single order.
+
+        Args:
+            name (str): The name of the asset to trade (not the asset ID).
+            is_buy (bool): True for a buy order, False for a sell order.
+            sz (float): The size of the order.
+            limit_px (float): The limit price for the order.
+            order_type (OrderType): The type of order (e.g., limit, market) along with the trigger.
+            reduce_only (bool, optional): If True, the order will only reduce an existing position. Defaults to False.
+            cloid (Optional[Cloid], optional): Client order ID. Defaults to None.
+            builder (Optional[BuilderInfo], optional): Information about the builder. Defaults to None.
+        """
         order: OrderRequest = {
             "coin": name,
             "is_buy": is_buy,
@@ -104,6 +117,16 @@ class Exchange(API):
         return self.bulk_orders([order], builder)
 
     def bulk_orders(self, order_requests: List[OrderRequest], builder: Optional[BuilderInfo] = None) -> Any:
+        """
+        Place multiple orders in a single transaction.
+
+        Args:
+            order_requests (List[OrderRequest]): A list of order requests to be placed.
+            builder (Optional[BuilderInfo], optional): Information about the builder. Defaults to None.
+
+        Note:
+            This function allows for more efficient placement of multiple orders compared to individual order calls.
+        """
         order_wires: List[OrderWire] = [
             order_request_to_order_wire(order, self.info.name_to_asset(order["coin"])) for order in order_requests
         ]
@@ -136,6 +159,22 @@ class Exchange(API):
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
     ) -> Any:
+        """
+        Modify an existing order.
+
+        Args:
+            oid (OidOrCloid): The order ID or client order ID of the order to modify.
+            name (str): The name of the asset being traded.
+            is_buy (bool): True for a buy order, False for a sell order.
+            sz (float): The new size of the order.
+            limit_px (float): The new limit price for the order.
+            order_type (OrderType): The new type of order (e.g., limit, market).
+            reduce_only (bool, optional): If True, the order will only reduce an existing position. Defaults to False.
+            cloid (Optional[Cloid], optional): New client order ID. Defaults to None.
+
+        Note:
+            This function is a wrapper around bulk_modify_orders_new for modifying a single order.
+        """
         modify: ModifyRequest = {
             "oid": oid,
             "order": {
@@ -151,6 +190,15 @@ class Exchange(API):
         return self.bulk_modify_orders_new([modify])
 
     def bulk_modify_orders_new(self, modify_requests: List[ModifyRequest]) -> Any:
+        """
+        Modify multiple existing orders in a single transaction.
+
+        Args:
+            modify_requests (List[ModifyRequest]): A list of modification requests for existing orders.
+
+        Note:
+            This function allows for more efficient modification of multiple orders compared to individual modify calls.
+        """
         timestamp = get_timestamp_ms()
         modify_wires = [
             {
@@ -234,12 +282,43 @@ class Exchange(API):
             )
 
     def cancel(self, name: str, oid: int) -> Any:
+        """
+        Cancel a single order.
+
+        Args:
+            name (str): The name of the asset for which the order was placed.
+            oid (int): The order ID of the order to be cancelled.
+
+        Note:
+            This function is a wrapper around bulk_cancel for cancelling a single order.
+        """
         return self.bulk_cancel([{"coin": name, "oid": oid}])
 
     def cancel_by_cloid(self, name: str, cloid: Cloid) -> Any:
+        """
+        Cancel a single order using the client order ID.
+
+        Args:
+            name (str): The name of the asset for which the order was placed.
+            cloid (Cloid): The client order ID of the order to be cancelled.
+
+        Note:
+            This function is a wrapper around bulk_cancel_by_cloid for cancelling a single order.
+        """
         return self.bulk_cancel_by_cloid([{"coin": name, "cloid": cloid}])
 
     def bulk_cancel(self, cancel_requests: List[CancelRequest]) -> Any:
+        """
+        Cancel multiple orders in a single transaction.
+
+        Args:
+            cancel_requests (List[CancelRequest]): A list of cancellation requests, each containing
+                                                   the asset name and order ID to be cancelled.
+
+        Note:
+            This function allows for more efficient cancellation of multiple orders compared to
+            individual cancel calls.
+        """
         timestamp = get_timestamp_ms()
         cancel_action = {
             "type": "cancel",
@@ -266,6 +345,18 @@ class Exchange(API):
         )
 
     def bulk_cancel_by_cloid(self, cancel_requests: List[CancelByCloidRequest]) -> Any:
+        """
+        Cancel multiple orders using client order IDs in a single transaction.
+
+        Args:
+            cancel_requests (List[CancelByCloidRequest]): A list of cancellation requests, each containing
+                                                         the asset name and client order ID to be cancelled.
+
+
+        Note:
+            This function allows for more efficient cancellation of multiple orders using client order IDs
+            compared to individual cancel calls.
+        """
         timestamp = get_timestamp_ms()
 
         cancel_action = {
@@ -293,12 +384,19 @@ class Exchange(API):
         )
 
     def schedule_cancel(self, time: Optional[int]) -> Any:
-        """Schedules a time (in UTC millis) to cancel all open orders. The time must be at least 5 seconds after the current time.
-        Once the time comes, all open orders will be canceled and a trigger count will be incremented. The max number of triggers
-        per day is 10. This trigger count is reset at 00:00 UTC.
+        """
+        Schedules a time (in UTC millis) to cancel all open orders.
 
         Args:
-            time (int): if time is not None, then set the cancel time in the future. If None, then unsets any cancel time in the future.
+            time (Optional[int]): If provided, sets the cancel time in the future (UTC milliseconds).
+                                  If None, unsets any previously scheduled cancel time.
+
+        Note:
+            - The scheduled time must be at least 5 seconds after the current time.
+            - Once the scheduled time arrives, all open orders will be canceled.
+            - A trigger count is incremented each time this action is executed.
+            - The maximum number of triggers per day is 10.
+            - The trigger count is reset at 00:00 UTC daily.
         """
         timestamp = get_timestamp_ms()
         schedule_cancel_action: ScheduleCancelAction = {
@@ -421,12 +519,12 @@ class Exchange(API):
 
     # Deprecated in favor of usd_class_transfer
     def user_spot_transfer(self, usdc: float, to_perp: bool) -> Any:
-        usdc = int(round(usdc, 2) * 1e6)
+        usdc_rounded_micros = int(round(usdc, 2) * 1e6)
         timestamp = get_timestamp_ms()
         spot_user_action = {
             "type": "spotUser",
             "classTransfer": {
-                "usdc": usdc,
+                "usdc": usdc_rounded_micros,
                 "toPerp": to_perp,
             },
         }
@@ -481,6 +579,18 @@ class Exchange(API):
         )
 
     def usd_transfer(self, amount: float, destination: str) -> Any:
+        """
+        Initiate a USD transfer to a specified destination address.
+
+        This function creates and signs a USD transfer action, then sends it for processing.
+
+        Args:
+            amount (float): The amount of USD to transfer.
+            destination (str): The destination address (EVM compatible) for the transfer.
+
+        Returns:
+            {'status': 'ok', 'response': {'type': 'default'}}
+        """
         timestamp = get_timestamp_ms()
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "usdSend"}
         is_mainnet = self.base_url == MAINNET_API_URL
@@ -492,6 +602,20 @@ class Exchange(API):
         )
 
     def spot_transfer(self, amount: float, destination: str, token: str) -> Any:
+        """
+        Initiate a spot transfer of a specific token to a specified destination address.
+
+        This function creates and signs a spot transfer action for a given token, then sends it
+        for processing.
+
+        Args:
+            amount (float): The amount of the token to transfer.
+            destination (str): The destination address (EVM compatible) for the transfer.
+            token (str): The identifier of the token to be transferred (e.g., "BTC", "ETH").
+
+        Returns:
+            {'status': 'ok', 'response': {'type': 'default'}}
+        """
         timestamp = get_timestamp_ms()
         action = {
             "destination": destination,
@@ -509,6 +633,18 @@ class Exchange(API):
         )
 
     def withdraw_from_bridge(self, amount: float, destination: str) -> Any:
+        """
+        Initiate a withdrawal from the Hyperliquid bridge to a specified destination.
+
+        Args:
+            amount (float): The amount to withdraw. This should be in the base unit of the asset
+                             (e.g., USDC for USD-based withdrawals).
+            destination (str): The destination address for the withdrawal. This should be a valid
+                               EVM address.
+
+        Returns:
+            {'status': 'ok', 'response': {'type': 'default'}}
+        """
         timestamp = get_timestamp_ms()
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "withdraw3"}
         is_mainnet = self.base_url == MAINNET_API_URL
@@ -520,6 +656,24 @@ class Exchange(API):
         )
 
     def approve_agent(self, name: Optional[str] = None) -> Tuple[Any, str]:
+        """Approve a new agent for the user's account and generate a new agent key.
+
+        Creates a new agent with a randomly generated key, approves it for use with
+        the user's account, and returns both the approval response and the new agent's private key.
+
+        Args:
+            name (Optional[str], optional): A name for the agent. If not provided, an empty string will be used.
+
+        Returns:
+            Tuple[Any, str]: A tuple containing two elements:
+                - Any: {'status': 'ok', 'response': {'type': 'default'}}
+                - str: The newly generated agent's private key as a hexadecimal string.
+
+        Note:
+            - The generated agent key is a 32-byte random value, represented as a 64-character hexadecimal string.
+            - The agent's Ethereum address is derived from this key and included in the approval action.
+            - If no name is provided, the 'agentName' field will be omitted from the approval action.
+        """
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
         timestamp = get_timestamp_ms()
@@ -544,6 +698,12 @@ class Exchange(API):
         )
 
     def approve_builder_fee(self, builder: str, max_fee_rate: str) -> Any:
+        """Approve a maximum fee rate for a builder.
+
+        Args:
+            builder (str): address in 42-character hexadecimal format
+            max_fee_rate (str): the maximum allowed builder fee rate as a percent string; e.g. "0.001%"
+        """
         timestamp = get_timestamp_ms()
 
         action = {"maxFeeRate": max_fee_rate, "builder": builder, "nonce": timestamp, "type": "approveBuilderFee"}
