@@ -1,3 +1,4 @@
+import json
 import logging
 import secrets
 
@@ -27,6 +28,8 @@ from hyperliquid.utils.signing import (
     sign_usd_class_transfer_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
+    sign_convert_to_multi_sig_user_action,
+    sign_convert_to_multi_sig_signer_action,
 )
 from hyperliquid.utils.types import Any, BuilderInfo, Cloid, List, Meta, Optional, SpotMeta, Tuple
 
@@ -549,3 +552,58 @@ class Exchange(API):
         action = {"maxFeeRate": max_fee_rate, "builder": builder, "nonce": timestamp, "type": "approveBuilderFee"}
         signature = sign_approve_builder_fee(self.wallet, action, self.base_url == MAINNET_API_URL)
         return self._post_action(action, signature, timestamp)
+
+    def convert_to_multi_sig_user(self, authorized_users: List[str], threshold: int) -> Any:
+        timestamp = get_timestamp_ms()
+        authorized_users = sorted(authorized_users)
+        signers = {
+            "authorizedUsers": authorized_users,
+            "threshold": threshold,
+        }
+        action = {
+            "type": "convertToMultiSigUser",
+            "signers": json.dumps(signers),
+            "nonce": timestamp,
+        }
+        signature = sign_convert_to_multi_sig_user_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def convert_to_multi_sig_signer(self, signer: str, multi_sig_user: str) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "convertToMultiSigUser",
+            "signer": signer,
+            "multi_sig_user": multi_sig_user,
+            "nonce": timestamp,
+        }
+        signature = sign_convert_to_multi_sig_signer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
+        multi_sig_action = {
+            "type": "multiSig",
+            "user": multi_sig_user.lower(),
+            "signatures": signatures,
+            "inner": inner_action,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            multi_sig_action,
+            vault_address,
+            nonce,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            multi_sig_action,
+            signature,
+            nonce,
+        )

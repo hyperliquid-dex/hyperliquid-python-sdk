@@ -222,6 +222,35 @@ def sign_usd_class_transfer_action(wallet, action, is_mainnet):
     )
 
 
+def sign_convert_to_multi_sig_user_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "signers", "type": "string"},
+            {"name": "nonce", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:ConvertToMultiSigUser",
+        is_mainnet,
+    )
+
+
+def sign_convert_to_multi_sig_signer_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "signer", "type": "address"},
+            {"name": "multiSigUser", "type": "address"},
+            {"name": "nonce", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:ConvertToMultiSigSigner",
+        is_mainnet,
+    )
+
+
 def sign_agent(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,

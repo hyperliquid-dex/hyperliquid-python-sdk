@@ -30,3 +30,18 @@ def setup(base_url=None, skip_ws=False):
         raise Exception(error_string)
     exchange = Exchange(account, base_url, account_address=address)
     return address, info, exchange
+
+
+def setup_multi_sig_wallets():
+    config_path = os.path.join(os.path.dirname(__file__), "multi_sig_wallets.json")
+    with open(config_path) as f:
+        config = json.load(f)
+    wallets = []
+    for wallet_config in config:
+        account: LocalAccount = eth_account.Account.from_key(wallet_config["secret_key"])
+        address = wallet_config["account_address"]
+        if account.address != address:
+            raise Exception(f"provided signer address {address} does not match private key")
+        print("loaded multi-sig signer", address)
+        wallets.append(account)
+    return wallets
