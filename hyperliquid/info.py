@@ -195,8 +195,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
-            start_time_ms (int): Unix timestamp in milliseconds
-            end_time_ms (Optional[int]): Unix timestamp in milliseconds
+            startTime (int): Unix timestamp in milliseconds
+            endTime (Optional[int]): Unix timestamp in milliseconds
 
         Returns:
             [
