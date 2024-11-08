@@ -187,6 +187,37 @@ class Info(API):
         """
         return self.post("/info", {"type": "userFills", "user": address})
 
+    def user_fills_by_time(self, address: str, startTime: int, endTime: Optional[int] = None) -> Any:
+        """Retrieve a given user's fills by time.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+            start_time_ms (int): Unix timestamp in milliseconds
+            end_time_ms (Optional[int]): Unix timestamp in milliseconds
+
+        Returns:
+            [
+              {
+                closedPnl: float string,
+                coin: str,
+                crossed: bool,
+                dir: str,
+                hash: str,
+                oid: int,
+                px: float string,
+                side: str,
+                startPosition: float string,
+                sz: float string,
+                time: int
+              },
+              ...
+            ]
+        """
+        return self.post("/info", {"type": "userFillsByTime", "user": address, "startTime": startTime, "endTime": endTime})
+
     def meta(self) -> Meta:
         """Retrieve exchange perp metadata
 
