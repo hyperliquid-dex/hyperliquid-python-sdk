@@ -106,7 +106,7 @@ def test_user_funding_history_with_end_time():
         assert "time" in record, "There must be a key 'time'"
         delta = record["delta"]
         for key in ["coin", "fundingRate", "szi", "type", "usdc"]:
-            assert key in delta, f"В 'delta' There must be a key '{key}'"
+            assert key in delta, f"There must be a key '{key}' in 'delta'"
         assert delta["type"] == "funding", "The type must be 'funding'"
 
 
@@ -121,5 +121,5 @@ def test_user_funding_history_without_end_time():
         assert "time" in record, "There must be a key 'time'"
         delta = record["delta"]
         for key in ["coin", "fundingRate", "szi", "type", "usdc"]:
-            assert key in delta, f"В 'delta' There must be a '{key}'"
+            assert key in delta, f"There must be a key '{key}' in 'delta'"
         assert delta["type"] == "funding", "The type must be 'funding'"
