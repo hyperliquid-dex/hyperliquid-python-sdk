@@ -48,6 +48,14 @@ def test_get_user_fills():
 
 
 @pytest.mark.vcr()
+def test_get_user_fills_by_time():
+    info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
+    response = info.user_fills_by_time("0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2", start_time=1683245555699, end_time=1683245884863)
+    assert isinstance(response, list)
+    assert len(response) == 500
+
+
+@pytest.mark.vcr()
 def test_get_info():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
     response = info.meta()
