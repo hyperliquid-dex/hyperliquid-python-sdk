@@ -37,7 +37,7 @@ info = Info(constants.TESTNET_API_URL, skip_ws=True)
 user_state = info.user_state("0xcd5051944f780a621ee62e39e493c489668acf4d")
 print(user_state)
 ```
-See [examples](examples) for more complete examples. You can also checkout the repo and run any of the examples after configuring your private key e.g. 
+See [examples](examples) for more complete examples. You can also check out the repo and run any of the examples after configuring your private key e.g. 
 ```bash
 cp examples/config.json.example examples/config.json
 vim examples/config.json
