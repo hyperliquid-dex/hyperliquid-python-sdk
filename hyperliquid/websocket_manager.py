@@ -186,25 +186,31 @@ class WebsocketManager(threading.Thread):
         try:
             msg = orjson.loads(message)
             
-            # Handle post responses
-            if isinstance(msg, dict) and msg.get("channel") == "post":
-                data = msg.get("data", {})
-                request_id = data.get("id")
+            # Handle post responses and pong messages first
+            if isinstance(msg, dict):
+                if msg.get("channel") == "post":
+                    data = msg.get("data", {})
+                    request_id = data.get("id")
+                    
+                    if request_id in self._request_callbacks:
+                        callback = self._request_callbacks.pop(request_id)
+                        response = data.get("response", {})
+                        callback(response)
+                        self.logger.debug(f"Processed response for request ID {request_id}")
                 
-                if request_id in self._request_callbacks:
-                    callback = self._request_callbacks.pop(request_id)
-                    response = data.get("response", {})
-                    callback(response)
-                    self.logger.debug(f"Processed response for request ID {request_id}")
+                elif msg.get("channel") == "pong":
+                    self.last_pong_time = time.time()
+                    self.logger.debug("Received pong response")
             
-            # Handle pong messages
-            elif msg.get("channel") == "pong":
-                self.last_pong_time = time.time()
-                self.logger.debug("Received pong response")
+            # Original message handling for subscriptions
+            if isinstance(msg, dict) and msg.get("channel") in self.callbacks:
+                self.callbacks[msg["channel"]](msg)
+                
         except orjson.JSONDecodeError:
-            pass
-        
-        super().on_message(ws, message)
+            self.logger.warning("Failed to decode websocket message")
+        except Exception as e:
+            self.logger.error(f"Error processing websocket message: {str(e)}")
+            sentry_sdk.capture_exception(e)
 
     def send_signed_request(self, action_payload, callback=None):
         """Send signed request implementation"""
