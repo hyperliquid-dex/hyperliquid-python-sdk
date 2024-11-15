@@ -20,10 +20,16 @@ class Info(API):
         skip_ws: Optional[bool] = False,
         meta: Optional[Meta] = None,
         spot_meta: Optional[SpotMeta] = None,
+        wallet_label: Optional[str] = None,
+        wallet_group: Optional[str] = None,
     ):
         super().__init__(base_url)
         if not skip_ws:
-            self.ws_manager = WebsocketManager(self.base_url)
+            self.ws_manager = WebsocketManager(
+                self.base_url,
+                wallet_label=wallet_label,
+                wallet_group=wallet_group
+            )
             self.ws_manager.start()
         if meta is None:
             meta = self.meta()
@@ -527,3 +533,8 @@ class Info(API):
 
     def name_to_asset(self, name: str) -> int:
         return self.coin_to_asset[self.name_to_coin[name]]
+
+    def cleanup(self):
+        """Clean shutdown of websocket manager"""
+        if hasattr(self, 'ws_manager'):
+            self.ws_manager.stop()
