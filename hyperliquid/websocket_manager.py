@@ -182,7 +182,6 @@ class WebsocketManager(threading.Thread):
                 return
 
     def on_message(self, _ws, message):
-        # Handle connection message
         if message == "Websocket connection established.":
             self.logger.debug(message)
             return
@@ -190,28 +189,28 @@ class WebsocketManager(threading.Thread):
         self.logger.debug(f"on_message {message}")
         
         try:
-            ws_msg = orjson.loads(message)
-            
-            # Handle our new post responses and pong tracking
-            if isinstance(ws_msg, dict):
-                if ws_msg.get("channel") == "post":
-                    data = ws_msg.get("data", {})
-                    request_id = data.get("id")
-                    
-                    if request_id in self._request_callbacks:
-                        callback = self._request_callbacks.pop(request_id)
-                        response = data.get("response", {})
-                        callback(response)
-                        self.logger.debug(f"Processed response for request ID {request_id}")
-                    return
+            ws_msg: WsMsg = orjson.loads(message)
+            identifier = ws_msg_to_identifier(ws_msg)
+
+            # Handle pong (original logic first)
+            if identifier == "pong":
+                self.last_pong_time = time.time()
+                self.logger.debug("Websocket received pong")
+                return
+
+            # Handle our new post responses
+            if isinstance(ws_msg, dict) and ws_msg.get("channel") == "post":
+                data = ws_msg.get("data", {})
+                request_id = data.get("id")
                 
-                elif ws_msg.get("channel") == "pong":
-                    self.last_pong_time = time.time()
-                    self.logger.debug("Websocket received pong")
-                    return
+                if request_id in self._request_callbacks:
+                    callback = self._request_callbacks.pop(request_id)
+                    response = data.get("response", {})
+                    callback(response)
+                    self.logger.debug(f"Processed response for request ID {request_id}")
+                return
 
             # Original message handling
-            identifier = ws_msg_to_identifier(ws_msg)
             if identifier is None:
                 self.logger.debug("Websocket not handling empty message")
                 return
@@ -222,7 +221,7 @@ class WebsocketManager(threading.Thread):
             else:
                 for active_subscription in active_subscriptions:
                     active_subscription.callback(ws_msg)
-                
+
         except orjson.JSONDecodeError:
             self.logger.warning("Failed to decode websocket message")
         except Exception as e:
