@@ -181,15 +181,21 @@ class WebsocketManager(threading.Thread):
                 self.stop()
                 return
 
-    def on_message(self, ws, message):
-        """Enhanced message handler"""
+    def on_message(self, _ws, message):
+        # Handle connection message
+        if message == "Websocket connection established.":
+            self.logger.debug(message)
+            return
+
+        self.logger.debug(f"on_message {message}")
+        
         try:
-            msg = orjson.loads(message)
+            ws_msg = orjson.loads(message)
             
-            # Handle post responses and pong messages first
-            if isinstance(msg, dict):
-                if msg.get("channel") == "post":
-                    data = msg.get("data", {})
+            # Handle our new post responses and pong tracking
+            if isinstance(ws_msg, dict):
+                if ws_msg.get("channel") == "post":
+                    data = ws_msg.get("data", {})
                     request_id = data.get("id")
                     
                     if request_id in self._request_callbacks:
@@ -197,14 +203,25 @@ class WebsocketManager(threading.Thread):
                         response = data.get("response", {})
                         callback(response)
                         self.logger.debug(f"Processed response for request ID {request_id}")
+                    return
                 
-                elif msg.get("channel") == "pong":
+                elif ws_msg.get("channel") == "pong":
                     self.last_pong_time = time.time()
-                    self.logger.debug("Received pong response")
+                    self.logger.debug("Websocket received pong")
+                    return
+
+            # Original message handling
+            identifier = ws_msg_to_identifier(ws_msg)
+            if identifier is None:
+                self.logger.debug("Websocket not handling empty message")
+                return
             
-            # Original message handling for subscriptions
-            if isinstance(msg, dict) and msg.get("channel") in self.callbacks:
-                self.callbacks[msg["channel"]](msg)
+            active_subscriptions = self.active_subscriptions[identifier]
+            if len(active_subscriptions) == 0:
+                print("Websocket message from an unexpected subscription:", message, identifier)
+            else:
+                for active_subscription in active_subscriptions:
+                    active_subscription.callback(ws_msg)
                 
         except orjson.JSONDecodeError:
             self.logger.warning("Failed to decode websocket message")
