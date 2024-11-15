@@ -19,7 +19,7 @@ class API:
     def post(self, url_path: str, payload: Any = None) -> Any:
         payload = payload or {}
         url = self.base_url + url_path
-        response = self.session.post(url, json=payload)
+        response = self.session.post(url, json=payload, timeout=10)
         self._handle_exception(response)
         try:
             return response.json()
