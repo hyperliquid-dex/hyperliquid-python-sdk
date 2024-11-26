@@ -74,6 +74,47 @@ ScheduleCancelAction = TypedDict(
     },
 )
 
+USD_SEND_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "destination", "type": "string"},
+    {"name": "amount", "type": "string"},
+    {"name": "time", "type": "uint64"},
+]
+
+SPOT_TRANSFER_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "destination", "type": "string"},
+    {"name": "token", "type": "string"},
+    {"name": "amount", "type": "string"},
+    {"name": "time", "type": "uint64"},
+]
+
+WITHDRAW_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "destination", "type": "string"},
+    {"name": "amount", "type": "string"},
+    {"name": "time", "type": "uint64"},
+]
+
+USD_CLASS_TRANSFER_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "amount", "type": "string"},
+    {"name": "toPerp", "type": "bool"},
+    {"name": "nonce", "type": "uint64"},
+]
+
+CONVERT_TO_MULTI_SIG_USER_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "signers", "type": "string"},
+    {"name": "nonce", "type": "uint64"},
+]
+
+MULTI_SIG_ENVELOPE_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "multiSigActionHash", "type": "bytes32"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 
 def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     if "limit" in order_type:
@@ -161,16 +202,71 @@ def sign_user_signed_action(wallet, action, payload_types, primary_type, is_main
     return sign_inner(wallet, data)
 
 
+def add_multi_sig_types(sign_types):
+    enriched_sign_types = []
+    enriched = False
+    for sign_type in sign_types:
+        enriched_sign_types.append(sign_type)
+        if sign_type["name"] == "hyperliquidChain":
+            enriched = True
+            enriched_sign_types.append(
+                {
+                    "name": "payloadMultiSigUser",
+                    "type": "address",
+                }
+            )
+            enriched_sign_types.append(
+                {
+                    "name": "outerSigner",
+                    "type": "address",
+                }
+            )
+    if not enriched:
+        print('"hyperliquidChain" missing from sign_types. sign_types was not enriched with multi-sig signing types')
+    return enriched_sign_types
+
+
+def add_multi_sig_fields(action, payload_multi_sig_user, outer_signer):
+    action = action.copy()
+    action["payloadMultiSigUser"] = payload_multi_sig_user.lower()
+    action["outerSigner"] = outer_signer.lower()
+    return action
+
+
+def sign_multi_sig_inner(wallet, action, is_mainnet, sign_types, tx_type, payload_multi_sig_user, outer_signer):
+    envelope = add_multi_sig_fields(action, payload_multi_sig_user, outer_signer)
+    sign_types = add_multi_sig_types(sign_types)
+    return sign_user_signed_action(
+        wallet,
+        envelope,
+        sign_types,
+        tx_type,
+        is_mainnet,
+    )
+
+
+def sign_multi_sig_action(wallet, action, is_mainnet, vault_address, nonce):
+    action_without_tag = action.copy()
+    del action_without_tag["type"]
+    multi_sig_action_hash = action_hash(action_without_tag, vault_address, nonce)
+    envelope = {
+        "multiSigActionHash": multi_sig_action_hash,
+        "nonce": nonce,
+    }
+    return sign_user_signed_action(
+        wallet,
+        envelope,
+        MULTI_SIG_ENVELOPE_SIGN_TYPES,
+        "HyperliquidTransaction:SendMultiSig",
+        is_mainnet,
+    )
+
+
 def sign_usd_transfer_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "destination", "type": "string"},
-            {"name": "amount", "type": "string"},
-            {"name": "time", "type": "uint64"},
-        ],
+        USD_SEND_SIGN_TYPES,
         "HyperliquidTransaction:UsdSend",
         is_mainnet,
     )
@@ -180,13 +276,7 @@ def sign_spot_transfer_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "destination", "type": "string"},
-            {"name": "token", "type": "string"},
-            {"name": "amount", "type": "string"},
-            {"name": "time", "type": "uint64"},
-        ],
+        SPOT_TRANSFER_SIGN_TYPES,
         "HyperliquidTransaction:SpotSend",
         is_mainnet,
     )
@@ -196,12 +286,7 @@ def sign_withdraw_from_bridge_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "destination", "type": "string"},
-            {"name": "amount", "type": "string"},
-            {"name": "time", "type": "uint64"},
-        ],
+        WITHDRAW_SIGN_TYPES,
         "HyperliquidTransaction:Withdraw",
         is_mainnet,
     )
@@ -211,12 +296,7 @@ def sign_usd_class_transfer_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "amount", "type": "string"},
-            {"name": "toPerp", "type": "bool"},
-            {"name": "nonce", "type": "uint64"},
-        ],
+        USD_CLASS_TRANSFER_SIGN_TYPES,
         "HyperliquidTransaction:UsdClassTransfer",
         is_mainnet,
     )
@@ -226,27 +306,8 @@ def sign_convert_to_multi_sig_user_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "signers", "type": "string"},
-            {"name": "nonce", "type": "uint64"},
-        ],
+        CONVERT_TO_MULTI_SIG_USER_SIGN_TYPES,
         "HyperliquidTransaction:ConvertToMultiSigUser",
-        is_mainnet,
-    )
-
-
-def sign_convert_to_multi_sig_signer_action(wallet, action, is_mainnet):
-    return sign_user_signed_action(
-        wallet,
-        action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "signer", "type": "address"},
-            {"name": "multiSigUser", "type": "address"},
-            {"name": "nonce", "type": "uint64"},
-        ],
-        "HyperliquidTransaction:ConvertToMultiSigSigner",
         is_mainnet,
     )
 

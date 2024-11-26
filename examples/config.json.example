@@ -5,7 +5,24 @@
         If you are using an Agent/API Wallet you MUST also specify the public address of your account, not the
         address of the Agent/API Wallet.
         Otherwise, feel free to leave it blank and it will be automatically derived from the secret key.
+
+        You can also populate the "multi_sig" section with the secret keys of the authorized user wallets that you
+        wish to sign multi-sig actions for.
     ",
     "secret_key": "",
-    "account_address": ""
+    "account_address": "",
+    "multi_sig": {
+        "authorized_users": [
+            {
+                "comment": "signer 1",
+                "secret_key": "",
+                "account_address": ""
+            },
+            {
+                "comment": "signer 2",
+                "secret_key": "",
+                "account_address": ""
+            }
+        ]
+    }
 }

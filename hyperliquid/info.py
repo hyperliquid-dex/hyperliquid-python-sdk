@@ -216,7 +216,9 @@ class Info(API):
               ...
             ]
         """
-        return self.post("/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time})
+        return self.post(
+            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
+        )
 
     def meta(self) -> Meta:
         """Retrieve exchange perp metadata
@@ -505,9 +507,6 @@ class Info(API):
 
     def query_user_to_multi_sig_signers(self, multi_sig_user: str) -> Any:
         return self.post("/info", {"type": "userToMultiSigSigners", "user": multi_sig_user})
-
-    def query_signer_to_multi_sig_user(self, signer: str) -> Any:
-        return self.post("/info", {"type": "signerToMultiSigUser", "signer": signer})
 
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if subscription["type"] == "l2Book" or subscription["type"] == "trades" or subscription["type"] == "candle":

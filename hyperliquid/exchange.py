@@ -29,7 +29,7 @@ from hyperliquid.utils.signing import (
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
     sign_convert_to_multi_sig_user_action,
-    sign_convert_to_multi_sig_signer_action,
+    sign_multi_sig_action,
 )
 from hyperliquid.utils.types import Any, BuilderInfo, Cloid, List, Meta, Optional, SpotMeta, Tuple
 
@@ -112,6 +112,8 @@ class Exchange(API):
         ]
         timestamp = get_timestamp_ms()
 
+        if builder:
+            builder["b"] = builder["b"].lower()
         order_action = order_wires_to_order_action(order_wires, builder)
 
         signature = sign_l1_action(
@@ -572,36 +574,26 @@ class Exchange(API):
             timestamp,
         )
 
-    def convert_to_multi_sig_signer(self, signer: str, multi_sig_user: str) -> Any:
-        timestamp = get_timestamp_ms()
-        action = {
-            "type": "convertToMultiSigUser",
-            "signer": signer,
-            "multi_sig_user": multi_sig_user,
-            "nonce": timestamp,
-        }
-        signature = sign_convert_to_multi_sig_signer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
-        return self._post_action(
-            action,
-            signature,
-            timestamp,
-        )
-
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
+        multi_sig_user = multi_sig_user.lower()
         multi_sig_action = {
             "type": "multiSig",
-            "user": multi_sig_user.lower(),
+            "signatureChainId": "0x66eee",
             "signatures": signatures,
-            "inner": inner_action,
+            "payload": {
+                "multiSigUser": multi_sig_user,
+                "outerSigner": self.wallet.address.lower(),
+                "action": inner_action,
+            },
         }
-        signature = sign_l1_action(
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_multi_sig_action(
             self.wallet,
             multi_sig_action,
+            is_mainnet,
             vault_address,
             nonce,
-            self.base_url == MAINNET_API_URL,
         )
-
         return self._post_action(
             multi_sig_action,
             signature,

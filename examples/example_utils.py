@@ -33,15 +33,16 @@ def setup(base_url=None, skip_ws=False):
 
 
 def setup_multi_sig_wallets():
-    config_path = os.path.join(os.path.dirname(__file__), "multi_sig_wallets.json")
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
     with open(config_path) as f:
         config = json.load(f)
-    wallets = []
-    for wallet_config in config:
+
+    authorized_user_wallets = []
+    for wallet_config in config["multi_sig"]["authorized_users"]:
         account: LocalAccount = eth_account.Account.from_key(wallet_config["secret_key"])
         address = wallet_config["account_address"]
         if account.address != address:
-            raise Exception(f"provided signer address {address} does not match private key")
-        print("loaded multi-sig signer", address)
-        wallets.append(account)
-    return wallets
+            raise Exception(f"provided authorized user address {address} does not match private key")
+        print("loaded authorized user for multi-sig", address)
+        authorized_user_wallets.append(account)
+    return authorized_user_wallets
