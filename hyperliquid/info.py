@@ -526,3 +526,8 @@ class Info(API):
 
     def name_to_asset(self, name: str) -> int:
         return self.coin_to_asset[self.name_to_coin[name]]
+
+    def close(self):
+        if not hasattr(self, "ws_manager") or self.ws_manager is None:
+            return
+        self.ws_manager.stop()
