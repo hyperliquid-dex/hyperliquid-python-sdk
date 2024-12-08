@@ -69,17 +69,25 @@ class WebsocketManager(threading.Thread):
         ws_url = "ws" + base_url[len("http") :] + "/ws"
         self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
         self.ping_sender = threading.Thread(target=self.send_ping)
+        self.stop_event = threading.Event()
 
     def run(self):
         self.ws.run_forever()
         self.ping_sender.start()
 
     def send_ping(self):
-        while self.ws.run_forever:
-            time.sleep(50)
+        while not self.stop_event.wait(50):
+            if not self.ws.keep_running:
+                break
             logging.debug("Websocket sending ping")
             self.ws.send(json.dumps({"method": "ping"}))
         logging.debug("Websocket ping sender stopped")
+
+    def stop(self):
+        self.stop_event.set()
+        self.ws.close()
+        if self.ping_sender.is_alive():
+            self.ping_sender.join()
 
     def on_message(self, _ws, message):
         if message == "Websocket connection established.":
@@ -137,8 +145,3 @@ class WebsocketManager(threading.Thread):
             self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
         self.active_subscriptions[identifier] = new_active_subscriptions
         return len(active_subscriptions) != len(new_active_subscriptions)
-
-    def stop(self):
-        if not self.ws.keep_running:
-            return
-        self.ws.close()
