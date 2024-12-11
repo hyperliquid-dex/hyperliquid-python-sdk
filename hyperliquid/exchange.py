@@ -424,30 +424,6 @@ class Exchange(API):
             timestamp,
         )
 
-    # Deprecated in favor of usd_class_transfer
-    def user_spot_transfer(self, usdc: float, to_perp: bool) -> Any:
-        usdc = int(round(usdc, 2) * 1e6)
-        timestamp = get_timestamp_ms()
-        spot_user_action = {
-            "type": "spotUser",
-            "classTransfer": {
-                "usdc": usdc,
-                "toPerp": to_perp,
-            },
-        }
-        signature = sign_l1_action(
-            self.wallet,
-            spot_user_action,
-            self.vault_address,
-            timestamp,
-            self.base_url == MAINNET_API_URL,
-        )
-        return self._post_action(
-            spot_user_action,
-            signature,
-            timestamp,
-        )
-
     def sub_account_transfer(self, sub_account_user: str, is_deposit: bool, usd: int) -> Any:
         timestamp = get_timestamp_ms()
         sub_account_transfer_action = {
