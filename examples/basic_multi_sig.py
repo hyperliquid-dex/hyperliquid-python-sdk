@@ -1,7 +1,8 @@
-from hyperliquid.utils import constants
-from hyperliquid.utils.signing import get_timestamp_ms, sign_multi_sig_inner, USD_SEND_SIGN_TYPES
-from hyperliquid.utils.types import Any, List
 import example_utils
+
+from hyperliquid.utils import constants
+from hyperliquid.utils.signing import USD_SEND_SIGN_TYPES, get_timestamp_ms, sign_multi_sig_inner
+from hyperliquid.utils.types import Any, List
 
 
 def main():
