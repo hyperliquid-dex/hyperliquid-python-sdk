@@ -24,15 +24,35 @@ from hyperliquid.utils.types import (
 )
 
 # --------------------------- CONFIGURATION ---------------------------
-DEPTH = 0.003                    # Depth from the best bid/offer to place orders
-ALLOWABLE_DEVIATION = 0.5        # Deviation allowed before replacing the order
-MAX_POSITION = 1.0               # Maximum position to hold in units of the coin
-COIN = "ETH"                     # Coin to add liquidity on
-POLL_INTERVAL = 10               # Interval for polling in seconds
-ORDER_TIMEOUT = 10000            # Timeout for in-flight orders in milliseconds
-CANCEL_CLEANUP_TIME = 30000      # Cleanup time for cancelled orders in milliseconds
+
+# How far from the best bid and offer this strategy ideally places orders. Currently set to 0.3%.
+# i.e., if the best bid is $1000, this strategy will place a resting bid at $997 (1000 - 0.3% of 1000).
+DEPTH = 0.003
+
+# How far from the target price a resting order can deviate before the strategy will cancel and replace it.
+# i.e., using the same example as above of a best bid of $1000 and targeted depth of 0.3% (a $3 difference).
+# Bids within $3 * 0.5 = $1.5 of the ideal price will not be cancelled. Therefore, any bids > $998.5 or < $995.5
+# will be cancelled and replaced.
+ALLOWABLE_DEVIATION = 0.5
+
+# The maximum absolute position value the strategy can accumulate in units of the coin.
+# i.e., the strategy will place orders such that it can long up to 1 ETH or short up to 1 ETH.
+MAX_POSITION = 1.0
+
+# The coin to add liquidity on.
+COIN = "ETH"
+
+# The interval (in seconds) at which the polling function runs.
+POLL_INTERVAL = 10
+
+# The maximum time (in milliseconds) to wait for an in-flight order before treating it as cancelled.
+ORDER_TIMEOUT = 10000
+
+# The time (in milliseconds) to keep recently cancelled orders before cleaning them up.
+CANCEL_CLEANUP_TIME = 30000
 
 # --------------------------- TYPE DEFINITIONS ---------------------------
+
 InFlightOrder = TypedDict("InFlightOrder", {"type": Literal["in_flight_order"], "time": int})
 Resting = TypedDict("Resting", {"type": Literal["resting"], "px": float, "oid": int})
 Cancelled = TypedDict("Cancelled", {"type": Literal["cancelled"]})
@@ -40,10 +60,12 @@ ProvideState = Union[InFlightOrder, Resting, Cancelled]
 
 
 def side_to_int(side: Side) -> int:
+    """Convert side ('A' for Ask, 'B' for Bid) to an integer multiplier."""
     return 1 if side == "A" else -1
 
 
 def side_to_uint(side: Side) -> int:
+    """Convert side ('A' for Ask, 'B' for Bid) to an integer (0 or 1)."""
     return 1 if side == "A" else 0
 
 
@@ -59,7 +81,10 @@ class BasicAdder:
         }
         self.recently_cancelled_oid_to_time: Dict[int, int] = {}
 
+        # Subscribe to updates
         self.subscribe_to_updates()
+
+        # Start the polling thread
         self.start_poller()
 
     def subscribe_to_updates(self) -> None:
@@ -88,7 +113,7 @@ class BasicAdder:
             self.handle_order_placement(side, book_data)
 
     def handle_order_placement(self, side: Side, book_data: Dict) -> None:
-        """Handle the placement and cancellation of orders."""
+        """Handle the placement and cancellation of orders based on the order book update."""
         book_price = float(book_data["levels"][side_to_uint(side)][0]["px"])
         ideal_distance = book_price * DEPTH
         ideal_price = book_price + (ideal_distance * side_to_int(side))
@@ -108,6 +133,7 @@ class BasicAdder:
         distance = abs(ideal_price - provide_state["px"])
         if distance > ALLOWABLE_DEVIATION * ideal_distance:
             oid = provide_state["oid"]
+            print(f"Cancelling order due to deviation: oid:{oid}, side:{side}, ideal_price:{ideal_price}")
             response = self.exchange.cancel(COIN, oid)
             if response["status"] == "ok":
                 self.recently_cancelled_oid_to_time[oid] = get_timestamp_ms()
@@ -118,7 +144,7 @@ class BasicAdder:
     def check_in_flight_order(self, side: Side, provide_state: InFlightOrder) -> None:
         """Check if the in-flight order has timed out."""
         if get_timestamp_ms() - provide_state["time"] > ORDER_TIMEOUT:
-            logging.warning(f"Order still in flight after {ORDER_TIMEOUT // 1000}s, treating as cancelled.")
+            print("Order is still in flight after timeout, treating as cancelled.")
             self.provide_state[side] = {"type": "cancelled"}
 
     def place_new_order(self, side: Side, ideal_price: float) -> None:
@@ -133,16 +159,15 @@ class BasicAdder:
             return
 
         px = float(f"{ideal_price:.5g}")
+        print(f"Placing order: size:{size}, price:{px}, side:{side}")
         response = self.exchange.order(COIN, side == "B", size, px, {"limit": {"tif": "Alo"}})
         if response["status"] == "ok":
             status = response["response"]["data"]["statuses"][0]
             if "resting" in status:
                 self.provide_state[side] = {"type": "resting", "px": px, "oid": status["resting"]["oid"]}
-        else:
-            logging.error(f"Failed to place order: {response}")
 
     def on_user_events(self, user_events: UserEventsMsg) -> None:
-        """Callback for user events (fills)."""
+        """Callback for user events (e.g., fills)."""
         if "fills" in user_events["data"]:
             with open("fills", "a+") as f:
                 f.write(json.dumps(user_events["data"]["fills"]) + "\n")
@@ -151,18 +176,8 @@ class BasicAdder:
     def poll(self) -> None:
         """Poll open orders and user positions periodically."""
         while True:
-            open_orders = self.info.open_orders(self.address)
-            current_time = get_timestamp_ms()
-            self.cleanup_recently_cancelled(current_time)
-            self.refresh_position()
             time.sleep(POLL_INTERVAL)
-
-    def cleanup_recently_cancelled(self, current_time: int) -> None:
-        """Clean up recently cancelled orders."""
-        self.recently_cancelled_oid_to_time = {
-            oid: timestamp for oid, timestamp in self.recently_cancelled_oid_to_time.items()
-            if current_time - timestamp < CANCEL_CLEANUP_TIME
-        }
+            self.refresh_position()
 
     def refresh_position(self) -> None:
         """Refresh the user’s current position."""
@@ -176,9 +191,4 @@ class BasicAdder:
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL)
-    BasicAdder(address, info, exchange)
-
-
-if __name__ == "__main__":
-    main()
+    address, info, exchange = example
