@@ -47,6 +47,7 @@ UserFundingsSubscription = TypedDict("UserFundingsSubscription", {"type": Litera
 UserNonFundingLedgerUpdatesSubscription = TypedDict(
     "UserNonFundingLedgerUpdatesSubscription", {"type": Literal["userNonFundingLedgerUpdates"], "user": str}
 )
+WebData2Subscription = TypedDict("WebData2Subscription", {"type": Literal["webData2"], "user": str})
 # If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
 Subscription = Union[
     AllMidsSubscription,
@@ -58,6 +59,7 @@ Subscription = Union[
     OrderUpdatesSubscription,
     UserFundingsSubscription,
     UserNonFundingLedgerUpdatesSubscription,
+    WebData2Subscription,
 ]
 
 AllMidsData = TypedDict("AllMidsData", {"mids": Dict[str, str]})
@@ -96,7 +98,7 @@ OtherWsMsg = TypedDict(
     "OtherWsMsg",
     {
         "channel": Union[
-            Literal["candle"], Literal["orderUpdates"], Literal["userFundings"], Literal["userNonFundingLedgerUpdates"]
+            Literal["candle"], Literal["orderUpdates"], Literal["userFundings"], Literal["userNonFundingLedgerUpdates"], Literal["webData2"]
         ],
         "data": Any,
     },
