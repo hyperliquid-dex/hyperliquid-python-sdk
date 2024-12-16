@@ -168,9 +168,14 @@ class BasicAdder:
 
     def on_user_events(self, user_events: UserEventsMsg) -> None:
         """Callback for user events (e.g., fills)."""
+        print(user_events)
         if "fills" in user_events["data"]:
             with open("fills", "a+") as f:
                 f.write(json.dumps(user_events["data"]["fills"]) + "\n")
+        # Set the position to None so that we don't place more orders without knowing our position
+        # You might want to also update provide_state to account for the fill. This could help avoid sending an
+        # unneeded cancel or failing to send a new order to replace the filled order, but we skipped this logic
+        # to make the example simpler
         self.position = None
 
     def poll(self) -> None:
@@ -192,3 +197,6 @@ class BasicAdder:
 def main():
     logging.basicConfig(level=logging.INFO)
     address, info, exchange = example
+
+if __name__ == "__main__":
+    main()
