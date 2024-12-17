@@ -30,6 +30,8 @@ def subscription_to_identifier(subscription: Subscription) -> str:
         return f'userFundings:{subscription["user"].lower()}'
     elif subscription["type"] == "userNonFundingLedgerUpdates":
         return f'userNonFundingLedgerUpdates:{subscription["user"].lower()}'
+    elif subscription["type"] == "webData2":
+        return f'webData2:{subscription["user"].lower()}'
 
 
 def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
@@ -57,6 +59,8 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
         return f'userFundings:{ws_msg["data"]["user"].lower()}'
     elif ws_msg["channel"] == "userNonFundingLedgerUpdates":
         return f'userNonFundingLedgerUpdates:{ws_msg["data"]["user"].lower()}'
+    elif ws_msg["channel"] == "webData2":
+        return f'webData2:{ws_msg["data"]["user"].lower()}'
 
 
 class WebsocketManager(threading.Thread):

@@ -16,6 +16,7 @@ def main():
     info.subscribe({"type": "orderUpdates", "user": address}, print)
     info.subscribe({"type": "userFundings", "user": address}, print)
     info.subscribe({"type": "userNonFundingLedgerUpdates", "user": address}, print)
+    info.subscribe({"type": "webData2", "user": address}, print)
 
 
 if __name__ == "__main__":
