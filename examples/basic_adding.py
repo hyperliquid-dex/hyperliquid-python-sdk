@@ -182,6 +182,29 @@ class BasicAdder:
         """Poll open orders and user positions periodically."""
         while True:
             time.sleep(POLL_INTERVAL)
+            # Fetch open orders
+            open_orders = self.info.open_orders(self.exchange.wallet.address)
+            print("open_orders", open_orders)
+    
+            # Collect valid order IDs (from recently cancelled orders and resting orders)
+            ok_oids = set(self.recently_cancelled_oid_to_time.keys())
+            for provide_state in self.provide_state.values():
+                if provide_state["type"] == "resting":
+                    ok_oids.add(provide_state["oid"])
+    
+            # Cancel any unknown orders
+            for open_order in open_orders:
+                if open_order["coin"] == COIN and open_order["oid"] not in ok_oids:
+                    print("Cancelling unknown oid", open_order["oid"])
+                    self.exchange.cancel(open_order["coin"], open_order["oid"])
+    
+            # Clean up recently cancelled orders after a timeout
+            current_time = get_timestamp_ms()
+            self.recently_cancelled_oid_to_time = {
+                oid: timestamp
+                for oid, timestamp in self.recently_cancelled_oid_to_time.items()
+                if current_time - timestamp <= CANCEL_CLEANUP_TIME
+            }
             self.refresh_position()
 
     def refresh_position(self) -> None:
