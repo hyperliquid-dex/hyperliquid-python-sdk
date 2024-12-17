@@ -1,3 +1,4 @@
+# This is an end to end example of a very basic adding strategy.
 import json
 import logging
 import threading
@@ -65,7 +66,7 @@ def side_to_int(side: Side) -> int:
 
 
 def side_to_uint(side: Side) -> int:
-    """Convert side ('A' for Ask, 'B' for Bid) to an integer (0 or 1)."""
+    """Convert side ('A' for Ask, 'B' for Bid) to an unsigned integer (0 or 1)."""
     return 1 if side == "A" else 0
 
 
@@ -181,7 +182,6 @@ class BasicAdder:
     def poll(self) -> None:
         """Poll open orders and user positions periodically."""
         while True:
-            time.sleep(POLL_INTERVAL)
             # Fetch open orders
             open_orders = self.info.open_orders(self.exchange.wallet.address)
             print("open_orders", open_orders)
@@ -206,6 +206,7 @@ class BasicAdder:
                 if current_time - timestamp <= CANCEL_CLEANUP_TIME
             }
             self.refresh_position()
+            time.sleep(POLL_INTERVAL)
 
     def refresh_position(self) -> None:
         """Refresh the user’s current position."""
