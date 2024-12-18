@@ -25,6 +25,8 @@ class Info(API):
         if not skip_ws:
             self.ws_manager = WebsocketManager(self.base_url)
             self.ws_manager.start()
+        else:
+            self.ws_manager = None
         if meta is None:
             meta = self.meta()
 
@@ -42,6 +44,12 @@ class Info(API):
             name = f'{spot_meta["tokens"][base]["name"]}/{spot_meta["tokens"][quote]["name"]}'
             if name not in self.name_to_coin:
                 self.name_to_coin[name] = spot_info["name"]
+
+    def disconnect_websocket(self):
+        if self.ws_manager is None:
+            raise RuntimeError("Cannot call disconnect_websocket since skip_ws was used")
+        else:
+            self.ws_manager.stop()
 
     def user_state(self, address: str) -> Any:
         """Retrieve trading details about a user.
