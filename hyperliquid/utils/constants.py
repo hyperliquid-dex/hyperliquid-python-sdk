@@ -1,3 +1,5 @@
 MAINNET_API_URL = "https://api.hyperliquid.xyz"
 TESTNET_API_URL = "https://api.hyperliquid-testnet.xyz"
+MAINNET_WS_URL = "wss://api.hyperliquid.xyz/ws"
+TESTNET_WS_URL = "wss://api.hyperliquid-testnet.xyz/ws"
 LOCAL_API_URL = "http://localhost:3001"
