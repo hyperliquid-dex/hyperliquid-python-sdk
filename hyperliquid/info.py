@@ -88,6 +88,27 @@ class Info(API):
         return self.post("/info", {"type": "clearinghouseState", "user": address})
 
     def spot_user_state(self, address: str) -> Any:
+        """Retrieve spot trading details about a user.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns:
+            {
+                "balances": [
+                    {
+                        "coin": str,      # Token name (e.g., "USDC", "PURR")
+                        "token": int,     # Token index
+                        "hold": str,      # Amount in hold/locked in orders
+                        "total": str,     # Total balance
+                        "entryNtl": str   # Entry notional value
+                    },
+                    ...
+                ]
+            }
+        """
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
     def open_orders(self, address: str) -> Any:
