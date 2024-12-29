@@ -519,6 +519,43 @@ class Info(API):
 
     def query_order_by_cloid(self, user: str, cloid: Cloid) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw()})
+        
+    def historical_orders(self, address: str) -> Any:
+      """Retrieve a user's historical orders (up to 2000 most recent).
+      
+      POST /info
+      
+      Args:
+          address (str): Address in 42-character hexadecimal format;
+                          e.g. 0x0000000000000000000000000000000000000000.
+      Returns:
+          [
+              {
+                  "order": {
+                      "coin": str,
+                      "side": "A" | "B",
+                      "limitPx": str,
+                      "sz": str,
+                      "oid": int,
+                      "timestamp": int,
+                      "triggerCondition": str,
+                      "isTrigger": bool,
+                      "triggerPx": str,
+                      "children": list,
+                      "isPositionTpsl": bool,
+                      "reduceOnly": bool,
+                      "orderType": str,
+                      "origSz": str,
+                      "tif": str,
+                      "cloid": Optional[str]
+                  },
+                  "status": "filled" | "open" | "canceled" | "triggered" | "rejected" | "marginCanceled",
+                  "statusTimestamp": int
+              },
+              ...
+          ]
+      """
+      return self.post("/info", {"type": "historicalOrders", "user": address})
 
     def query_referral_state(self, user: str) -> Any:
         return self.post("/info", {"type": "referral", "user": user})
