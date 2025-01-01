@@ -1,3 +1,4 @@
+# hyperliquid/hyperliquid/info.py
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
     Any,
@@ -179,15 +180,17 @@ class Info(API):
         """
         return self.post("/info", {"type": "allMids"})
 
-    def user_fills(self, address: str) -> Any:
+    def user_fills(self, address: str, aggregate_by_time: Optional[bool] = None) -> Any:
         """Retrieve a given user's fills.
-
+    
         POST /info
-
+    
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
-
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when 
+                                              a crossing order gets filled by multiple different resting orders.
+    
         Returns:
             [
               {
@@ -201,24 +204,33 @@ class Info(API):
                 side: str,
                 startPosition: float string,
                 sz: float string,
-                time: int
+                time: int,
+                fee: float string,
+                feeToken: str,
+                builderFee: Optional[float string]
               },
               ...
             ]
         """
-        return self.post("/info", {"type": "userFills", "user": address})
+        req = {"type": "userFills", "user": address}
+        if aggregate_by_time is not None:
+            req["aggregateByTime"] = aggregate_by_time
+        return self.post("/info", req)
 
-    def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None) -> Any:
+    def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None, 
+                      aggregate_by_time: Optional[bool] = None) -> Any:
         """Retrieve a given user's fills by time.
-
+    
         POST /info
-
+    
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
-            start_time (int): Unix timestamp in milliseconds
-            end_time (Optional[int]): Unix timestamp in milliseconds
-
+            start_time (int): Start time in milliseconds, inclusive
+            end_time (Optional[int]): End time in milliseconds, inclusive. Defaults to current time.
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when 
+                                              a crossing order gets filled by multiple different resting orders.
+    
         Returns:
             [
               {
@@ -232,14 +244,20 @@ class Info(API):
                 side: str,
                 startPosition: float string,
                 sz: float string,
-                time: int
+                time: int,
+                fee: float string,
+                feeToken: str,
+                builderFee: Optional[float string]
               },
               ...
             ]
         """
-        return self.post(
-            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
-        )
+        req = {"type": "userFillsByTime", "user": address, "startTime": start_time}
+        if end_time is not None:
+            req["endTime"] = end_time
+        if aggregate_by_time is not None:
+            req["aggregateByTime"] = aggregate_by_time
+        return self.post("/info", req)
 
     def meta(self) -> Meta:
         """Retrieve exchange perp metadata
