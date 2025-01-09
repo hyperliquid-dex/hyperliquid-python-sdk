@@ -98,7 +98,11 @@ OtherWsMsg = TypedDict(
     "OtherWsMsg",
     {
         "channel": Union[
-            Literal["candle"], Literal["orderUpdates"], Literal["userFundings"], Literal["userNonFundingLedgerUpdates"], Literal["webData2"]
+            Literal["candle"],
+            Literal["orderUpdates"],
+            Literal["userFundings"],
+            Literal["userNonFundingLedgerUpdates"],
+            Literal["webData2"],
         ],
         "data": Any,
     },

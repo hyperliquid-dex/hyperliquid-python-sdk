@@ -13,6 +13,7 @@ from hyperliquid.utils.signing import get_timestamp_ms
 from hyperliquid.utils.types import (
     SIDES,
     Dict,
+    L2BookData,
     L2BookMsg,
     L2BookSubscription,
     Literal,
@@ -113,7 +114,7 @@ class BasicAdder:
         for side in SIDES:
             self.handle_order_placement(side, book_data)
 
-    def handle_order_placement(self, side: Side, book_data: Dict) -> None:
+    def handle_order_placement(self, side: Side, book_data: L2BookData) -> None:
         """Handle the placement and cancellation of orders based on the order book update."""
         book_price = float(book_data["levels"][side_to_uint(side)][0]["px"])
         ideal_distance = book_price * DEPTH
@@ -185,19 +186,19 @@ class BasicAdder:
             # Fetch open orders
             open_orders = self.info.open_orders(self.exchange.wallet.address)
             print("open_orders", open_orders)
-    
+
             # Collect valid order IDs (from recently cancelled orders and resting orders)
             ok_oids = set(self.recently_cancelled_oid_to_time.keys())
             for provide_state in self.provide_state.values():
                 if provide_state["type"] == "resting":
                     ok_oids.add(provide_state["oid"])
-    
+
             # Cancel any unknown orders
             for open_order in open_orders:
                 if open_order["coin"] == COIN and open_order["oid"] not in ok_oids:
                     print("Cancelling unknown oid", open_order["oid"])
                     self.exchange.cancel(open_order["coin"], open_order["oid"])
-    
+
             # Clean up recently cancelled orders after a timeout
             current_time = get_timestamp_ms()
             self.recently_cancelled_oid_to_time = {
@@ -223,6 +224,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL)
     BasicAdder(address, info, exchange)
+
 
 if __name__ == "__main__":
     main()
