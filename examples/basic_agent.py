@@ -47,7 +47,7 @@ def main():
     print("Running with extra agent address:", extra_agent_account.address)
 
     print("Placing order with original agent")
-    order_result = extra_agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
+    order_result = agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
     print(order_result)
 
     if order_result["status"] == "ok":
