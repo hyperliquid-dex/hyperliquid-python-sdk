@@ -18,6 +18,8 @@ def subscription_to_identifier(subscription: Subscription) -> str:
         return f'l2Book:{subscription["coin"].lower()}'
     elif subscription["type"] == "trades":
         return f'trades:{subscription["coin"].lower()}'
+    elif subscription["type"] == "activeAssetCtx":
+        return f'activeAssetCtx:{subscription["coin"].lower()}'
     elif subscription["type"] == "userEvents":
         return "userEvents"
     elif subscription["type"] == "userFills":
@@ -41,6 +43,8 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
         return "allMids"
     elif ws_msg["channel"] == "l2Book":
         return f'l2Book:{ws_msg["data"]["coin"].lower()}'
+    elif ws_msg["channel"] == "activeAssetCtx":
+        return f'activeAssetCtx:{ws_msg["data"]["coin"].lower()}'
     elif ws_msg["channel"] == "trades":
         trades = ws_msg["data"]
         if len(trades) == 0:
