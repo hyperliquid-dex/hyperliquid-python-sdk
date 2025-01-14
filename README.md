@@ -61,7 +61,7 @@ order_result = exchange.order(
 
 ### Info Class
 
-The `Info` class provides methods to query market data and user information:
+The `Info` class provides methods to query market data and user information. The full [API specs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint) are available in the documentation.
 
 ```python
 from hyperliquid.info import Info
@@ -80,7 +80,7 @@ mid_prices = info.all_mids()
 
 ### Exchange Class
 
-The `Exchange` class handles all trading operations:
+The `Exchange` class handles all trading operations.  The full [API specs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint) are available in the documentation.
 
 ```python
 from hyperliquid.exchange import Exchange
