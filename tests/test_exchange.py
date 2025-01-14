@@ -155,3 +155,157 @@ def test_slippage_price_rounding(mock_all_mids, exchange):
     # Test spot rounding (8 decimals)
     price = exchange._slippage_price("BTC/USDC", True, 0.05)
     assert str(price).count('.') == 0 or len(str(price).split('.')[1]) <= 8
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_bulk_orders(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test bulk_orders method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1  # Mock name_to_asset to return 1 for any input
+
+    # Test single order
+    order_requests = [
+        {
+            "coin": "ETH",
+            "is_buy": True,
+            "sz": 1.0,
+            "limit_px": 2000.0,
+            "order_type": {"limit": {"tif": "Gtc"}},
+            "reduce_only": False,
+        }
+    ]
+
+    response = exchange.bulk_orders(order_requests)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    assert call_args[0] == exchange.wallet  # wallet
+    assert call_args[1]["type"] == "order"  # action
+    assert call_args[2] == exchange.vault_address  # vault_address
+    assert call_args[3] == 1234567890  # timestamp
+    assert call_args[4] == (exchange.base_url == MAINNET_API_URL)  # is_mainnet
+
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once_with(
+        mock_sign.call_args[0][1],  # action
+        "test_signature",  # signature
+        1234567890  # timestamp
+    )
+
+    # Test with builder
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    builder = {"b": "TEST_BUILDER", "r": 0.001}  # Using uppercase to test lowercasing
+    response = exchange.bulk_orders(order_requests, builder)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify builder was included in the action
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]  # Get the action argument
+    assert action["type"] == "order"
+    # The builder object should be passed through as is (after lowercase conversion)
+    assert action["builder"]["b"] == "test_builder"
+    assert action["builder"]["r"] == 0.001
+
+@patch('hyperliquid.exchange.Exchange.bulk_orders')
+def test_order(mock_bulk_orders, exchange):
+    """Test order method with various scenarios"""
+    # Setup
+    mock_bulk_orders.return_value = {
+        "status": "ok",
+        "response": {
+            "data": {
+                "statuses": [{"resting": {"oid": 123}}]
+            }
+        }
+    }
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test 1: Basic limit order
+    response = exchange.order(
+        name="ETH",
+        is_buy=True,
+        sz=1.0,
+        limit_px=2000.0,
+        order_type={"limit": {"tif": "Gtc"}},
+    )
+    
+    assert response["status"] == "ok"
+    assert response["response"]["data"]["statuses"][0]["resting"]["oid"] == 123
+    
+    mock_bulk_orders.assert_called_once_with(
+        [
+            {
+                "coin": "ETH",
+                "is_buy": True,
+                "sz": 1.0,
+                "limit_px": 2000.0,
+                "order_type": {"limit": {"tif": "Gtc"}},
+                "reduce_only": False,
+            }
+        ],
+        None
+    )
+
+    # Test 2: Order with builder fee
+    mock_bulk_orders.reset_mock()
+    builder = {"b": "0x8c967E73E7B15087c42A10D344cFf4c96D877f1D", "r": 0.001}
+    
+    response = exchange.order(
+        name="ETH",
+        is_buy=True,
+        sz=0.05,
+        limit_px=2000.0,
+        order_type={"limit": {"tif": "Ioc"}},
+        builder=builder
+    )
+    
+    assert response["status"] == "ok"
+    mock_bulk_orders.assert_called_once()
+    call_args = mock_bulk_orders.call_args[0]
+    assert call_args[1]["b"].lower() == builder["b"].lower()
+    assert call_args[1]["r"] == builder["r"]
+
+    # Test 3: TPSL order
+    mock_bulk_orders.reset_mock()
+    response = exchange.order(
+        name="ETH",
+        is_buy=True,
+        sz=100,
+        limit_px=100,
+        order_type={"trigger": {"triggerPx": 103, "isMarket": True, "tpsl": "sl"}},
+        reduce_only=True
+    )
+    
+    assert response["status"] == "ok"
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["order_type"]["trigger"]["tpsl"] == "sl"
+    assert order_request["reduce_only"] is True
+
+    # Test 4: Order with cloid
+    mock_bulk_orders.reset_mock()
+    cloid = "0x00000000000000000000000000000001"
+    
+    response = exchange.order(
+        name="ETH",
+        is_buy=True,
+        sz=1.0,
+        limit_px=2000.0,
+        order_type={"limit": {"tif": "Gtc"}},
+        cloid=cloid
+    )
+    
+    assert response["status"] == "ok"
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["cloid"] == cloid
