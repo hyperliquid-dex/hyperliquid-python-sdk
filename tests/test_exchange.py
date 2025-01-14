@@ -1021,3 +1021,80 @@ def test_usd_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
     assert action["destination"] == destination
     assert action["amount"] == "1000.0"
     assert action["time"] == 1234567890
+
+@patch('hyperliquid.exchange.sign_spot_transfer_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_spot_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test spot_transfer method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test spot transfer
+    destination = "0x5e9ee1089755c3435139848e47e6635505d5a13a"
+    response = exchange.spot_transfer(
+        amount=1000.0,
+        destination=destination,
+        token="ETH"
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_spot_transfer_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    message = call_args[1]
+    assert message["destination"] == destination
+    assert message["amount"] == "1000.0"
+    assert message["token"] == "ETH"
+    assert message["time"] == 1234567890
+    assert message["type"] == "spotSend"
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    action = call_args[0]
+    assert action["type"] == "spotSend"
+    assert action["destination"] == destination
+    assert action["amount"] == "1000.0"
+    assert action["token"] == "ETH"
+    assert action["time"] == 1234567890
+
+@patch('hyperliquid.exchange.sign_withdraw_from_bridge_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_withdraw_from_bridge(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test withdraw_from_bridge method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test bridge withdrawal
+    destination = "0x5e9ee1089755c3435139848e47e6635505d5a13a"
+    response = exchange.withdraw_from_bridge(
+        amount=1000.0,
+        destination=destination
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_withdraw_from_bridge_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "withdraw3"
+    assert action["destination"] == destination
+    assert action["amount"] == "1000.0"
+    assert action["time"] == 1234567890
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    action = call_args[0]
+    assert action["type"] == "withdraw3"
+    assert action["destination"] == destination
+    assert action["amount"] == "1000.0"
+    assert action["time"] == 1234567890
