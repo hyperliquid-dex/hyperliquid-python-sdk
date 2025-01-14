@@ -2,6 +2,7 @@ import pytest
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from unittest.mock import Mock, patch
+import json
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils.constants import MAINNET_API_URL
@@ -1180,3 +1181,84 @@ def test_approve_builder_fee(mock_post_action, mock_timestamp, mock_sign, exchan
     assert action["builder"] == "0x1234567890123456789012345678901234567890"
     assert action["maxFeeRate"] == "0.001"
     assert action["nonce"] == 1234567890
+
+@patch('hyperliquid.exchange.sign_convert_to_multi_sig_user_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_convert_to_multi_sig_user(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test convert_to_multi_sig_user method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test converting to multi-sig user
+    authorized_users = [
+        "0x0000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000000"  # Note: Will be sorted
+    ]
+    threshold = 1
+    response = exchange.convert_to_multi_sig_user(authorized_users, threshold)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_convert_to_multi_sig_user_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "convertToMultiSigUser"
+    assert action["nonce"] == 1234567890
+    
+    # Verify signers JSON structure
+    signers = json.loads(action["signers"])
+    assert signers["threshold"] == 1
+    assert signers["authorizedUsers"] == sorted(authorized_users)
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"
+
+@patch('hyperliquid.exchange.sign_multi_sig_action')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_multi_sig(mock_post_action, mock_sign, exchange):
+    """Test multi_sig method"""
+    # Setup
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    
+    # Test parameters
+    multi_sig_user = "0xABCD"
+    inner_action = {"type": "order", "data": "test"}
+    signatures = ["sig1", "sig2"]
+    nonce = 1234567890
+    vault_address = "0x1234"
+    
+    # Test multi-sig action
+    response = exchange.multi_sig(
+        multi_sig_user=multi_sig_user,
+        inner_action=inner_action,
+        signatures=signatures,
+        nonce=nonce,
+        vault_address=vault_address
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_multi_sig_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "multiSig"
+    assert action["signatureChainId"] == "0x66eee"
+    assert action["signatures"] == signatures
+    assert action["payload"]["multiSigUser"] == multi_sig_user.lower()
+    assert action["payload"]["outerSigner"] == exchange.wallet.address.lower()
+    assert action["payload"]["action"] == inner_action
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[0] == action
+    assert call_args[1] == "test_signature"
+    assert call_args[2] == nonce
