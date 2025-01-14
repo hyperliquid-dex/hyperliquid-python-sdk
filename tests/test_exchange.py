@@ -951,3 +951,73 @@ def test_sub_account_transfer(mock_post_action, mock_timestamp, mock_sign, excha
     assert action["subAccountUser"] == sub_account
     assert action["isDeposit"] is False
     assert action["usd"] == 500
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_vault_usd_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test vault_usd_transfer method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test vault transfer
+    vault_address = "0xa15099a30bbf2e68942d6f4c43d70d04faeab0a0"
+    response = exchange.vault_usd_transfer(
+        vault_address=vault_address,
+        is_deposit=True,
+        usd=5_000_000
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "vaultTransfer"
+    assert action["vaultAddress"] == vault_address
+    assert action["isDeposit"] is True
+    assert action["usd"] == 5_000_000
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"  # signature
+
+@patch('hyperliquid.exchange.sign_usd_transfer_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_usd_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test usd_transfer method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test USD transfer
+    destination = "0x5e9ee1089755c3435139848e47e6635505d5a13a"
+    response = exchange.usd_transfer(
+        destination=destination,
+        amount=1000.0
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_usd_transfer_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    message = call_args[1]
+    assert message["destination"] == destination
+    assert message["amount"] == "1000.0"
+    assert message["time"] == 1234567890
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    action = call_args[0]
+    assert action["type"] == "usdSend"  # Corrected action type
+    assert action["destination"] == destination
+    assert action["amount"] == "1000.0"
+    assert action["time"] == 1234567890
