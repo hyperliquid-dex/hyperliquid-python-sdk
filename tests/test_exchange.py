@@ -309,3 +309,127 @@ def test_order(mock_bulk_orders, exchange):
     mock_bulk_orders.assert_called_once()
     order_request = mock_bulk_orders.call_args[0][0][0]
     assert order_request["cloid"] == cloid
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_modify_order(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test modify_order method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test 1: Basic modify order with oid
+    oid = 12345
+    response = exchange.modify_order(
+        oid=oid,
+        name="ETH",
+        is_buy=True,
+        sz=0.1,
+        limit_px=1105,
+        order_type={"limit": {"tif": "Gtc"}},
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "batchModify"
+    assert len(action["modifies"]) == 1
+    assert action["modifies"][0]["oid"] == oid
+    
+    # Test 2: Modify order with cloid
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    from hyperliquid.utils.types import Cloid
+    cloid = Cloid.from_str("0x00000000000000000000000000000001")
+    new_cloid = Cloid.from_str("0x00000000000000000000000000000002")
+    
+    response = exchange.modify_order(
+        oid=cloid,
+        name="ETH",
+        is_buy=True,
+        sz=0.1,
+        limit_px=1105,
+        order_type={"limit": {"tif": "Gtc"}},
+        reduce_only=True,
+        cloid=new_cloid
+    )
+    
+    assert response == {"status": "ok"}
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["modifies"][0]["oid"] == cloid.to_raw()
+    assert action["modifies"][0]["order"]["r"] is True  # reduce_only
+    assert "c" in action["modifies"][0]["order"]  # cloid in wire format
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_bulk_modify_orders_new(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test bulk_modify_orders_new method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    from hyperliquid.utils.types import Cloid
+    cloid1 = Cloid.from_str("0x00000000000000000000000000000001")
+    cloid2 = Cloid.from_str("0x00000000000000000000000000000002")
+
+    # Test multiple order modifications
+    modify_requests = [
+        {
+            "oid": 12345,
+            "order": {
+                "coin": "ETH",
+                "is_buy": True,
+                "sz": 0.1,
+                "limit_px": 1105,
+                "order_type": {"limit": {"tif": "Gtc"}},
+                "reduce_only": False,
+                "cloid": None,
+            },
+        },
+        {
+            "oid": cloid1,
+            "order": {
+                "coin": "BTC",
+                "is_buy": False,
+                "sz": 1.0,
+                "limit_px": 50000,
+                "order_type": {"limit": {"tif": "Ioc"}},
+                "reduce_only": True,
+                "cloid": cloid2,
+            },
+        },
+    ]
+    
+    response = exchange.bulk_modify_orders_new(modify_requests)
+    assert response == {"status": "ok"}
+    
+    # Verify the action structure
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    
+    assert action["type"] == "batchModify"
+    assert len(action["modifies"]) == 2
+    
+    # Verify first modification
+    assert action["modifies"][0]["oid"] == 12345
+    assert action["modifies"][0]["order"]["s"] == "0.1"  # size as string
+    assert action["modifies"][0]["order"]["p"] == "1105"  # price as string
+    
+    # Verify second modification
+    assert action["modifies"][1]["oid"] == cloid1.to_raw()
+    assert action["modifies"][1]["order"]["s"] == "1"  # size as string
+    assert action["modifies"][1]["order"]["p"] == "50000"  # price as string
+    assert action["modifies"][1]["order"]["r"] is True
+    assert "c" in action["modifies"][1]["order"]  # cloid in wire format
