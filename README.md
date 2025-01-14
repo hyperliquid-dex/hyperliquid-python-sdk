@@ -103,7 +103,7 @@ exchange.cancel("ETH", order_id)
 ```
 
 ### Websockets
-The SDK provides real-time market data and user events through WebSocket connections. The WebSocket manager automatically handles connection maintenance and reconnection.
+The SDK provides real-time market data and user events through WebSocket connections. The WebSocket manager automatically handles connection maintenance and reconnection.  The full specs are available on the [documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/websocket/subscriptions).
 
 #### Basic Websockets Connection
 ```python
