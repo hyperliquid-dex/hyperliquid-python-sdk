@@ -716,3 +716,59 @@ def test_schedule_cancel(mock_post_action, mock_timestamp, mock_sign, exchange):
     mock_post_action.assert_called_once()
     call_args = mock_post_action.call_args[0]
     assert call_args[1] == "test_signature"  # signature
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_update_leverage(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test update_leverage method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test 1: Update leverage with default cross margin
+    response = exchange.update_leverage(leverage=10, name="ETH")
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "updateLeverage"
+    assert action["asset"] == 1
+    assert action["leverage"] == 10
+    assert action["isCross"] is True
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"  # signature
+    
+    # Test 2: Update leverage with isolated margin
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    response = exchange.update_leverage(
+        leverage=5,
+        name="BTC",
+        is_cross=False
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "updateLeverage"
+    assert action["asset"] == 1
+    assert action["leverage"] == 5
+    assert action["isCross"] is False
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"  # signature
