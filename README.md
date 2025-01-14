@@ -49,8 +49,8 @@ print(user_state)
 
 # Place a limit order
 order_result = exchange.order(
-    name="ETH",          # Asset name
-    is_buy=True,        # True for buy, False for sell
+    name="ETH",        # Asset name
+    is_buy=True,       # True for buy, False for sell
     sz=0.1,            # Order size
     limit_px=1800,     # Limit price
     order_type={"limit": {"tif": "Gtc"}}  # Good-till-cancel order
