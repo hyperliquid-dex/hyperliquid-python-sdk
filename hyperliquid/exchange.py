@@ -297,7 +297,7 @@ class Exchange(API):
             timestamp,
         )
 
-    def schedule_cancel(self, time: Optional[int]) -> Any:
+    def schedule_cancel(self, time: Optional[int] = None) -> Any:
         """Schedules a time (in UTC millis) to cancel all open orders. The time must be at least 5 seconds after the current time.
         Once the time comes, all open orders will be canceled and a trigger count will be incremented. The max number of triggers
         per day is 10. This trigger count is reset at 00:00 UTC.
