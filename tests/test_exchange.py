@@ -668,3 +668,51 @@ def test_bulk_cancel_by_cloid(mock_post_action, mock_timestamp, mock_sign, excha
     assert action["cancels"][0]["cloid"] == cloid1.to_raw()
     assert action["cancels"][1]["asset"] == 1
     assert action["cancels"][1]["cloid"] == cloid2.to_raw()
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_schedule_cancel(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test schedule_cancel method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test 1: Basic schedule cancel without time (uses current timestamp)
+    response = exchange.schedule_cancel()
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "scheduleCancel"
+    assert "time" not in action  # No specific time provided
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"  # signature
+    
+    # Test 2: Schedule cancel with specific time
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    cancel_time = 1234567890 + 10000  # 10 seconds from now
+    response = exchange.schedule_cancel(cancel_time)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "scheduleCancel"
+    assert action["time"] == cancel_time
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    assert call_args[1] == "test_signature"  # signature
