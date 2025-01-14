@@ -549,3 +549,122 @@ def test_market_close(mock_bulk_orders, exchange):
     # Verify builder was passed correctly
     assert mock_bulk_orders.call_args[0][1]["b"].lower() == builder["b"].lower()
     assert mock_bulk_orders.call_args[0][1]["r"] == builder["r"]
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_cancel(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test cancel method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test basic cancel
+    response = exchange.cancel("ETH", 12345)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "cancel"
+    assert len(action["cancels"]) == 1
+    assert action["cancels"][0]["a"] == 1  # asset
+    assert action["cancels"][0]["o"] == 12345  # oid
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_cancel_by_cloid(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test cancel_by_cloid method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    from hyperliquid.utils.types import Cloid
+    cloid = Cloid.from_str("0x00000000000000000000000000000001")
+
+    # Test cancel by cloid
+    response = exchange.cancel_by_cloid("ETH", cloid)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "cancelByCloid"
+    assert len(action["cancels"]) == 1
+    assert action["cancels"][0]["asset"] == 1
+    assert action["cancels"][0]["cloid"] == cloid.to_raw()
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_bulk_cancel(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test bulk_cancel method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test multiple cancels
+    cancel_requests = [
+        {"coin": "ETH", "oid": 12345},
+        {"coin": "BTC", "oid": 67890}
+    ]
+    
+    response = exchange.bulk_cancel(cancel_requests)
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "cancel"
+    assert len(action["cancels"]) == 2
+    assert action["cancels"][0]["a"] == 1
+    assert action["cancels"][0]["o"] == 12345
+    assert action["cancels"][1]["a"] == 1
+    assert action["cancels"][1]["o"] == 67890
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_bulk_cancel_by_cloid(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test bulk_cancel_by_cloid method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    exchange.info.name_to_asset = lambda x: 1
+
+    from hyperliquid.utils.types import Cloid
+    cloid1 = Cloid.from_str("0x00000000000000000000000000000001")
+    cloid2 = Cloid.from_str("0x00000000000000000000000000000002")
+
+    # Test multiple cancels by cloid
+    cancel_requests = [
+        {"coin": "ETH", "cloid": cloid1},
+        {"coin": "BTC", "cloid": cloid2}
+    ]
+    
+    response = exchange.bulk_cancel_by_cloid(cancel_requests)
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "cancelByCloid"
+    assert len(action["cancels"]) == 2
+    assert action["cancels"][0]["asset"] == 1
+    assert action["cancels"][0]["cloid"] == cloid1.to_raw()
+    assert action["cancels"][1]["asset"] == 1
+    assert action["cancels"][1]["cloid"] == cloid2.to_raw()
