@@ -433,3 +433,119 @@ def test_bulk_modify_orders_new(mock_post_action, mock_timestamp, mock_sign, exc
     assert action["modifies"][1]["order"]["p"] == "50000"  # price as string
     assert action["modifies"][1]["order"]["r"] is True
     assert "c" in action["modifies"][1]["order"]  # cloid in wire format
+
+@patch('hyperliquid.exchange.Exchange.bulk_orders')
+def test_market_open(mock_bulk_orders, exchange):
+    """Test market_open method"""
+    # Setup
+    mock_bulk_orders.return_value = {
+        "status": "ok",
+        "response": {
+            "data": {
+                "statuses": [{"filled": {"oid": 123, "totalSz": "0.05", "avgPx": "1950.5"}}]
+            }
+        }
+    }
+    exchange.info.name_to_asset = lambda x: 1
+
+    # Test 1: Basic market open
+    response = exchange.market_open(
+        name="ETH",
+        is_buy=True,
+        sz=0.05,
+    )
+    
+    assert response["status"] == "ok"
+    assert response["response"]["data"]["statuses"][0]["filled"]["oid"] == 123
+    
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["coin"] == "ETH"
+    assert order_request["is_buy"] is True
+    assert order_request["sz"] == 0.05
+    assert order_request["order_type"] == {"limit": {"tif": "Ioc"}}
+    assert order_request["reduce_only"] is False
+    
+    # Test 2: Market open with slippage and builder
+    mock_bulk_orders.reset_mock()
+    builder = {"b": "0x8c967E73E7B15087c42A10D344cFf4c96D877f1D", "r": 0.001}
+    
+    response = exchange.market_open(
+        name="ETH",
+        is_buy=True,
+        sz=0.05,
+        builder=builder,
+        slippage=0.01  # 1% slippage
+    )
+    
+    assert response["status"] == "ok"
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["coin"] == "ETH"
+    assert order_request["sz"] == 0.05
+    assert order_request["order_type"] == {"limit": {"tif": "Ioc"}}
+    # Verify builder was passed correctly
+    assert mock_bulk_orders.call_args[0][1]["b"].lower() == builder["b"].lower()
+    assert mock_bulk_orders.call_args[0][1]["r"] == builder["r"]
+
+@patch('hyperliquid.exchange.Exchange.bulk_orders')
+def test_market_close(mock_bulk_orders, exchange):
+    """Test market_close method"""
+    # Setup
+    mock_bulk_orders.return_value = {
+        "status": "ok",
+        "response": {
+            "data": {
+                "statuses": [{"filled": {"oid": 123, "totalSz": "0.05", "avgPx": "1950.5"}}]
+            }
+        }
+    }
+    exchange.info.name_to_asset = lambda x: 1
+    
+    # Mock user_state to return a position
+    exchange.info.user_state = lambda x: {
+        "assetPositions": [
+            {
+                "position": {
+                    "coin": "ETH",
+                    "szi": "0.05",
+                    "entryPx": "2000",
+                    "positionValue": "100"
+                }
+            }
+        ]
+    }
+
+    # Test 1: Basic market close
+    response = exchange.market_close("ETH")
+    
+    assert response["status"] == "ok"
+    assert response["response"]["data"]["statuses"][0]["filled"]["oid"] == 123
+    
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["coin"] == "ETH"
+    assert order_request["sz"] == 0.05
+    assert order_request["order_type"] == {"limit": {"tif": "Ioc"}}
+    assert order_request["reduce_only"] is True
+    
+    # Test 2: Market close with slippage and builder
+    mock_bulk_orders.reset_mock()
+    builder = {"b": "0x8c967E73E7B15087c42A10D344cFf4c96D877f1D", "r": 0.001}
+    
+    response = exchange.market_close(
+        coin="ETH",
+        builder=builder,
+        slippage=0.01  # 1% slippage
+    )
+    
+    assert response["status"] == "ok"
+    mock_bulk_orders.assert_called_once()
+    order_request = mock_bulk_orders.call_args[0][0][0]
+    assert order_request["coin"] == "ETH"
+    assert order_request["sz"] == 0.05
+    assert order_request["order_type"] == {"limit": {"tif": "Ioc"}}
+    assert order_request["reduce_only"] is True
+    # Verify builder was passed correctly
+    assert mock_bulk_orders.call_args[0][1]["b"].lower() == builder["b"].lower()
+    assert mock_bulk_orders.call_args[0][1]["r"] == builder["r"]
