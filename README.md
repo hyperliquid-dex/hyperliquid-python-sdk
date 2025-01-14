@@ -59,6 +59,12 @@ python examples/basic_order.py
 make install
 ```
 
+4. Run your local code with poetry
+
+```bash
+poetry run python examples/basic_order
+```
+
 ### Makefile usage
 
 CLI commands for faster development.
