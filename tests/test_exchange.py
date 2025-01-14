@@ -859,3 +859,95 @@ def test_create_sub_account(mock_post_action, mock_timestamp, mock_sign, exchang
     mock_post_action.assert_called_once()
     call_args = mock_post_action.call_args[0]
     assert call_args[1] == "test_signature"  # signature
+
+@patch('hyperliquid.exchange.sign_usd_class_transfer_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_usd_class_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test usd_class_transfer method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test 1: Basic transfer without vault address
+    response = exchange.usd_class_transfer(amount=1000.0, to_perp=True)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_usd_class_transfer_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "usdClassTransfer"
+    assert action["amount"] == "1000.0"
+    assert action["toPerp"] is True
+    assert action["nonce"] == 1234567890
+    
+    # Test 2: Transfer with vault address
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    exchange.vault_address = "0x1234"
+    
+    response = exchange.usd_class_transfer(amount=500.5, to_perp=False)
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_usd_class_transfer_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "usdClassTransfer"
+    assert action["amount"] == "500.5 subaccount:0x1234"
+    assert action["toPerp"] is False
+    assert action["nonce"] == 1234567890
+
+@patch('hyperliquid.exchange.sign_l1_action')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_sub_account_transfer(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test sub_account_transfer method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test deposit to sub account
+    sub_account = "0x1d9470d4b963f552e6f671a81619d395877bf409"
+    response = exchange.sub_account_transfer(
+        sub_account_user=sub_account,
+        is_deposit=True,
+        usd=1000
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "subAccountTransfer"
+    assert action["subAccountUser"] == sub_account
+    assert action["isDeposit"] is True
+    assert action["usd"] == 1000
+    
+    # Test withdrawal from sub account
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    response = exchange.sub_account_transfer(
+        sub_account_user=sub_account,
+        is_deposit=False,
+        usd=500
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_l1_action was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "subAccountTransfer"
+    assert action["subAccountUser"] == sub_account
+    assert action["isDeposit"] is False
+    assert action["usd"] == 500
