@@ -1098,3 +1098,85 @@ def test_withdraw_from_bridge(mock_post_action, mock_timestamp, mock_sign, excha
     assert action["destination"] == destination
     assert action["amount"] == "1000.0"
     assert action["time"] == 1234567890
+
+@patch('hyperliquid.exchange.sign_agent')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+@patch('hyperliquid.exchange.secrets.token_hex')
+def test_approve_agent(mock_token_hex, mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test approve_agent method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+    # Generate a 32-byte hex string (64 characters)
+    mock_token_hex.return_value = "a" * 64
+
+    # Test 1: approve agent without name
+    response, agent_key = exchange.approve_agent()
+    
+    assert response == {"status": "ok"}
+    assert agent_key == "0x" + ("a" * 64)
+    
+    # Verify sign_agent was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "approveAgent"
+    assert "agentAddress" in action
+    assert action["nonce"] == 1234567890
+    assert "agentName" not in action
+    
+    # Test 2: approve agent with name
+    mock_sign.reset_mock()
+    mock_post_action.reset_mock()
+    
+    response, agent_key = exchange.approve_agent(name="test_agent")
+    
+    assert response == {"status": "ok"}
+    assert agent_key == "0x" + ("a" * 64)
+    
+    # Verify sign_agent was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "approveAgent"
+    assert "agentAddress" in action
+    assert action["nonce"] == 1234567890
+    assert action["agentName"] == "test_agent"
+
+@patch('hyperliquid.exchange.sign_approve_builder_fee')
+@patch('hyperliquid.exchange.get_timestamp_ms')
+@patch('hyperliquid.exchange.Exchange._post_action')
+def test_approve_builder_fee(mock_post_action, mock_timestamp, mock_sign, exchange):
+    """Test approve_builder_fee method"""
+    # Setup
+    mock_timestamp.return_value = 1234567890
+    mock_sign.return_value = "test_signature"
+    mock_post_action.return_value = {"status": "ok"}
+
+    # Test approving builder fee
+    response = exchange.approve_builder_fee(
+        builder="0x1234567890123456789012345678901234567890",
+        max_fee_rate="0.001"
+    )
+    
+    assert response == {"status": "ok"}
+    
+    # Verify sign_approve_builder_fee was called correctly
+    mock_sign.assert_called_once()
+    call_args = mock_sign.call_args[0]
+    action = call_args[1]
+    assert action["type"] == "approveBuilderFee"
+    assert action["builder"] == "0x1234567890123456789012345678901234567890"
+    assert action["maxFeeRate"] == "0.001"
+    assert action["nonce"] == 1234567890
+    
+    # Verify _post_action was called correctly
+    mock_post_action.assert_called_once()
+    call_args = mock_post_action.call_args[0]
+    action = call_args[0]
+    assert action["type"] == "approveBuilderFee"
+    assert action["builder"] == "0x1234567890123456789012345678901234567890"
+    assert action["maxFeeRate"] == "0.001"
+    assert action["nonce"] == 1234567890
