@@ -7,7 +7,7 @@ from order import Order, OrderSide, TimeInForce
 
 def main():
     # Setup exchange connection
-    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+    _, _, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
     # Create order wrapper
     order = Order(exchange)
