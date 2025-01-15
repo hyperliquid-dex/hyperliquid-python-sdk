@@ -1,36 +1,44 @@
+from typing import Any, Dict, List, Optional, Union
+
 from enum import Enum
-from typing import Optional, Union, Dict, Any, List
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils.types import BuilderInfo, Cloid
 
+
 class TimeInForce(Enum):
     """Time in force options for orders"""
+
     GTC = "Gtc"  # Good till cancelled
     IOC = "Ioc"  # Immediate or cancel
     ALO = "Alo"  # Add liquidity only (post-only)
 
+
 class OrderSide(Enum):
     """Order side (buy/sell)"""
+
     BUY = True
     SELL = False
 
+
 class TriggerType(Enum):
     """Trigger order types"""
+
     TAKE_PROFIT = "tp"
     STOP_LOSS = "sl"
+
 
 class Order:
     """
     A wrapper class for Hyperliquid exchange order methods that provides a simpler interface.
-    
+
     Reference: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
     """
-    
+
     def __init__(self, exchange: Exchange):
         """
         Initialize the Order wrapper with a Hyperliquid exchange instance.
-        
+
         Args:
             exchange (Exchange): An initialized Hyperliquid exchange instance
         """
@@ -60,7 +68,7 @@ class Order:
         slippage: float = Exchange.DEFAULT_SLIPPAGE,
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
-        builder: Optional[BuilderInfo] = None
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         """
         Place a market order using asset quantity.
@@ -77,9 +85,7 @@ class Order:
         Returns:
             Exchange response
         """
-        return self.exchange.market_open(
-            asset, side.value, quantity, None, slippage, cloid, builder
-        )
+        return self.exchange.market_open(asset, side.value, quantity, None, slippage, cloid, builder)
 
     def market_order_notional(
         self,
@@ -89,7 +95,7 @@ class Order:
         slippage: float = Exchange.DEFAULT_SLIPPAGE,
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
-        builder: Optional[BuilderInfo] = None
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         """
         Place a market order using notional amount (USD).
@@ -107,9 +113,7 @@ class Order:
             Exchange response
         """
         quantity = self._calculate_quantity(asset, notional_amount)
-        return self.market_order(
-            asset, side, quantity, slippage, reduce_only, cloid, builder
-        )
+        return self.market_order(asset, side, quantity, slippage, reduce_only, cloid, builder)
 
     def limit_order(
         self,
@@ -120,7 +124,7 @@ class Order:
         tif: TimeInForce = TimeInForce.GTC,
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
-        builder: Optional[BuilderInfo] = None
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         """
         Place a limit order using asset quantity.
@@ -139,9 +143,7 @@ class Order:
             Exchange response
         """
         order_type = self._create_order_type(tif)
-        return self.exchange.order(
-            asset, side.value, quantity, price, order_type, reduce_only, cloid, builder
-        )
+        return self.exchange.order(asset, side.value, quantity, price, order_type, reduce_only, cloid, builder)
 
     def limit_order_notional(
         self,
@@ -152,7 +154,7 @@ class Order:
         tif: TimeInForce = TimeInForce.GTC,
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
-        builder: Optional[BuilderInfo] = None
+        builder: Optional[BuilderInfo] = None,
     ) -> Any:
         """
         Place a limit order using notional amount (USD).
@@ -171,9 +173,7 @@ class Order:
             Exchange response
         """
         quantity = self._calculate_quantity(asset, notional_amount, price)
-        return self.limit_order(
-            asset, side, quantity, price, tif, reduce_only, cloid, builder
-        )
+        return self.limit_order(asset, side, quantity, price, tif, reduce_only, cloid, builder)
 
     def cancel_order(self, asset: str, oid: int) -> Any:
         """Cancel an order by order ID"""
@@ -192,7 +192,7 @@ class Order:
         price: float,
         tif: TimeInForce = TimeInForce.GTC,
         reduce_only: bool = False,
-        cloid: Optional[Cloid] = None
+        cloid: Optional[Cloid] = None,
     ) -> Any:
         """
         Modify an existing order.
@@ -213,7 +213,7 @@ class Order:
         order_type = self._create_order_type(tif)
         return self.exchange.modify_order(
             oid_or_cloid, asset, side.value, quantity, price, order_type, reduce_only, cloid
-        ) 
+        )
 
     def stop_loss(
         self,
@@ -228,7 +228,7 @@ class Order:
     ) -> Any:
         """
         Place a stop loss order.
-        
+
         Args:
             asset: Asset symbol
             side: OrderSide.BUY or OrderSide.SELL
@@ -239,21 +239,12 @@ class Order:
             reduce_only: Whether order reduces position only
             cloid: Optional client order ID
         """
-        order_type = {
-            "trigger": {
-                "triggerPx": trigger_price,
-                "isMarket": is_market,
-                "tpsl": "sl"
-            }
-        }
-        
+        order_type = {"trigger": {"triggerPx": trigger_price, "isMarket": is_market, "tpsl": "sl"}}
+
         # For stop-limit orders, use the limit price, otherwise use trigger price
         exec_price = limit_price if limit_price is not None else trigger_price
-        
-        return self.exchange.order(
-            asset, side.value, quantity, exec_price, 
-            order_type, reduce_only, cloid
-        )
+
+        return self.exchange.order(asset, side.value, quantity, exec_price, order_type, reduce_only, cloid)
 
     def take_profit(
         self,
@@ -268,7 +259,7 @@ class Order:
     ) -> Any:
         """
         Place a take profit order.
-        
+
         Args:
             asset: Asset symbol
             side: OrderSide.BUY or OrderSide.SELL
@@ -279,20 +270,11 @@ class Order:
             reduce_only: Whether order reduces position only
             cloid: Optional client order ID
         """
-        order_type = {
-            "trigger": {
-                "triggerPx": trigger_price,
-                "isMarket": is_market,
-                "tpsl": "tp"
-            }
-        }
-        
+        order_type = {"trigger": {"triggerPx": trigger_price, "isMarket": is_market, "tpsl": "tp"}}
+
         exec_price = limit_price if limit_price is not None else trigger_price
-        
-        return self.exchange.order(
-            asset, side.value, quantity, exec_price, 
-            order_type, reduce_only, cloid
-        )
+
+        return self.exchange.order(asset, side.value, quantity, exec_price, order_type, reduce_only, cloid)
 
     def bracket_order(
         self,
@@ -308,7 +290,7 @@ class Order:
     ) -> List[Any]:
         """
         Place a bracket order (entry + stop loss + take profit).
-        
+
         Args:
             asset: Asset symbol
             side: OrderSide.BUY or OrderSide.SELL
@@ -321,15 +303,12 @@ class Order:
             cloid: Optional client order ID base (will be incremented)
         """
         results = []
-        
+
         # Entry order
         entry_order_type = self._create_order_type(entry_type)
         entry_cloid = Cloid.from_int(int(cloid.to_raw(), 16)) if cloid else None
-        
-        entry = self.exchange.order(
-            asset, side.value, quantity, entry_price,
-            entry_order_type, False, entry_cloid
-        )
+
+        entry = self.exchange.order(asset, side.value, quantity, entry_price, entry_order_type, False, entry_cloid)
         results.append(entry)
 
         # Only place TP/SL if entry order is accepted
@@ -337,18 +316,14 @@ class Order:
             # Stop loss (opposite side of entry)
             sl_cloid = Cloid.from_int(int(entry_cloid.to_raw(), 16) + 1) if entry_cloid else None
             opposite_side = OrderSide.SELL if side == OrderSide.BUY else OrderSide.BUY
-            sl = self.stop_loss(
-                asset, opposite_side, quantity, stop_loss_price,
-                is_market_tp_sl, None, True, sl_cloid
-            )
+            sl = self.stop_loss(asset, opposite_side, quantity, stop_loss_price, is_market_tp_sl, None, True, sl_cloid)
             results.append(sl)
 
             # Take profit (opposite side of entry)
             tp_cloid = Cloid.from_int(int(entry_cloid.to_raw(), 16) + 2) if entry_cloid else None
             tp = self.take_profit(
-                asset, opposite_side, quantity, take_profit_price,
-                is_market_tp_sl, None, True, tp_cloid
+                asset, opposite_side, quantity, take_profit_price, is_market_tp_sl, None, True, tp_cloid
             )
             results.append(tp)
 
-        return results 
+        return results
