@@ -177,14 +177,14 @@ def sign_l1_action(wallet, action, active_pool, nonce, is_mainnet):
     return sign_inner(wallet, data)
 
 
-def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet, signature_chain_id = "0x66eee"):
+def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet, signature_chain_id = "0x66eee", chainId = 421614):
     action["signatureChainId"] = signature_chain_id
     action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
     data = {
         "domain": {
             "name": "HyperliquidSignTransaction",
             "version": "1",
-            "chainId": 421614,
+            "chainId": chainId,
             "verifyingContract": "0x0000000000000000000000000000000000000000",
         },
         "types": {
@@ -365,10 +365,8 @@ def sign_staking_transfer_action(wallet, action, is_mainnet):
         "nonce": XXX,
         "signatureChainId": "0x1",
     }
-    
-    "hyperliquidChain" is populated by sign_user_signed_action
+    "signatureChainId" and "hyperliquidChain" is populated by sign_user_signed_action
     """
-    action["signatureChainId"] = "0x1"
     return sign_user_signed_action(
         wallet,
         action,
@@ -393,9 +391,8 @@ def sign_staking_delegation_action(wallet, action, is_mainnet):
         "signatureChainId": "0x1",
     }
     
-    "hyperliquidChain" is populated by sign_user_signed_action
+    "signatureChainId" and "hyperliquidChain" is populated by sign_user_signed_action
     """
-    action["signatureChainId"] = "0x1"
     return sign_user_signed_action(
         wallet,
         action,
@@ -408,6 +405,8 @@ def sign_staking_delegation_action(wallet, action, is_mainnet):
         ],
         "HyperliquidTransaction:TokenDelegate",
         is_mainnet,
+        signatureChainId = "0x1",
+        chainId = 1
     )
 
 def sign_inner(wallet, data):
