@@ -25,6 +25,7 @@ from hyperliquid.utils.signing import (
     sign_approve_builder_fee,
     sign_l1_action,
     sign_spot_transfer_action,
+    sign_staking_delegation_action,
     sign_staking_transfer_action,
     sign_usd_class_transfer_action,
     sign_usd_transfer_action,
@@ -590,3 +591,21 @@ class Exchange(API):
             action,
             signature,
             timestamp,
+        )
+    
+    def staking_delegation(self, validator: str, amount: float, is_undelegate: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "tokenDelegate",
+            "validator": validator,
+            "wei": str(amount),
+            "isUndelegate": is_undelegate,
+            "nonce": timestamp,
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_staking_delegation_action(self.wallet, action, is_mainnet)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
