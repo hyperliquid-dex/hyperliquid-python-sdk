@@ -22,7 +22,6 @@ formatting: codestyle
 #* Linting
 test:
 	poetry run pytest -c pyproject.toml tests/
-	poetry run coverage-badge -o assets/images/coverage.svg -f
 
 check-codestyle:
 	poetry run isort --diff --check-only --settings-path pyproject.toml ./
