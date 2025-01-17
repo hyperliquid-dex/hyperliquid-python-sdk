@@ -233,7 +233,9 @@ def add_multi_sig_fields(action, payload_multi_sig_user, outer_signer):
     return action
 
 
-def sign_multi_sig_inner(wallet, action, is_mainnet, sign_types, tx_type, payload_multi_sig_user, outer_signer):
+def sign_multi_sig_user_signed_action_payload(
+    wallet, action, is_mainnet, sign_types, tx_type, payload_multi_sig_user, outer_signer
+):
     envelope = add_multi_sig_fields(action, payload_multi_sig_user, outer_signer)
     sign_types = add_multi_sig_types(sign_types)
     return sign_user_signed_action(
@@ -241,6 +243,19 @@ def sign_multi_sig_inner(wallet, action, is_mainnet, sign_types, tx_type, payloa
         envelope,
         sign_types,
         tx_type,
+        is_mainnet,
+    )
+
+
+def sign_multi_sig_l1_action_payload(
+    wallet, action, is_mainnet, vault_address, timestamp, payload_multi_sig_user, outer_signer
+):
+    envelope = [payload_multi_sig_user.lower(), outer_signer.lower(), action]
+    return sign_l1_action(
+        wallet,
+        envelope,
+        vault_address,
+        timestamp,
         is_mainnet,
     )
 

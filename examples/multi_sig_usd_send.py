@@ -1,7 +1,7 @@
-from hyperliquid.utils import constants
-from hyperliquid.utils.signing import get_timestamp_ms, sign_multi_sig_inner, USD_SEND_SIGN_TYPES
-from hyperliquid.utils.types import Any, List
 import example_utils
+
+from hyperliquid.utils import constants
+from hyperliquid.utils.signing import USD_SEND_SIGN_TYPES, get_timestamp_ms, sign_multi_sig_user_signed_action_payload
 
 
 def main():
@@ -26,12 +26,12 @@ def main():
         "amount": "100.0",
         "time": timestamp,
     }
-    signatures: List[Any] = []
+    signatures = []
 
     # Collect signatures from each wallet in multi_sig_wallets. Each wallet must belong to a user.
     for wallet in multi_sig_wallets:
         # Sign the action with each wallet
-        signature = sign_multi_sig_inner(
+        signature = sign_multi_sig_user_signed_action_payload(
             wallet,
             action,
             exchange.base_url == constants.MAINNET_API_URL,

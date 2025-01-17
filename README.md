@@ -46,10 +46,12 @@ python examples/basic_order.py
 
 ## Getting started with contributing to this repo
 
-1. Download `Poetry`: https://python-poetry.org/. Note that in the install script you might have to set `symlinks=True` in `venv.EnvBuilder`.
+1. Download `Poetry`: https://python-poetry.org/. 
+   - Note that in the install script you might have to set `symlinks=True` in `venv.EnvBuilder`.
+   - Note that Poetry v2 is not supported, so you'll need to specify a specific version e.g. curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.1 python3 - 
 
 2. Point poetry to correct version of python. For development we require python 3.10 exactly. Some dependencies have issues on 3.11, while older versions don't have correct typing support.
-`brew install python@3.10 && poetry env use /opt/homebrew/Cellar/python@3.10/3.10.10_1/bin/python3.10`
+`brew install python@3.10 && poetry env use /opt/homebrew/Cellar/python@3.10/3.10.16/bin/python3.10`
 
 3. Install dependencies:
 
@@ -210,16 +212,13 @@ This project is licensed under the terms of the `MIT` license. See [LICENSE](LIC
 @misc{hyperliquid-python-sdk,
   author = {Hyperliquid},
   title = {SDK for Hyperliquid API trading with Python.},
-  year = {2023},
+  year = {2024},
   publisher = {GitHub},
   journal = {GitHub repository},
   howpublished = {\url{https://github.com/hyperliquid-dex/hyperliquid-python-sdk}}
 }
 ```
 
-## Terms
-
-By using this package you agree to the Terms of Use. See [TERMS](TERMS.md) for more details.
 ## Credits
 
 This project was generated with [`python-package-template`](https://github.com/TezRomacH/python-package-template).
