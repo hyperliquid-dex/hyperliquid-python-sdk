@@ -509,7 +509,7 @@ class Info(API):
         """
         return self.post("/info", {"type": "delegatorSummary", "user": address})
     
-    def user_stakes(self, address: str) -> Any:
+    def user_staking_delegations(self, address: str) -> Any:
         """Retrieve the user's staking delegations.
         POST /info
         Args:
