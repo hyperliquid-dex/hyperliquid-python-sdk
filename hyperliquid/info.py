@@ -510,7 +510,7 @@ class Info(API):
         return self.post("/info", {"type": "delegatorSummary", "user": address})
     
     def user_stakes(self, address: str) -> Any:
-        """Retrieve the staking info for each validator associated with a user.
+        """Retrieve the user's staking delegations.
         POST /info
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
