@@ -500,6 +500,56 @@ class Info(API):
             }
         """
         return self.post("/info", {"type": "userFees", "user": address})
+    
+    def user_staking_summary(self, address: str) -> Any:
+        """Retrieve the staking summary associated with a user.
+        POST /info
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns:
+            {
+                delegated: float string,
+                undelegated: float string,
+                totalPendingWithdrawal: float string,
+                nPendingWithdrawals: int
+            }
+        """
+        return self.post("/info", {"type": "delegatorSummary", "user": address})
+    
+    def user_staking_delegations(self, address: str) -> Any:
+        """Retrieve the user's staking delegations.
+        POST /info
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns:
+            [
+                {
+                    validator: string,
+                    amount: float string,
+                    lockedUntilTimestamp: int
+                },
+            ]
+        """
+        return self.post("/info", {"type": "delegations", "user": address})
+    
+    def user_staking_rewards(self, address: str) -> Any:
+        """Retrieve the historic staking rewards associated with a user.
+        POST /info
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns:
+            [
+                {
+                    time: int,
+                    source: string,
+                    totalAmount: float string
+                },
+            ]
+        """
+        return self.post("/info", {"type": "delegatorRewards", "user": address})
 
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
