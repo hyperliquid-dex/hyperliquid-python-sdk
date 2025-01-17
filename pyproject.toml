@@ -138,17 +138,13 @@ addopts = [
   "--tb=short",
   "--doctest-modules",
   "--doctest-continue-on-failure",
+  "--record-mode=once",
+  "--cov-report=html",
+  "--cov=hyperliquid"
 ]
 
 [tool.coverage.run]
-source = ["tests"]
-
-[coverage.paths]
-source = "hyperliquid-python-sdk"
-
-[coverage.run]
 branch = true
 
-[coverage.report]
-fail_under = 50
+[tool.coverage.report]
 show_missing = true

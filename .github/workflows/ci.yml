@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+concurrency:
+  # Concurrency group that uses the workflow name and PR number if available
+  # or commit SHA as a fallback. If a new build is triggered under that
+  # concurrency group while a previous build is running it will be canceled.
+  # Repeated pushes to a PR will cancel all previous builds, while multiple
+  # merges to master will not cancel.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        run: make poetry-download
+
+      - name: Set up cache
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install
+
+      - name: Run tests
+        run: |
+          make test
+
+      - name: Archive Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        # also upload in case of test failure. this does not affect the overall workflow status
+        if: always()
+        with:
+          name: coverage-html-report-${{ matrix.python-version }}
+          path: htmlcov
+          retention-days: 5
