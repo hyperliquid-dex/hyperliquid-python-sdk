@@ -123,6 +123,12 @@ class Cloid:
         assert self._raw_cloid[:2] == "0x", "cloid is not a hex string"
         assert len(self._raw_cloid[2:]) == 32, "cloid is not 16 bytes"
 
+    def __str__(self):
+        return str(self._raw_cloid)
+
+    def __repr__(self):
+        return str(self._raw_cloid)
+    
     @staticmethod
     def from_int(cloid: int) -> Cloid:
         return Cloid(f"{cloid:#034x}")
