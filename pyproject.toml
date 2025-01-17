@@ -40,9 +40,8 @@ classifiers = [  #! Update me
 
 [tool.poetry.dependencies]
 python = "^3.8"
-eth-utils = "^2.1.0"
-eth-abi = "^4.1.0"
-eth-account = "^0.10.0"
+eth-utils = ">=2.1.0,<6.0.0"
+eth-account = ">=0.10.0,<0.14.0"
 websocket-client = "^1.5.1"
 requests = "^2.31.0"
 msgpack = "^1.0.5"
