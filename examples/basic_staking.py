@@ -13,7 +13,7 @@ def main():
     print("Staking summary:")
     print(json.dumps(user_staking_summary, indent=2))
 
-    # Get the user staking details and print information
+    # Get the user staking delegations and print information
     user_stakes = info.user_stakes(address)
     print("Staking breakdown:")
     print(json.dumps(user_stakes, indent=2))
