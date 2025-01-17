@@ -1,6 +1,7 @@
+import example_utils
+
 from hyperliquid.utils import constants
 from hyperliquid.utils.signing import get_timestamp_ms, sign_multi_sig_l1_action_payload
-import example_utils
 
 
 def main():
