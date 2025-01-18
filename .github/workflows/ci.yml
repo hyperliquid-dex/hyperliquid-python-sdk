@@ -20,7 +20,10 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python-version: ['3.9', '3.11']
+        # https://devguide.python.org/versions/
+        # 3.9: lower bound = lowest Python non-EOL version
+        # 3.13: upper bound = latest Python stable version
+        python-version: ['3.9', '3.13']
     steps:
       - uses: actions/checkout@v4
 
