@@ -22,11 +22,10 @@ class Info(API):
         spot_meta: Optional[SpotMeta] = None,
     ):
         super().__init__(base_url)
+        self.ws_manager: Optional[WebsocketManager] = None
         if not skip_ws:
             self.ws_manager = WebsocketManager(self.base_url)
             self.ws_manager.start()
-        else:
-            self.ws_manager = None
         if meta is None:
             meta = self.meta()
 
@@ -500,7 +499,7 @@ class Info(API):
             }
         """
         return self.post("/info", {"type": "userFees", "user": address})
-    
+
     def user_staking_summary(self, address: str) -> Any:
         """Retrieve the staking summary associated with a user.
         POST /info
@@ -516,7 +515,7 @@ class Info(API):
             }
         """
         return self.post("/info", {"type": "delegatorSummary", "user": address})
-    
+
     def user_staking_delegations(self, address: str) -> Any:
         """Retrieve the user's staking delegations.
         POST /info
@@ -533,7 +532,7 @@ class Info(API):
             ]
         """
         return self.post("/info", {"type": "delegations", "user": address})
-    
+
     def user_staking_rewards(self, address: str) -> Any:
         """Retrieve the historic staking rewards associated with a user.
         POST /info

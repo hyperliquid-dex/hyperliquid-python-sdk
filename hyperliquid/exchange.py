@@ -210,7 +210,7 @@ class Exchange(API):
         cloid: Optional[Cloid] = None,
         builder: Optional[BuilderInfo] = None,
     ) -> Any:
-        address = self.wallet.address
+        address: str = self.wallet.address
         if self.account_address:
             address = self.account_address
         if self.vault_address:
