@@ -1,7 +1,6 @@
 import json
 import logging
 import threading
-import time
 from collections import defaultdict
 
 import websocket

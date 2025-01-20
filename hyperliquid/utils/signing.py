@@ -364,7 +364,7 @@ def sign_inner(wallet, data):
 
 
 def float_to_wire(x: float) -> str:
-    rounded = "{:.8f}".format(x)
+    rounded = f"{x:.8f}"
     if abs(float(rounded) - x) >= 1e-12:
         raise ValueError("float_to_wire causes rounding", x)
     if rounded == "-0":
