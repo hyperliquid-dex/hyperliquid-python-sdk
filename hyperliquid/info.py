@@ -46,7 +46,7 @@ class Info(API):
                 self.name_to_coin[name] = spot_info["name"]
 
     def disconnect_websocket(self):
-        if self.ws_manager is None:
+        if not getattr(self, "ws_manager", None):
             raise RuntimeError("Cannot call disconnect_websocket since skip_ws was used")
         else:
             self.ws_manager.stop()
@@ -569,7 +569,7 @@ class Info(API):
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
         if subscription["type"] == "l2Book" or subscription["type"] == "trades" or subscription["type"] == "candle":
             subscription["coin"] = self.name_to_coin[subscription["coin"]]
-        if self.ws_manager is None:
+        if not getattr(self, "ws_manager", None):
             raise RuntimeError("Cannot call subscribe since skip_ws was used")
         else:
             return self.ws_manager.subscribe(subscription, callback)
@@ -577,7 +577,7 @@ class Info(API):
     def unsubscribe(self, subscription: Subscription, subscription_id: int) -> bool:
         if subscription["type"] == "l2Book" or subscription["type"] == "trades" or subscription["type"] == "candle":
             subscription["coin"] = self.name_to_coin[subscription["coin"]]
-        if self.ws_manager is None:
+        if not getattr(self, "ws_manager", None):
             raise RuntimeError("Cannot call unsubscribe since skip_ws was used")
         else:
             return self.ws_manager.unsubscribe(subscription, subscription_id)
