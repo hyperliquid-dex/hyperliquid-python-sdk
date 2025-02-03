@@ -9,6 +9,7 @@ Integer prices are always allowed, regardless of the number of significant figur
 Prices are precise to the lesser of 5 significant figures or 6 decimals.
 You can find the szDecimals for an asset by making a meta request to the info endpoint
 """
+
 import json
 
 import example_utils

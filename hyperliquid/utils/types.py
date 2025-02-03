@@ -128,7 +128,7 @@ class Cloid:
 
     def __repr__(self):
         return str(self._raw_cloid)
-    
+
     @staticmethod
     def from_int(cloid: int) -> Cloid:
         return Cloid(f"{cloid:#034x}")
