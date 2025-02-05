@@ -18,7 +18,7 @@ def main():
     Finally, it creates an extra agent that persists beyond the current session and places an order with the extra agent.
     """
 
-    # Setting up the environment (exchange, account info, etc.) for testing purposes.
+    # Set up the environment (exchange, account info, etc.) for testing purposes.
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
     # Ensuring that the wallet address and agent address are not the same
