@@ -21,8 +21,8 @@ def main():
     # Set up the environment (exchange, account info, etc.) for testing purposes.
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
-    # Ensuring that the wallet address and agent address are not the same
-    # This prevents the risk of accidentally creating an agent using the wallet itself, which could compromise funds.
+    # Ensure that the wallet address and agent address are not the same
+    # This prevents the risk of accidentally creating an agent using the wallet itself.
     if exchange.account_address != exchange.wallet.address:
         raise Exception("You should not create an agent using an agent")
 
