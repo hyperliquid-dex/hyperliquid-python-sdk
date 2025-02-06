@@ -21,8 +21,8 @@ poetry-download:	## Download and install poetry
 
 lint: pre-commit	## Alias for the pre-commit target
 
-pre-commit:  ## Run linters + formatters via pre-commit
-	poetry run pre-commit run --all-files --verbose --show-diff-on-failure --color always
+pre-commit:  ## Run linters + formatters via pre-commit, run "make pre-commit hook=black" to run only black
+	poetry run pre-commit run --all-files --verbose --show-diff-on-failure --color always $(hook)
 
 test:	## Run tests with pytest
 	poetry run pytest -c pyproject.toml tests/

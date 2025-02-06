@@ -71,7 +71,7 @@ lint                  Alias for the pre-commit target
 lockfile-update       Update poetry.lock
 lockfile-update-full  Fully regenerate poetry.lock
 poetry-download       Download and install poetry
-pre-commit            Run linters + formatters via pre-commit
+pre-commit            Run linters + formatters via pre-commit, run "make pre-commit hook=black" to run only black
 test                  Run tests with pytest
 update-dev-deps       Update development dependencies to latest versions
 ```
