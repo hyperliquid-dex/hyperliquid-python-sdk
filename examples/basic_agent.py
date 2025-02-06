@@ -9,10 +9,10 @@ from hyperliquid.utils import constants
 def main():
     """
     Sets up an environment for testing purposes by creating an agent that can place trades on behalf of the account.
-    The agent does not have permission to transfer or withdraw funds. You can run this part on a separate machine or 
-    change the code to connect the agent via a wallet app instead of using your private key directly in Python. 
+    The agent does not have permission to transfer or withdraw funds. You can run this part on a separate machine or
+    change the code to connect the agent via a wallet app instead of using your private key directly in Python.
     You can also create a named agent using the frontend, which persists the authorization under an agent name.
-    
+
     The main function then proceeds to place a test order with the agent and simulates the process of managing orders
     and ensuring that orders that are no longer needed are cleaned up.
     Finally, it creates an extra agent that persists beyond the current session and places an order with the extra agent.
@@ -26,7 +26,6 @@ def main():
     if exchange.account_address != exchange.wallet.address:
         raise Exception("You should not create an agent using an agent")
 
- 
     approve_result, agent_key = exchange.approve_agent()
 
     # Check if the agent approval was successful. If not, log the error and return.
@@ -34,7 +33,7 @@ def main():
     if approve_result["status"] != "ok":
         print("approving agent failed", approve_result)
         return
-    
+
     # Create the agent's local account using the agent's private key.
     # We use `eth_account.Account.from_key()` to securely generate the agent's account from its private key.
     agent_account: LocalAccount = eth_account.Account.from_key(agent_key)
@@ -59,10 +58,10 @@ def main():
             print(cancel_result)
 
     # Create an extra agent that persists beyond the current session.
-    # The "persist" argument ensures that the agent remains available for future interactions and doesn't require re-approval each time.    
+    # The "persist" argument ensures that the agent remains available for future interactions and doesn't require re-approval each time.
 
     approve_result, extra_agent_key = exchange.approve_agent("persist")
-    
+
     # Check if the extra agent was successfully approved.
     if approve_result["status"] != "ok":
         print("approving extra agent failed", approve_result)
