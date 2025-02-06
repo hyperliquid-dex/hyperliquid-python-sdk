@@ -120,8 +120,10 @@ class Cloid:
         self._validate()
 
     def _validate(self):
-        assert self._raw_cloid[:2] == "0x", "cloid is not a hex string"
-        assert len(self._raw_cloid[2:]) == 32, "cloid is not 16 bytes"
+        if not self._raw_cloid[:2] == "0x":
+            raise TypeError("cloid is not a hex string")
+        if not len(self._raw_cloid[2:]) == 32:
+            raise TypeError("cloid is not 16 bytes")
 
     def __str__(self):
         return str(self._raw_cloid)

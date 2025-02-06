@@ -1,74 +1,44 @@
-#* Variables
+# Define the shell to use when executing commands
 SHELL := /usr/bin/env bash -o pipefail -o errexit
 
-#* Lockfile handling
-lockfile-update:
+help:
+	@@grep -h '^[a-zA-Z]' $(MAKEFILE_LIST) | awk -F ':.*?## ' 'NF==2 {printf "   %-22s%s\n", $$1, $$2}' | sort
+
+lockfile-update:	## Update poetry.lock
 	poetry lock -n
 
-lockfile-update-full:
+lockfile-update-full:	## Fully regenerate poetry.lock
 	poetry lock -n --regenerate
 
-#* Installation
-install:
+install:	## Install dependencies from poetry.lock
 	poetry install -n
 
-install-types:
+install-types:	## Find and install additional types for mypy
 	poetry run mypy --install-types --non-interactive ./
 
-#* Poetry
-poetry-download:
+poetry-download:	## Download and install poetry
 	curl -sSL https://install.python-poetry.org | python -
 
-#* Formatters
-codestyle:
-	poetry run pyupgrade --exit-zero-even-if-changed --py39-plus **/*.py
-	poetry run isort --settings-path pyproject.toml ./
-	poetry run black --config pyproject.toml ./
+lint: pre-commit	## Alias for the pre-commit target
 
-formatting: codestyle
+pre-commit:  ## Run linters + formatters via pre-commit, run "make pre-commit hook=black" to run only black
+	poetry run pre-commit run --all-files --verbose --show-diff-on-failure --color always $(hook)
 
-#* Linting
-test:
+test:	## Run tests with pytest
 	poetry run pytest -c pyproject.toml tests/
 
-check-codestyle:
-	poetry run isort --diff --check-only --settings-path pyproject.toml ./
-	poetry run black --diff --check --config pyproject.toml ./
-	poetry run darglint --verbosity 2 hyperliquid tests
-
-check:
-	poetry run mypy --config-file pyproject.toml ./
-
-check-safety:
-	poetry check
+check-safety:	## Run safety checks on dependencies
 	poetry run safety check --full-report
-	poetry run bandit -ll --recursive hyperliquid tests
 
-lint: test check-codestyle mypy check-safety
+update-dev-deps:	## Update development dependencies to latest versions
+	poetry add -D mypy@latest pre-commit@latest pytest@latest safety@latest coverage@latest pytest-cov@latest
+	poetry run pre-commit autoupdate
 
-update-dev-deps:
-	poetry add -D bandit@latest darglint@latest "isort[colors]@latest" mypy@latest pre-commit@latest pydocstyle@latest pylint@latest pytest@latest pyupgrade@latest safety@latest coverage@latest coverage-badge@latest pytest-cov@latest
-	poetry add -D --allow-prereleases black@latest
-
-#* Cleaning
-pycache-remove:
+cleanup: ## Cleanup project
 	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
-
-dsstore-remove:
 	find . | grep -E ".DS_Store" | xargs rm -rf
-
-mypycache-remove:
 	find . | grep -E ".mypy_cache" | xargs rm -rf
-
-ipynbcheckpoints-remove:
-	find . | grep -E ".ipynb_checkpoints" | xargs rm -rf
-
-pytestcache-remove:
 	find . | grep -E ".pytest_cache" | xargs rm -rf
-
-build-remove:
 	rm -rf build/
-
-cleanup: pycache-remove dsstore-remove mypycache-remove ipynbcheckpoints-remove pytestcache-remove
 
 .PHONY: all $(MAKECMDGOALS)

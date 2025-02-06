@@ -48,43 +48,19 @@ msgpack = "^1.0.5"
 
 [tool.poetry.group.dev.dependencies]
 python = "^3.10"
-pytest = "^7.2.1"
-pytest-recording = "^0.12.2"
-bandit = "^1.7.1"
-black = "^24.8.0"
-darglint = "^1.8.1"
-isort = {extras = ["colors"], version = "^5.10.1"}
-mypy = "^0.991"
-mypy-extensions = "^0.4.3"
-pre-commit = "^2.15.0"
-pydocstyle = "^6.1.1"
-pylint = "^2.11.1"
-pyupgrade = "^2.29.1"
-safety = "^2.2.1"
-coverage = "^6.1.2"
-coverage-badge = "^1.1.0"
-pytest-cov = "^4.0.0"
+pytest = "^8.3.4"
+pytest-recording = "^0.13.2"
+mypy = "^1.14.1"
+mypy-extensions = "^1.0.0"
+pre-commit = "^4.1.0"
+safety = "^3.2.14"
+coverage = "^7.6.10"
+pytest-cov = "^6.0.0"
 vcrpy = { version = "^7.0.0", python = "3.10.10" }
 types-requests = "^2.31.0"
 
 [tool.black]
 line-length = 120
-
-exclude = '''
-/(
-    \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | env
-    | venv
-)/
-'''
 
 [tool.isort]
 # https://github.com/timothycrosley/isort/
@@ -125,6 +101,32 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    consider-using-in,
+    fixme,
+    import-error,
+    inconsistent-return-statements,
+    invalid-name,
+    logging-fstring-interpolation,
+    line-too-long,
+    missing-class-docstring,
+    missing-function-docstring,
+    missing-module-docstring,
+    no-else-raise,
+    no-else-return,
+    raise-missing-from,
+    redefined-builtin,
+    self-assigning-variable,
+    simplifiable-if-expression,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-branches,
+    too-many-positional-arguments,
+    too-many-public-methods,
+    too-many-return-statements
+"""
 
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml

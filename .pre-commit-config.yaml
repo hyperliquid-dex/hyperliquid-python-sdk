@@ -1,44 +1,63 @@
-default_language_version:
-  python: python3.10
-
-default_stages: [commit, push]
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v5.0.0
     hooks:
+      - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
-        exclude: LICENSE
-
-  - repo: local
+        exclude: LICENSE.md
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
-        name: pyupgrade
-        entry: poetry run pyupgrade --py310-plus
-        types: [python]
-        language: system
-
-  - repo: local
+        args: [--py39-plus]
+        exclude: hyperliquid/utils/types.py$
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.0
     hooks:
       - id: isort
-        name: isort
-        entry: poetry run isort --settings-path pyproject.toml
-        types: [python]
-        language: system
-
-  - repo: local
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.1.0
     hooks:
       - id: black
-        name: black
-        entry: poetry run black --config pyproject.toml
-        types: [python]
-        language: system
-
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        # ignoring formatting related lints, which are handled by black
+        args: ['--ignore=E501,E203,W503']
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.2
+    hooks:
+      - id: bandit
+        exclude: tests/.*$
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.3.4
+    hooks:
+      - id: pylint
+        exclude: examples/.*$
+  - repo: https://github.com/python-poetry/poetry
+    rev: 2.0.1
+    hooks:
+      - id: poetry-check
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
+    hooks:
+      - id: yamlfmt
+        args: [--mapping, '2', --offset, '2', --sequence, '4', --implicit_start]
+        files: .pre-commit-config.yaml|\.github/workflows/.*\.yml$
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.31.1
+    hooks:
+      - id: check-github-workflows
   - repo: local
     hooks:
-      - id: codestyle
-        name: codestyle
-        entry: make codestyle
-        types: [python]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy --config-file pyproject.toml ./
+        pass_filenames: false
         language: system
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes

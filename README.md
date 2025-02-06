@@ -60,122 +60,21 @@ make install
 
 ### Makefile usage
 
-CLI commands for faster development.
-
-<details>
-<summary>Install all dependencies</summary>
-<p>
-
-Install requirements:
+CLI commands for faster development. See `make help` for more details.
 
 ```bash
-make install
+check-safety          Run safety checks on dependencies
+cleanup               Cleanup project
+install               Install dependencies from poetry.lock
+install-types         Find and install additional types for mypy
+lint                  Alias for the pre-commit target
+lockfile-update       Update poetry.lock
+lockfile-update-full  Fully regenerate poetry.lock
+poetry-download       Download and install poetry
+pre-commit            Run linters + formatters via pre-commit, run "make pre-commit hook=black" to run only black
+test                  Run tests with pytest
+update-dev-deps       Update development dependencies to latest versions
 ```
-
-</p>
-</details>
-
-<details>
-<summary>Codestyle</summary>
-<p>
-
-Install pre-commit hooks which will run isort, black and codestyle on your code:
-
-```bash
-make pre-commit-install
-```
-
-Automatic formatting uses `pyupgrade`, `isort` and `black`.
-
-```bash
-make codestyle
-
-# or use synonym
-make formatting
-```
-
-Codestyle checks only, without rewriting files:
-
-```bash
-make check-codestyle
-```
-
-> Note: `check-codestyle` uses `isort`, `black` and `darglint` library
-
-Update all dev libraries to the latest version using one command
-
-```bash
-make update-dev-deps
-```
-
-</p>
-</details>
-
-<details>
-<summary>Tests with coverage badges</summary>
-<p>
-
-Run `pytest`
-
-```bash
-make test
-```
-
-</p>
-</details>
-
-<details>
-<summary>All linters</summary>
-<p>
-
-```bash
-make lint
-```
-
-the same as:
-
-```bash
-make test && make check-codestyle && make mypy && make check-safety
-```
-
-</p>
-</details>
-
-<details>
-<summary>Cleanup</summary>
-<p>
-Delete pycache files
-
-```bash
-make pycache-remove
-```
-
-Remove package build
-
-```bash
-make build-remove
-```
-
-Delete .DS_STORE files
-
-```bash
-make dsstore-remove
-```
-
-Remove .mypycache
-
-```bash
-make mypycache-remove
-```
-
-Or to remove all above run:
-
-```bash
-make cleanup
-```
-
-</p>
-</details>
 
 ## Releases
 
