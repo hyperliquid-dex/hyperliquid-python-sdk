@@ -16,7 +16,10 @@ def main():
         if sub_account["name"] == name:
             sub_account_user = sub_account["subAccountUser"]
 
-    print(exchange.sub_account_transfer(sub_account_user, True, 10))
+    # Transfer 1 USD to the subaccount
+    print(exchange.sub_account_transfer(sub_account_user, True, 1_000_000))
+    # Transfer 1.23 HYPE to the subaccount (the token string assumes testnet, the address needs to be changed for mainnet)
+    print(exchange.sub_account_spot_transfer(sub_account_user, True, "HYPE:0x7317beb7cceed72ef0b346074cc8e7ab", 1.23))
 
 
 if __name__ == "__main__":

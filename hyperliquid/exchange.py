@@ -445,6 +445,28 @@ class Exchange(API):
             timestamp,
         )
 
+    def sub_account_spot_transfer(self, sub_account_user: str, is_deposit: bool, token: str, amount: float) -> Any:
+        timestamp = get_timestamp_ms()
+        sub_account_transfer_action = {
+            "type": "subAccountSpotTransfer",
+            "subAccountUser": sub_account_user,
+            "isDeposit": is_deposit,
+            "token": token,
+            "amount": str(amount),
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            sub_account_transfer_action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            sub_account_transfer_action,
+            signature,
+            timestamp,
+        )
+
     def vault_usd_transfer(self, vault_address: str, is_deposit: bool, usd: int) -> Any:
         timestamp = get_timestamp_ms()
         vault_transfer_action = {
@@ -574,4 +596,23 @@ class Exchange(API):
             multi_sig_action,
             signature,
             nonce,
+        )
+
+    def use_big_blocks(self, enable: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "evmUserModify",
+            "usingBigBlocks": enable,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
         )
