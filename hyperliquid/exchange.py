@@ -575,3 +575,29 @@ class Exchange(API):
             signature,
             nonce,
         )
+    
+    def spot_deploy(self, token_id, user_and_wei: List[Tuple[str, int]], existing_token_and_wei: List[Tuple[str, int]]):
+        spot_deploy_action = {
+            "type": "spotDeploy",
+            "userGenesis":{
+                "token": token_id,
+                "userAndWei": [(address.lower(), amount) for address, amount in user_and_wei],
+                "existingTokenAndWei": [(address.lower(), amount) for address, amount in existing_token_and_wei]
+            }
+        }
+
+        timestamp = get_timestamp_ms()
+    
+        signature = sign_l1_action(
+            self.wallet,
+            spot_deploy_action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            spot_deploy_action,
+            signature,
+            timestamp,
+        )
