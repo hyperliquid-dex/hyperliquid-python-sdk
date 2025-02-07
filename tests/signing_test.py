@@ -13,6 +13,8 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
+    sign_staking_transfer_action,
+    sign_staking_delegation_action,
 )
 from hyperliquid.utils.types import Cloid
 
@@ -265,3 +267,31 @@ def test_schedule_cancel_action():
     assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
     assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
     assert signature_testnet["v"] == 27
+
+
+def test_sign_staking_transfer_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    message = {
+        "type": "cDeposit",
+        "wei": 100000000,
+        "nonce": 1687816341423,
+    }
+    signature = sign_staking_transfer_action(wallet, message, False)
+    assert signature["r"] == "0x9a8a8d278350f637a1066f14d66e9c42dc0a0f1d8a281b1ded2458628e244abd"
+    assert signature["s"] == "0x9a6b1a456c0794341a17ed9a7aca1527171229ef9b9b9fc5a817714fcb9afa6"
+    assert signature["v"] == 28
+
+
+def test_sign_staking_delegation_action():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    message = {
+        "type": "tokenDelegate",
+        "validator": "0x5e9ee1089755c3435139848e47e6635505d5a13a",
+        "wei": 100000000,
+        "isUndelegate": False,
+        "nonce": 1687816341423,
+    }
+    signature = sign_staking_delegation_action(wallet, message, False)
+    assert signature["r"] == "0xb8d14088d2efd302e451d0a4766eaf20d3fc234f0ba41fad078015fabe7f1442"
+    assert signature["s"] == "0x32529593b2cc6e9e00a01f25a4ad3628a50d2c3d40a88888a4e5f7dd184aa0b"
+    assert signature["v"] == 27

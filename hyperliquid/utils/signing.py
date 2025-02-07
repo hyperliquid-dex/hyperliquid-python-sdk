@@ -177,14 +177,14 @@ def sign_l1_action(wallet, action, active_pool, nonce, is_mainnet):
     return sign_inner(wallet, data)
 
 
-def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet):
-    action["signatureChainId"] = "0x66eee"
+def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet, signature_chain_id = "0x66eee", chainId = 421614):
+    action["signatureChainId"] = signature_chain_id
     action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
     data = {
         "domain": {
             "name": "HyperliquidSignTransaction",
             "version": "1",
-            "chainId": 421614,
+            "chainId": chainId,
             "verifyingContract": "0x0000000000000000000000000000000000000000",
         },
         "types": {
@@ -355,7 +355,59 @@ def sign_approve_builder_fee(wallet, action, is_mainnet):
         "HyperliquidTransaction:ApproveBuilderFee",
         is_mainnet,
     )
+    
+def sign_staking_transfer_action(wallet, action, is_mainnet):
+    """
+    Action Message: 
+    {
+        "type": "cDeposit",
+        "wei": <"100000000">,
+        "nonce": XXX,
+        "signatureChainId": "0x1",
+    }
+    "signatureChainId" and "hyperliquidChain" is populated by sign_user_signed_action
+    """
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "wei", "type": "uint64"},
+            {"name": "nonce", "type": "uint64"},
+        ],
+        "HyperliquidTransaction:CDeposit",
+        is_mainnet,
+    )
 
+def sign_staking_delegation_action(wallet, action, is_mainnet):
+    """
+    Action Message: 
+    {
+        "type": "tokenDelegate",
+        "validator": <validator_address>,
+        "wei": <"100000000">,
+        "isUndelegate": <true/false>,
+        "nonce": <"XXX">,
+        "signatureChainId": "0x1",
+    }
+    
+    "signatureChainId" and "hyperliquidChain" is populated by sign_user_signed_action
+    """
+    return sign_user_signed_action(
+        wallet,
+        action,
+        [
+            {"name": "hyperliquidChain", "type": "string"},
+            {"name": "validator", "type": "address"},
+            {"name": "wei", "type": "uint64"},
+            {"name": "isUndelegate", "type": "bool"},
+            {"name": "nonce", "type": "uint64"}, 
+        ],
+        "HyperliquidTransaction:TokenDelegate",
+        is_mainnet,
+        signatureChainId = "0x1",
+        chainId = 1
+    )
 
 def sign_inner(wallet, data):
     structured_data = encode_typed_data(full_message=data)
