@@ -23,7 +23,7 @@ def main():
 
     # Ensure that the wallet address and agent address are not the same
     # This prevents the risk of accidentally creating an agent using the wallet itself.
-    if exchange.account_address != exchange.wallet.address:
+    if exchange.account_address == exchange.wallet.address:
         raise Exception("You should not create an agent using an agent")
 
     approve_result, agent_key = exchange.approve_agent()
