@@ -21,9 +21,9 @@ def main():
     # Set up the environment (exchange, account info, etc.) for testing purposes.
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
-    # Ensure that the wallet address and agent address are not the same
-    # This prevents the risk of accidentally creating an agent using the wallet itself.
-    if exchange.account_address != exchange.wallet.address:
+    # Ensure that the wallet address and account address are the same.
+    # If these are not the same then an agent will be approved for the wallet address instead of the account address, and the order will fail.
+    if address != exchange.wallet.address:
         raise Exception("You should not create an agent using an agent")
 
     approve_result, agent_key = exchange.approve_agent()
@@ -73,8 +73,8 @@ def main():
     print("Running with extra agent address:", extra_agent_account.address)
 
     # Place an order with the extra agent using the same process as the original agent.
-    print("Placing order with original agent")
-    order_result = agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
+    print("Placing order with extra agent")
+    order_result = extra_agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
     print(order_result)
 
     # If the extra agent's order is placed successfully, attempt to cancel it.
