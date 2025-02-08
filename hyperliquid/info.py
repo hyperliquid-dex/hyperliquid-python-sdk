@@ -1,3 +1,4 @@
+# hyperliquid/hyperliquid/info.py
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
     Any,
@@ -95,6 +96,27 @@ class Info(API):
         return self.post("/info", {"type": "clearinghouseState", "user": address})
 
     def spot_user_state(self, address: str) -> Any:
+        """Retrieve spot trading details about a user.
+
+        POST /info
+
+        Args:
+            address (str): Onchain address in 42-character hexadecimal format;
+                            e.g. 0x0000000000000000000000000000000000000000.
+        Returns:
+            {
+                "balances": [
+                    {
+                        "coin": str,      # Token name (e.g., "USDC", "PURR")
+                        "token": int,     # Token index
+                        "hold": str,      # Amount in hold/locked in orders
+                        "total": str,     # Total balance
+                        "entryNtl": str   # Entry notional value
+                    },
+                    ...
+                ]
+            }
+        """
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
     def open_orders(self, address: str) -> Any:
@@ -165,34 +187,37 @@ class Info(API):
         """
         return self.post("/info", {"type": "allMids"})
 
-    def user_fills(self, address: str) -> Any:
+    def user_fills(self, address: str, aggregate_by_time: Optional[bool] = None) -> Any:
         """Retrieve a given user's fills.
 
         POST /info
 
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
-                            e.g. 0x0000000000000000000000000000000000000000.
+                        e.g. 0x0000000000000000000000000000000000000000.
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when 
+                                                a crossing order gets filled by multiple different resting orders.
 
         Returns:
             [
-              {
-                closedPnl: float string,
-                coin: str,
-                crossed: bool,
-                dir: str,
-                hash: str,
-                oid: int,
-                px: float string,
+            {
                 side: str,
                 startPosition: float string,
                 sz: float string,
-                time: int
-              },
-              ...
+                time: int,
+                fee: float string,
+                feeToken: str,
+                builderFee: Optional[float string]
+            },
+            ...
             ]
         """
-        return self.post("/info", {"type": "userFills", "user": address})
+        req = {"type": "userFills", "user": address}
+        # Only add aggregate_by_time to the request if it's provided.
+        if aggregate_by_time is not None:
+            req["aggregateByTime"] = aggregate_by_time
+
+        return self.post("/info", req)
 
     def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None) -> Any:
         """Retrieve a given user's fills by time.
@@ -201,13 +226,13 @@ class Info(API):
 
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
-                            e.g. 0x0000000000000000000000000000000000000000.
-            start_time (int): Unix timestamp in milliseconds
-            end_time (Optional[int]): Unix timestamp in milliseconds
+                        e.g. 0x0000000000000000000000000000000000000000.
+            start_time (int): Unix timestamp in milliseconds.
+            end_time (Optional[int]): Unix timestamp in milliseconds.
 
         Returns:
             [
-              {
+            {
                 closedPnl: float string,
                 coin: str,
                 crossed: bool,
@@ -219,13 +244,15 @@ class Info(API):
                 startPosition: float string,
                 sz: float string,
                 time: int
-              },
-              ...
+            },
+            ...
             ]
         """
-        return self.post(
-            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
-        )
+        req = {"type": "userFillsByTime", "user": address, "startTime": start_time}
+        if end_time is not None:
+            req["endTime"] = end_time
+
+        return self.post("/info", req)
 
     def meta(self) -> Meta:
         """Retrieve exchange perp metadata
@@ -555,6 +582,43 @@ class Info(API):
 
     def query_order_by_cloid(self, user: str, cloid: Cloid) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw()})
+        
+    def historical_orders(self, address: str) -> Any:
+      """Retrieve a user's historical orders (up to 2000 most recent).
+      
+      POST /info
+      
+      Args:
+          address (str): Address in 42-character hexadecimal format;
+                          e.g. 0x0000000000000000000000000000000000000000.
+      Returns:
+          [
+              {
+                  "order": {
+                      "coin": str,
+                      "side": "A" | "B",
+                      "limitPx": str,
+                      "sz": str,
+                      "oid": int,
+                      "timestamp": int,
+                      "triggerCondition": str,
+                      "isTrigger": bool,
+                      "triggerPx": str,
+                      "children": list,
+                      "isPositionTpsl": bool,
+                      "reduceOnly": bool,
+                      "orderType": str,
+                      "origSz": str,
+                      "tif": str,
+                      "cloid": Optional[str]
+                  },
+                  "status": "filled" | "open" | "canceled" | "triggered" | "rejected" | "marginCanceled",
+                  "statusTimestamp": int
+              },
+              ...
+          ]
+      """
+      return self.post("/info", {"type": "historicalOrders", "user": address})
 
     def query_referral_state(self, user: str) -> Any:
         return self.post("/info", {"type": "referral", "user": user})
