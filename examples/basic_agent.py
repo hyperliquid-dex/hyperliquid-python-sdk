@@ -74,7 +74,7 @@ def main():
 
     # Place an order with the extra agent using the same process as the original agent.
     print("Placing order with original agent")
-    order_result = agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
+    order_result = extra_agent_exchange.order("ETH", True, 0.2, 1000, {"limit": {"tif": "Gtc"}})
     print(order_result)
 
     # If the extra agent's order is placed successfully, attempt to cancel it.
