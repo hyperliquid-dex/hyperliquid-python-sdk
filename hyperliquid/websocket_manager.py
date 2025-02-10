@@ -75,8 +75,8 @@ class WebsocketManager(threading.Thread):
         self.stop_event = threading.Event()
 
     def run(self):
-        self.ws.run_forever()
         self.ping_sender.start()
+        self.ws.run_forever()
 
     def send_ping(self):
         while not self.stop_event.wait(50):
