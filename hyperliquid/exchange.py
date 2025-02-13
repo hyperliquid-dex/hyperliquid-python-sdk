@@ -94,7 +94,6 @@ class Exchange(API):
         reduce_only: bool = False,
         cloid: Optional[Cloid] = None,
         builder: Optional[BuilderInfo] = None,
-        grouping: Grouping = "na",
     ) -> Any:
         order: OrderRequest = {
             "coin": name,
@@ -106,7 +105,7 @@ class Exchange(API):
         }
         if cloid:
             order["cloid"] = cloid
-        return self.bulk_orders([order], builder, grouping)
+        return self.bulk_orders([order], builder)
 
     def bulk_orders(
         self,
