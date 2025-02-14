@@ -58,6 +58,7 @@ coverage = "^7.6.10"
 pytest-cov = "^6.0.0"
 vcrpy = { version = "^7.0.0", python = "3.10.10" }
 types-requests = "^2.31.0"
+lz4 = "^4.3"
 
 [tool.black]
 line-length = 120
