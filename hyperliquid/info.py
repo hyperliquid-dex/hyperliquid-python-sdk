@@ -32,15 +32,24 @@ class Info(API):
         if spot_meta is None:
             spot_meta = self.spot_meta()
 
-        self.coin_to_asset = {asset_info["name"]: asset for (asset, asset_info) in enumerate(meta["universe"])}
-        self.name_to_coin = {asset_info["name"]: asset_info["name"] for asset_info in meta["universe"]}
+        self.coin_to_asset = {}
+        self.name_to_coin = {}
+        self.asset_to_sz_decimals = {}
+        for asset, asset_info in enumerate(meta["universe"]):
+            self.coin_to_asset[asset_info["name"]] = asset
+            self.name_to_coin[asset_info["name"]] = asset_info["name"]
+            self.asset_to_sz_decimals[asset] = asset_info["szDecimals"]
 
         # spot assets start at 10000
         for spot_info in spot_meta["universe"]:
-            self.coin_to_asset[spot_info["name"]] = spot_info["index"] + 10000
+            asset = spot_info["index"] + 10000
+            self.coin_to_asset[spot_info["name"]] = asset
             self.name_to_coin[spot_info["name"]] = spot_info["name"]
             base, quote = spot_info["tokens"]
-            name = f'{spot_meta["tokens"][base]["name"]}/{spot_meta["tokens"][quote]["name"]}'
+            base_info = spot_meta["tokens"][base]
+            quote_info = spot_meta["tokens"][quote]
+            self.asset_to_sz_decimals[asset] = base_info["szDecimals"]
+            name = f'{base_info["name"]}/{quote_info["name"]}'
             if name not in self.name_to_coin:
                 self.name_to_coin[name] = spot_info["name"]
 
