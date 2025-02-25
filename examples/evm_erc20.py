@@ -267,7 +267,8 @@ else:
     creation_nonce = 0
 
 if SHOULD_LINK_CONTRACT:
-    assert contract_address is not None
+    if contract_address is None:
+        raise Exception("contract address cannot be None")
     action = {
         "type": "spotDeploy",
         "requestEvmContract": {
@@ -284,7 +285,7 @@ if SHOULD_LINK_CONTRACT:
         "signature": signature,
         "vaultAddress": None,
     }
-    response = requests.post(constants.TESTNET_API_URL + "/exchange", json=payload)
+    response = requests.post(constants.TESTNET_API_URL + "/exchange", json=payload, timeout=10)
     print(response.json())
 
     use_create_finalization = True
@@ -305,5 +306,5 @@ if SHOULD_LINK_CONTRACT:
         "signature": signature,
         "vaultAddress": None,
     }
-    response = requests.post(constants.TESTNET_API_URL + "/exchange", json=payload)
+    response = requests.post(constants.TESTNET_API_URL + "/exchange", json=payload, timeout=10)
     print(response.json())
