@@ -70,7 +70,9 @@ class WebsocketManager(threading.Thread):
         self.queued_subscriptions: List[Tuple[Subscription, ActiveSubscription]] = []
         self.active_subscriptions: Dict[str, List[ActiveSubscription]] = defaultdict(list)
         ws_url = "ws" + base_url[len("http") :] + "/ws"
-        self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
+        self.ws = websocket.WebSocketApp(
+            ws_url, on_message=self.on_message, on_open=self.on_open, on_close=self.on_close
+        )
         self.ping_sender = threading.Thread(target=self.send_ping)
         self.stop_event = threading.Event()
 
@@ -117,6 +119,10 @@ class WebsocketManager(threading.Thread):
         self.ws_ready = True
         for subscription, active_subscription in self.queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
+
+    def on_close(self, _ws, close_status_code, close_msg):
+        logging.debug("on_close", close_status_code, close_msg)
+        self.stop()
 
     def subscribe(
         self, subscription: Subscription, callback: Callable[[Any], None], subscription_id: Optional[int] = None
