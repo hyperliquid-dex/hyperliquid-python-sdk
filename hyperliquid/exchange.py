@@ -573,6 +573,123 @@ class Exchange(API):
             timestamp,
         )
 
+    def spot_deploy_register_token(self, token_name, sz_decimals, wei_decimals, max_gas, full_name) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "registerToken2": {
+                "spec": {"name": token_name, "szDecimals": sz_decimals, "weiDecimals": 8},
+                "maxGas": max_gas,
+                "fullName": full_name,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_user_genesis(self, token, user_and_wei, existing_token_and_wei) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "userGenesis": {
+                "token": token,
+                "userAndWei": [(user.lower(), wei) for (user, wei) in user_and_wei],
+                "existingTokenAndWei": existing_token_and_wei,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_genesis(self, token, max_supply, no_hyperliquidity):
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "genesis": {
+                "token": token,
+                "maxSupply": max_supply,
+            },
+        }
+        if no_hyperliquidity:
+            action["genesis"]["noHyperliquidity"] = True
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_register_spot(self, base_token, quote_token):
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "registerSpot": {
+                "tokens": [base_token, quote_token],
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_register_hyperliquidity(self, spot, start_px, order_sz, n_orders, n_seeded_levels):
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "registerHyperliquidity": {
+                "spot": spot,
+                "startPx": str(start_px),
+                "orderSz": str(order_sz),
+                "nOrders": n_orders,
+            },
+        }
+        if n_seeded_levels is not None:
+            action["registerHyperliquidity"]["nSeededLevels"] = n_seeded_levels
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
         multi_sig_action = {
