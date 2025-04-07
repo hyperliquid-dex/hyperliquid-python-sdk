@@ -8,6 +8,11 @@ import example_utils
 
 from hyperliquid.utils import constants
 
+# Set to True to enable freeze functionality for the deployed token
+# See step 2-a below for more details on freezing.
+ENABLE_FREEZE_PRIVILEGE = False
+DUMMY_USER = "0x0000000000000000000000000000000000000001"
+
 
 def main():
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
@@ -36,7 +41,7 @@ def main():
     user_genesis_result = exchange.spot_deploy_user_genesis(
         token,
         [
-            ("0x0000000000000000000000000000000000000001", "100000000000000"),
+            (DUMMY_USER, "100000000000000"),
             ("0xffffffffffffffffffffffffffffffffffffffff", "100000000000000"),
         ],
         [],
@@ -48,6 +53,20 @@ def main():
     # Distribute 100000000000000 wei on a weighted basis to all holders of token with index 1
     user_genesis_result = exchange.spot_deploy_user_genesis(token, [], [(1, "100000000000000")])
     print(user_genesis_result)
+
+    if ENABLE_FREEZE_PRIVILEGE:
+        # Step 2-a: Enables the deployer to freeze/unfreeze users. Freezing a user means
+        # that user cannot trade, send, or receive this token.
+        enable_freeze_privilege_result = exchange.spot_deploy_enable_freeze_privilege(token)
+        print(enable_freeze_privilege_result)
+
+        # Freeze user for token
+        freeze_user_result = exchange.spot_deploy_freeze_user(token, DUMMY_USER, True)
+        print(freeze_user_result)
+
+        # Unfreeze user for token
+        unfreeze_user_result = exchange.spot_deploy_freeze_user(token, DUMMY_USER, False)
+        print(unfreeze_user_result)
 
     # Step 3: Genesis
     #

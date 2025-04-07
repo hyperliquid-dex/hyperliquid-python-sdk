@@ -623,6 +623,71 @@ class Exchange(API):
             timestamp,
         )
 
+    def spot_deploy_enable_freeze_privilege(self, token: int) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "enableFreezePrivilege": {
+                "token": token,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_freeze_user(self, token: int, user: str, freeze: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "freezeUser": {
+                "token": token,
+                "user": user.lower(),
+                "freeze": freeze,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_revoke_freeze_privilege(self, token: int) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "revokeFreezePrivilege": {
+                "token": token,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
     def spot_deploy_genesis(self, token: int, max_supply: str, no_hyperliquidity: bool) -> Any:
         timestamp = get_timestamp_ms()
         genesis = {
