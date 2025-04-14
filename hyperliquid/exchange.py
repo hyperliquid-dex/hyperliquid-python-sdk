@@ -53,6 +53,10 @@ class Exchange(API):
         self.account_address = account_address
         self.info = Info(base_url, True, meta, spot_meta)
 
+    @property
+    def is_mainnet(self) -> bool:
+        return self.base_url == MAINNET_API_URL
+
     def _post_action(self, action, signature, nonce):
         payload = {
             "action": action,
@@ -122,7 +126,7 @@ class Exchange(API):
             order_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
 
         return self._post_action(
@@ -176,7 +180,7 @@ class Exchange(API):
             modify_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
 
         return self._post_action(
@@ -262,7 +266,7 @@ class Exchange(API):
             cancel_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
 
         return self._post_action(
@@ -289,7 +293,7 @@ class Exchange(API):
             cancel_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
 
         return self._post_action(
@@ -317,7 +321,7 @@ class Exchange(API):
             schedule_cancel_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             schedule_cancel_action,
@@ -338,7 +342,7 @@ class Exchange(API):
             update_leverage_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             update_leverage_action,
@@ -360,7 +364,7 @@ class Exchange(API):
             update_isolated_margin_action,
             self.vault_address,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             update_isolated_margin_action,
@@ -379,7 +383,7 @@ class Exchange(API):
             set_referrer_action,
             None,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             set_referrer_action,
@@ -398,7 +402,7 @@ class Exchange(API):
             create_sub_account_action,
             None,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             create_sub_account_action,
@@ -418,7 +422,7 @@ class Exchange(API):
             "toPerp": to_perp,
             "nonce": timestamp,
         }
-        signature = sign_usd_class_transfer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        signature = sign_usd_class_transfer_action(self.wallet, action, self.is_mainnet)
         return self._post_action(
             action,
             signature,
@@ -438,7 +442,7 @@ class Exchange(API):
             sub_account_transfer_action,
             None,
             timestamp,
-            self.base_url == MAINNET_API_URL,
+            self.is_mainnet,
         )
         return self._post_action(
             sub_account_transfer_action,
@@ -476,8 +480,7 @@ class Exchange(API):
             "isDeposit": is_deposit,
             "usd": usd,
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, is_mainnet)
+        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, self.is_mainnet)
         return self._post_action(
             vault_transfer_action,
             signature,
@@ -487,8 +490,7 @@ class Exchange(API):
     def usd_transfer(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "usdSend"}
-        is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_usd_transfer_action(self.wallet, action, is_mainnet)
+        signature = sign_usd_transfer_action(self.wallet, action, self.is_mainnet)
         return self._post_action(
             action,
             signature,
@@ -504,8 +506,7 @@ class Exchange(API):
             "time": timestamp,
             "type": "spotSend",
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_spot_transfer_action(self.wallet, action, is_mainnet)
+        signature = sign_spot_transfer_action(self.wallet, action, self.is_mainnet)
         return self._post_action(
             action,
             signature,
@@ -515,8 +516,7 @@ class Exchange(API):
     def withdraw_from_bridge(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "withdraw3"}
-        is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_withdraw_from_bridge_action(self.wallet, action, is_mainnet)
+        signature = sign_withdraw_from_bridge_action(self.wallet, action, self.is_mainnet)
         return self._post_action(
             action,
             signature,
@@ -527,14 +527,13 @@ class Exchange(API):
         agent_key = "0x" + secrets.token_hex(32)
         account = eth_account.Account.from_key(agent_key)
         timestamp = get_timestamp_ms()
-        is_mainnet = self.base_url == MAINNET_API_URL
         action = {
             "type": "approveAgent",
             "agentAddress": account.address,
             "agentName": name or "",
             "nonce": timestamp,
         }
-        signature = sign_agent(self.wallet, action, is_mainnet)
+        signature = sign_agent(self.wallet, action, self.is_mainnet)
         if name is None:
             del action["agentName"]
 
@@ -551,7 +550,7 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
 
         action = {"maxFeeRate": max_fee_rate, "builder": builder, "nonce": timestamp, "type": "approveBuilderFee"}
-        signature = sign_approve_builder_fee(self.wallet, action, self.base_url == MAINNET_API_URL)
+        signature = sign_approve_builder_fee(self.wallet, action, self.is_mainnet)
         return self._post_action(action, signature, timestamp)
 
     def convert_to_multi_sig_user(self, authorized_users: List[str], threshold: int) -> Any:
@@ -566,7 +565,7 @@ class Exchange(API):
             "signers": json.dumps(signers),
             "nonce": timestamp,
         }
-        signature = sign_convert_to_multi_sig_user_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        signature = sign_convert_to_multi_sig_user_action(self.wallet, action, self.is_mainnet)
         return self._post_action(
             action,
             signature,
@@ -764,6 +763,9 @@ class Exchange(API):
         )
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
+        # Currently, we only support up to 10 authorized users for multi-sig
+        assert len(signatures) <= 10, "Only up to 10 authorized users are supported for multi-sig"
+
         multi_sig_user = multi_sig_user.lower()
         multi_sig_action = {
             "type": "multiSig",
@@ -775,11 +777,10 @@ class Exchange(API):
                 "action": inner_action,
             },
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_multi_sig_action(
             self.wallet,
             multi_sig_action,
-            is_mainnet,
+            self.is_mainnet,
             vault_address,
             nonce,
         )
