@@ -41,6 +41,7 @@ def main():
             timestamp,
             multi_sig_user,
             address,
+            exchange.expires_after,
         )
         signatures.append(signature)
 

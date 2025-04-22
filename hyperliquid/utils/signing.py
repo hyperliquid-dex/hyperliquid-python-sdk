@@ -134,7 +134,7 @@ def address_to_bytes(address):
     return bytes.fromhex(address[2:] if address.startswith("0x") else address)
 
 
-def action_hash(action, vault_address, nonce):
+def action_hash(action, vault_address, nonce, expires_after):
     data = msgpack.packb(action)
     data += nonce.to_bytes(8, "big")
     if vault_address is None:
@@ -142,6 +142,9 @@ def action_hash(action, vault_address, nonce):
     else:
         data += b"\x01"
         data += address_to_bytes(vault_address)
+    if expires_after is not None:
+        data += b"\x00"
+        data += expires_after.to_bytes(8, "big")
     return keccak(data)
 
 
@@ -149,8 +152,8 @@ def construct_phantom_agent(hash, is_mainnet):
     return {"source": "a" if is_mainnet else "b", "connectionId": hash}
 
 
-def sign_l1_action(wallet, action, active_pool, nonce, is_mainnet):
-    hash = action_hash(action, active_pool, nonce)
+def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet):
+    hash = action_hash(action, active_pool, nonce, expires_after)
     phantom_agent = construct_phantom_agent(hash, is_mainnet)
     data = {
         "domain": {
@@ -248,7 +251,7 @@ def sign_multi_sig_user_signed_action_payload(
 
 
 def sign_multi_sig_l1_action_payload(
-    wallet, action, is_mainnet, vault_address, timestamp, payload_multi_sig_user, outer_signer
+    wallet, action, is_mainnet, vault_address, timestamp, expires_after, payload_multi_sig_user, outer_signer
 ):
     envelope = [payload_multi_sig_user.lower(), outer_signer.lower(), action]
     return sign_l1_action(
@@ -256,14 +259,15 @@ def sign_multi_sig_l1_action_payload(
         envelope,
         vault_address,
         timestamp,
+        expires_after,
         is_mainnet,
     )
 
 
-def sign_multi_sig_action(wallet, action, is_mainnet, vault_address, nonce):
+def sign_multi_sig_action(wallet, action, is_mainnet, vault_address, nonce, expires_after):
     action_without_tag = action.copy()
     del action_without_tag["type"]
-    multi_sig_action_hash = action_hash(action_without_tag, vault_address, nonce)
+    multi_sig_action_hash = action_hash(action_without_tag, vault_address, nonce, expires_after)
     envelope = {
         "multiSigActionHash": multi_sig_action_hash,
         "nonce": nonce,

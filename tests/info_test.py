@@ -1,7 +1,7 @@
 import pytest
 
 from hyperliquid.info import Info
-from hyperliquid.utils.types import Meta, SpotMeta
+from hyperliquid.utils.types import L2BookData, Meta, SpotMeta
 
 TEST_META: Meta = {"universe": []}
 TEST_SPOT_META: SpotMeta = {"universe": [], "tokens": []}
@@ -83,7 +83,7 @@ def test_get_funding_history(endTime):
 @pytest.mark.vcr()
 def test_get_l2_snapshot():
     info = Info(skip_ws=True, spot_meta=TEST_SPOT_META)
-    response = info.l2_snapshot(name="DYDX")
+    response: L2BookData = info.l2_snapshot(name="DYDX")
     assert len(response) != 0
     assert len(response["levels"]) == 2
     assert response["coin"] == "DYDX"

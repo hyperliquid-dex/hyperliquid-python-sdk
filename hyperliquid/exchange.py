@@ -52,6 +52,7 @@ class Exchange(API):
         self.vault_address = vault_address
         self.account_address = account_address
         self.info = Info(base_url, True, meta, spot_meta)
+        self.expires_after: Optional[int] = None
 
     def _post_action(self, action, signature, nonce):
         payload = {
@@ -59,6 +60,7 @@ class Exchange(API):
             "nonce": nonce,
             "signature": signature,
             "vaultAddress": self.vault_address if action["type"] != "usdClassTransfer" else None,
+            "expiresAfter": self.expires_after,
         }
         logging.debug(payload)
         return self.post("/exchange", payload)
@@ -83,6 +85,12 @@ class Exchange(API):
         px *= (1 + slippage) if is_buy else (1 - slippage)
         # We round px to 5 significant figures and 6 decimals for perps, 8 decimals for spot
         return round(float(f"{px:.5g}"), (6 if not is_spot else 8) - self.info.asset_to_sz_decimals[asset])
+
+    # expires_after will cause actions to be rejected after that timestamp in milliseconds
+    # expires_after is not supported on user_signed actions (e.g. usd_transfer) and must be None in order for those
+    # actions to work.
+    def set_expires_after(self, expires_after: Optional[int]) -> None:
+        self.expires_after = expires_after
 
     def order(
         self,
@@ -122,6 +130,7 @@ class Exchange(API):
             order_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
 
@@ -176,6 +185,7 @@ class Exchange(API):
             modify_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
 
@@ -262,6 +272,7 @@ class Exchange(API):
             cancel_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
 
@@ -289,6 +300,7 @@ class Exchange(API):
             cancel_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
 
@@ -317,6 +329,7 @@ class Exchange(API):
             schedule_cancel_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -338,6 +351,7 @@ class Exchange(API):
             update_leverage_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -360,6 +374,7 @@ class Exchange(API):
             update_isolated_margin_action,
             self.vault_address,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -379,6 +394,7 @@ class Exchange(API):
             set_referrer_action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -398,6 +414,7 @@ class Exchange(API):
             create_sub_account_action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -438,6 +455,7 @@ class Exchange(API):
             sub_account_transfer_action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -460,6 +478,7 @@ class Exchange(API):
             sub_account_transfer_action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -477,7 +496,7 @@ class Exchange(API):
             "usd": usd,
         }
         is_mainnet = self.base_url == MAINNET_API_URL
-        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, is_mainnet)
+        signature = sign_l1_action(self.wallet, vault_transfer_action, None, timestamp, self.expires_after, is_mainnet)
         return self._post_action(
             vault_transfer_action,
             signature,
@@ -590,6 +609,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -615,6 +635,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -636,6 +657,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -659,6 +681,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -680,6 +703,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -705,6 +729,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -726,6 +751,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -755,6 +781,30 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def spot_deploy_set_deployer_trading_fee_share(self, token: int, share: str) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "spotDeploy",
+            "setDeployerTradingFeeShare": {
+                "token": token,
+                "share": share,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(
@@ -782,6 +832,7 @@ class Exchange(API):
             is_mainnet,
             vault_address,
             nonce,
+            self.expires_after,
         )
         return self._post_action(
             multi_sig_action,
@@ -800,6 +851,7 @@ class Exchange(API):
             action,
             None,
             timestamp,
+            self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
         return self._post_action(

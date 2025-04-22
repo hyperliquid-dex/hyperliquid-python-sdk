@@ -11,6 +11,9 @@ from hyperliquid.utils import constants
 # Set to True to enable freeze functionality for the deployed token
 # See step 2-a below for more details on freezing.
 ENABLE_FREEZE_PRIVILEGE = False
+# Set to True to set the deployer trading fee share
+# See step 6 below for more details on setting the deployer trading fee share.
+SET_DEPLOYER_TRADING_FEE_SHARE = False
 DUMMY_USER = "0x0000000000000000000000000000000000000001"
 
 
@@ -100,6 +103,14 @@ def main():
     # If "noHyperliquidity" was set to True during step 3 (genesis), then "n_orders" is required to be 0.
     register_hyperliquidity_result = exchange.spot_deploy_register_hyperliquidity(spot, 2.0, 4.0, 100, None)
     print(register_hyperliquidity_result)
+
+    if SET_DEPLOYER_TRADING_FEE_SHARE:
+        # Step 6
+        #
+        # Note that the deployer trading fee share cannot increase.
+        # The default is already 100% and the smallest increment is 0.001%.
+        set_deployer_trading_fee_share_result = exchange.spot_deploy_set_deployer_trading_fee_share(token, "100%")
+        print(set_deployer_trading_fee_share_result)
 
 
 if __name__ == "__main__":
