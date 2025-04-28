@@ -27,6 +27,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_multi_sig_action,
     sign_spot_transfer_action,
+    sign_token_delegate_action,
     sign_usd_class_transfer_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
@@ -531,6 +532,23 @@ class Exchange(API):
             timestamp,
         )
 
+    def token_delegate(self, validator: str, wei: int, is_undelegate: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "validator": validator,
+            "wei": wei,
+            "isUndelegate": is_undelegate,
+            "nonce": timestamp,
+            "type": "tokenDelegate",
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_token_delegate_action(self.wallet, action, is_mainnet)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
     def withdraw_from_bridge(self, amount: float, destination: str) -> Any:
         timestamp = get_timestamp_ms()
         action = {"destination": destination, "amount": str(amount), "time": timestamp, "type": "withdraw3"}
@@ -798,6 +816,130 @@ class Exchange(API):
                 "token": token,
                 "share": share,
             },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def c_signer_unjail_self(self) -> Any:
+        return self.c_signer_inner("unjailSelf")
+
+    def c_signer_jail_self(self) -> Any:
+        return self.c_signer_inner("jailSelf")
+
+    def c_signer_inner(self, variant: str) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "CSignerAction",
+            variant: None,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def c_validator_register(
+        self,
+        node_ip: str,
+        name: str,
+        description: str,
+        delegations_disabled: bool,
+        commission_bps: int,
+        signer: str,
+        unjailed: bool,
+        initial_wei: int,
+    ) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "CValidatorAction",
+            "register": {
+                "profile": {
+                    "node_ip": {"Ip": node_ip},
+                    "name": name,
+                    "description": description,
+                    "delegations_disabled": delegations_disabled,
+                    "commission_bps": commission_bps,
+                    "signer": signer,
+                },
+                "unjailed": unjailed,
+                "initial_wei": initial_wei,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def c_validator_change_profile(
+        self,
+        node_ip: Optional[str],
+        name: Optional[str],
+        description: Optional[str],
+        unjailed: bool,
+        disable_delegations: Optional[bool],
+        commission_bps: Optional[int],
+        signer: Optional[str],
+    ) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "CValidatorAction",
+            "changeProfile": {
+                "node_ip": None if node_ip is None else {"Ip": node_ip},
+                "name": name,
+                "description": description,
+                "unjailed": unjailed,
+                "disable_delegations": disable_delegations,
+                "commission_bps": commission_bps,
+                "signer": signer,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def c_validator_unregister(self) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "CValidatorAction",
+            "unregister": None,
         }
         signature = sign_l1_action(
             self.wallet,

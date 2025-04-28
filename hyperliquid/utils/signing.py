@@ -2,6 +2,7 @@ import time
 from decimal import Decimal
 
 import msgpack
+from eth_account import Account
 from eth_account.messages import encode_typed_data
 from eth_utils import keccak, to_hex
 
@@ -103,6 +104,14 @@ USD_CLASS_TRANSFER_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+TOKEN_DELEGATE_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "validator", "type": "address"},
+    {"name": "wei", "type": "uint64"},
+    {"name": "isUndelegate", "type": "bool"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 CONVERT_TO_MULTI_SIG_USER_SIGN_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
     {"name": "signers", "type": "string"},
@@ -152,10 +161,8 @@ def construct_phantom_agent(hash, is_mainnet):
     return {"source": "a" if is_mainnet else "b", "connectionId": hash}
 
 
-def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet):
-    hash = action_hash(action, active_pool, nonce, expires_after)
-    phantom_agent = construct_phantom_agent(hash, is_mainnet)
-    data = {
+def l1_payload(phantom_agent):
+    return {
         "domain": {
             "chainId": 1337,
             "name": "Exchange",
@@ -177,17 +184,15 @@ def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet
         "primaryType": "Agent",
         "message": phantom_agent,
     }
-    return sign_inner(wallet, data)
 
 
-def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet):
-    action["signatureChainId"] = "0x66eee"
-    action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
-    data = {
+def user_signed_payload(primary_type, payload_types, action):
+    chain_id = int(action["signatureChainId"], 16)
+    return {
         "domain": {
             "name": "HyperliquidSignTransaction",
             "version": "1",
-            "chainId": 421614,
+            "chainId": chain_id,
             "verifyingContract": "0x0000000000000000000000000000000000000000",
         },
         "types": {
@@ -202,6 +207,21 @@ def sign_user_signed_action(wallet, action, payload_types, primary_type, is_main
         "primaryType": primary_type,
         "message": action,
     }
+
+
+def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet):
+    hash = action_hash(action, active_pool, nonce, expires_after)
+    phantom_agent = construct_phantom_agent(hash, is_mainnet)
+    data = l1_payload(phantom_agent)
+    return sign_inner(wallet, data)
+
+
+def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet):
+    # signatureChainId is the chain used by the wallet to sign and can be any chain.
+    # hyperliquidChain determines the environment and prevents replaying an action on a different chain.
+    action["signatureChainId"] = "0x66eee"
+    action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
+    data = user_signed_payload(primary_type, payload_types, action)
     return sign_inner(wallet, data)
 
 
@@ -361,10 +381,37 @@ def sign_approve_builder_fee(wallet, action, is_mainnet):
     )
 
 
+def sign_token_delegate_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        TOKEN_DELEGATE_TYPES,
+        "HyperliquidTransaction:TokenDelegate",
+        is_mainnet,
+    )
+
+
 def sign_inner(wallet, data):
     structured_data = encode_typed_data(full_message=data)
     signed = wallet.sign_message(structured_data)
     return {"r": to_hex(signed["r"]), "s": to_hex(signed["s"]), "v": signed["v"]}
+
+
+def recover_agent_or_user_from_l1_action(action, signature, active_pool, nonce, expires_after, is_mainnet):
+    hash = action_hash(action, active_pool, nonce, expires_after)
+    phantom_agent = construct_phantom_agent(hash, is_mainnet)
+    data = l1_payload(phantom_agent)
+    structured_data = encode_typed_data(full_message=data)
+    address = Account.recover_message(structured_data, vrs=[signature["v"], signature["r"], signature["s"]])
+    return address
+
+
+def recover_user_from_user_signed_action(action, signature, payload_types, primary_type, is_mainnet):
+    action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
+    data = user_signed_payload(primary_type, payload_types, action)
+    structured_data = encode_typed_data(full_message=data)
+    address = Account.recover_message(structured_data, vrs=[signature["v"], signature["r"], signature["s"]])
+    return address
 
 
 def float_to_wire(x: float) -> str:
