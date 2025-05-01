@@ -51,12 +51,13 @@ class Info(API):
             if name not in self.name_to_coin:
                 self.name_to_coin[name] = spot_info["name"]
 
-        # builder-deployed perp dexs start at 110000
-        perp_dex_to_offset = {perp_dex["name"]: 110000 + i * 10000 for (i, perp_dex) in enumerate(self.perp_dexs()[1:])}
-        perp_dex_to_offset[""] = 0
-
+        perp_dex_to_offset = {"": 0}
         if perp_dexs is None:
             perp_dexs = [""]
+        else:
+            for i, perp_dex in enumerate(self.perp_dexs()[1:]):
+                # builder-deployed perp dexs start at 110000
+                perp_dex_to_offset[perp_dex["name"]] = 110000 + i * 10000
 
         for perp_dex in perp_dexs:
             offset = perp_dex_to_offset[perp_dex]
