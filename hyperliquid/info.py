@@ -3,6 +3,7 @@ from hyperliquid.utils.types import (
     Any,
     Callable,
     Cloid,
+    List,
     Meta,
     Optional,
     SpotMeta,
@@ -20,14 +21,15 @@ class Info(API):
         skip_ws: Optional[bool] = False,
         meta: Optional[Meta] = None,
         spot_meta: Optional[SpotMeta] = None,
-    ):
+        # Note that when perp_dexs is None, then "" is used as the perp dex. "" represents
+        # the original dex.
+        perp_dexs: Optional[List[str]] = None,
+    ):  # pylint: disable=too-many-locals
         super().__init__(base_url)
         self.ws_manager: Optional[WebsocketManager] = None
         if not skip_ws:
             self.ws_manager = WebsocketManager(self.base_url)
             self.ws_manager.start()
-        if meta is None:
-            meta = self.meta()
 
         if spot_meta is None:
             spot_meta = self.spot_meta()
@@ -35,10 +37,6 @@ class Info(API):
         self.coin_to_asset = {}
         self.name_to_coin = {}
         self.asset_to_sz_decimals = {}
-        for asset, asset_info in enumerate(meta["universe"]):
-            self.coin_to_asset[asset_info["name"]] = asset
-            self.name_to_coin[asset_info["name"]] = asset_info["name"]
-            self.asset_to_sz_decimals[asset] = asset_info["szDecimals"]
 
         # spot assets start at 10000
         for spot_info in spot_meta["universe"]:
@@ -53,13 +51,35 @@ class Info(API):
             if name not in self.name_to_coin:
                 self.name_to_coin[name] = spot_info["name"]
 
+        # builder-deployed perp dexs start at 110000
+        perp_dex_to_offset = {perp_dex["name"]: 110000 + i * 10000 for (i, perp_dex) in enumerate(self.perp_dexs()[1:])}
+        perp_dex_to_offset[""] = 0
+
+        if perp_dexs is None:
+            perp_dexs = [""]
+
+        for perp_dex in perp_dexs:
+            offset = perp_dex_to_offset[perp_dex]
+            if perp_dex == "" and meta is not None:
+                self.set_perp_meta(meta, 0)
+            else:
+                fresh_meta = self.meta(dex=perp_dex)
+                self.set_perp_meta(fresh_meta, offset)
+
+    def set_perp_meta(self, meta: Meta, offset: int) -> Any:
+        for asset, asset_info in enumerate(meta["universe"]):
+            asset += offset
+            self.coin_to_asset[asset_info["name"]] = asset
+            self.name_to_coin[asset_info["name"]] = asset_info["name"]
+            self.asset_to_sz_decimals[asset] = asset_info["szDecimals"]
+
     def disconnect_websocket(self):
         if self.ws_manager is None:
             raise RuntimeError("Cannot call disconnect_websocket since skip_ws was used")
         else:
             self.ws_manager.stop()
 
-    def user_state(self, address: str) -> Any:
+    def user_state(self, address: str, dex: str = "") -> Any:
         """Retrieve trading details about a user.
 
         POST /info
@@ -101,12 +121,12 @@ class Info(API):
                     totalRawUsd: float string,
                 }
         """
-        return self.post("/info", {"type": "clearinghouseState", "user": address})
+        return self.post("/info", {"type": "clearinghouseState", "user": address, "dex": dex})
 
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
 
-    def open_orders(self, address: str) -> Any:
+    def open_orders(self, address: str, dex: str = "") -> Any:
         """Retrieve a user's open orders.
 
         POST /info
@@ -125,9 +145,9 @@ class Info(API):
             }
         ]
         """
-        return self.post("/info", {"type": "openOrders", "user": address})
+        return self.post("/info", {"type": "openOrders", "user": address, "dex": dex})
 
-    def frontend_open_orders(self, address: str) -> Any:
+    def frontend_open_orders(self, address: str, dex: str = "") -> Any:
         """Retrieve a user's open orders with additional frontend info.
 
         POST /info
@@ -158,9 +178,9 @@ class Info(API):
             }
         ]
         """
-        return self.post("/info", {"type": "frontendOpenOrders", "user": address})
+        return self.post("/info", {"type": "frontendOpenOrders", "user": address, "dex": dex})
 
-    def all_mids(self) -> Any:
+    def all_mids(self, dex: str = "") -> Any:
         """Retrieve all mids for all actively traded coins.
 
         POST /info
@@ -172,7 +192,7 @@ class Info(API):
               any other coins which are trading: float string
             }
         """
-        return self.post("/info", {"type": "allMids"})
+        return self.post("/info", {"type": "allMids", "dex": dex})
 
     def user_fills(self, address: str) -> Any:
         """Retrieve a given user's fills.
@@ -236,7 +256,7 @@ class Info(API):
             "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
         )
 
-    def meta(self) -> Meta:
+    def meta(self, dex: str = "") -> Meta:
         """Retrieve exchange perp metadata
 
         POST /info
@@ -252,7 +272,7 @@ class Info(API):
                 ]
             }
         """
-        return cast(Meta, self.post("/info", {"type": "meta"}))
+        return cast(Meta, self.post("/info", {"type": "meta", "dex": dex}))
 
     def meta_and_asset_ctxs(self) -> Any:
         """Retrieve exchange MetaAndAssetCtxs
@@ -288,6 +308,9 @@ class Info(API):
             ]
         """
         return self.post("/info", {"type": "metaAndAssetCtxs"})
+
+    def perp_dexs(self) -> Any:
+        return self.post("/info", {"type": "perpDexs"})
 
     def spot_meta(self) -> SpotMeta:
         """Retrieve exchange spot metadata

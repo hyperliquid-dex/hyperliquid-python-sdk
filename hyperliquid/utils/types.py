@@ -113,6 +113,10 @@ WsMsg = Union[AllMidsMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFill
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
 BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
 
+PerpDexSchemaInput = TypedDict(
+    "PerpDexSchemaInput", {"fullName": str, "collateralToken": int, "oracleUpdater": Optional[str]}
+)
+
 
 class Cloid:
     def __init__(self, raw_cloid: str):

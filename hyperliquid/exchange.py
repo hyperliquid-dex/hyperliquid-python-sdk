@@ -32,7 +32,18 @@ from hyperliquid.utils.signing import (
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
 )
-from hyperliquid.utils.types import Any, BuilderInfo, Cloid, List, Meta, Optional, SpotMeta, Tuple
+from hyperliquid.utils.types import (
+    Any,
+    BuilderInfo,
+    Cloid,
+    Dict,
+    List,
+    Meta,
+    Optional,
+    PerpDexSchemaInput,
+    SpotMeta,
+    Tuple,
+)
 
 
 class Exchange(API):
@@ -47,12 +58,13 @@ class Exchange(API):
         vault_address: Optional[str] = None,
         account_address: Optional[str] = None,
         spot_meta: Optional[SpotMeta] = None,
+        perp_dexs: Optional[List[str]] = None,
     ):
         super().__init__(base_url)
         self.wallet = wallet
         self.vault_address = vault_address
         self.account_address = account_address
-        self.info = Info(base_url, True, meta, spot_meta)
+        self.info = Info(base_url, True, meta, spot_meta, perp_dexs)
         self.expires_after: Optional[int] = None
 
     def _post_action(self, action, signature, nonce):
@@ -815,6 +827,87 @@ class Exchange(API):
             "setDeployerTradingFeeShare": {
                 "token": token,
                 "share": share,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def perp_deploy_register_asset(
+        self,
+        dex: str,
+        max_gas: Optional[int],
+        coin: str,
+        sz_decimals: int,
+        oracle_px: str,
+        margin_table_id: int,
+        only_isolated: bool,
+        schema: Optional[PerpDexSchemaInput],
+    ) -> Any:
+        timestamp = get_timestamp_ms()
+        schema_wire = None
+        if schema is not None:
+            schema_wire = {
+                "fullName": schema["fullName"],
+                "collateralToken": schema["collateralToken"],
+                "oracleUpdater": schema["oracleUpdater"].lower() if schema["oracleUpdater"] is not None else None,
+            }
+        action = {
+            "type": "perpDeploy",
+            "registerAsset": {
+                "maxGas": max_gas,
+                "assetRequest": {
+                    "coin": coin,
+                    "szDecimals": sz_decimals,
+                    "oraclePx": oracle_px,
+                    "marginTableId": margin_table_id,
+                    "onlyIsolated": only_isolated,
+                },
+                "dex": dex,
+                "schema": schema_wire,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def perp_deploy_set_oracle(
+        self,
+        dex: str,
+        oracle_pxs: Dict[str, str],
+        mark_pxs: Optional[Dict[str, str]],
+    ) -> Any:
+        timestamp = get_timestamp_ms()
+        oracle_pxs_wire = sorted(list(oracle_pxs.items()))
+        mark_pxs_wire = None
+        if mark_pxs is not None:
+            mark_pxs_wire = sorted(list(mark_pxs.items()))
+        action = {
+            "type": "perpDeploy",
+            "setOracle": {
+                "dex": dex,
+                "oraclePxs": oracle_pxs_wire,
+                "markPxs": mark_pxs_wire,
             },
         }
         signature = sign_l1_action(
