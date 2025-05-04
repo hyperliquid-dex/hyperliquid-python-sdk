@@ -69,7 +69,7 @@ AllMidsMsg = TypedDict("AllMidsMsg", {"channel": Literal["allMids"], "data": All
 L2Level = TypedDict("L2Level", {"px": str, "sz": str, "n": int})
 BboData = TypedDict("BboData", {"coin": str, "time": int, "bbo": Tuple[Optional[L2Level], Optional[L2Level]]})
 BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
-L2BookData = TypedDict("L2BookData", {"coin": str, "levels": Tuple[List[L2Level]], "time": int})
+L2BookData = TypedDict("L2BookData", {"coin": str, "levels": Tuple[List[L2Level], List[L2Level]], "time": int})
 L2BookMsg = TypedDict("L2BookMsg", {"channel": Literal["l2Book"], "data": L2BookData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
 Trade = TypedDict("Trade", {"coin": str, "side": Side, "px": str, "sz": int, "hash": str, "time": int})
@@ -116,6 +116,10 @@ WsMsg = Union[AllMidsMsg, BboMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, 
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
 BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
+
+PerpDexSchemaInput = TypedDict(
+    "PerpDexSchemaInput", {"fullName": str, "collateralToken": int, "oracleUpdater": Optional[str]}
+)
 
 
 class Cloid:

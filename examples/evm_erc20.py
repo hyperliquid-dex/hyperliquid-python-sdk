@@ -278,7 +278,7 @@ if SHOULD_LINK_CONTRACT:
         },
     }
     nonce = get_timestamp_ms()
-    signature = sign_l1_action(account, action, None, nonce, False)
+    signature = sign_l1_action(account, action, None, nonce, None, False)
     payload = {
         "action": action,
         "nonce": nonce,
@@ -299,7 +299,7 @@ if SHOULD_LINK_CONTRACT:
     else:
         finalize_action = {"type": "finalizeEvmContract", "token": TOKEN, "input": "firstStorageSlot"}
     nonce = get_timestamp_ms()
-    signature = sign_l1_action(account, finalize_action, None, nonce, False)
+    signature = sign_l1_action(account, finalize_action, None, nonce, None, False)
     payload = {
         "action": finalize_action,
         "nonce": nonce,
