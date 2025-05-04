@@ -575,7 +575,12 @@ class Info(API):
         return self.post("/info", {"type": "userToMultiSigSigners", "user": multi_sig_user})
 
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
-        if subscription["type"] == "l2Book" or subscription["type"] == "trades" or subscription["type"] == "candle":
+        if (
+            subscription["type"] == "l2Book"
+            or subscription["type"] == "trades"
+            or subscription["type"] == "candle"
+            or subscription["type"] == "bbo"
+        ):
             subscription["coin"] = self.name_to_coin[subscription["coin"]]
         if self.ws_manager is None:
             raise RuntimeError("Cannot call subscribe since skip_ws was used")
