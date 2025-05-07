@@ -392,8 +392,7 @@ def sign_token_delegate_action(wallet, action, is_mainnet):
 
 
 def sign_inner(wallet, data):
-    structured_data = encode_typed_data(full_message=data)
-    signed = wallet.sign_message(structured_data)
+    signed = wallet.sign_typed_data(full_message=data)
     return {"r": to_hex(signed["r"]), "s": to_hex(signed["s"]), "v": signed["v"]}
 
 
