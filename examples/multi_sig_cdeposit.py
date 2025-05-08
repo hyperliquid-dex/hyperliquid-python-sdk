@@ -13,7 +13,7 @@ def main():
     # Address of the multi-sig user that the action will be executed for
     # Executing the action requires at least the specified threshold of signatures
     # required for that multi-sig user
-    multi_sig_user = "0xfBfd36dFc2f5b1b82cCd33D695568f5Ca0792A3F"
+    multi_sig_user = "0x0000000000000000000000000000000000000005"
 
     timestamp = get_timestamp_ms()
 
