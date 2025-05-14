@@ -26,6 +26,7 @@ from hyperliquid.utils.signing import (
     sign_convert_to_multi_sig_user_action,
     sign_l1_action,
     sign_multi_sig_action,
+    sign_perp_dex_class_transfer_action,
     sign_spot_transfer_action,
     sign_token_delegate_action,
     sign_usd_class_transfer_action,
@@ -449,6 +450,27 @@ class Exchange(API):
             "nonce": timestamp,
         }
         signature = sign_usd_class_transfer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def perp_dex_class_transfer(self, dex: str, token: str, amount: float, to_perp: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        str_amount = str(amount)
+        if self.vault_address:
+            str_amount += f" subaccount:{self.vault_address}"
+
+        action = {
+            "type": "PerpDexClassTransfer",
+            "dex": dex,
+            "token": token,
+            "amount": str_amount,
+            "toPerp": to_perp,
+            "nonce": timestamp,
+        }
+        signature = sign_perp_dex_class_transfer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
         return self._post_action(
             action,
             signature,

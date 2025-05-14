@@ -598,7 +598,7 @@ class Info(API):
     def query_user_to_multi_sig_signers(self, multi_sig_user: str) -> Any:
         return self.post("/info", {"type": "userToMultiSigSigners", "user": multi_sig_user})
 
-    def _validate_subscription(self, subscription: Subscription) -> None:
+    def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (
             subscription["type"] == "l2Book"
             or subscription["type"] == "trades"
@@ -608,14 +608,14 @@ class Info(API):
             subscription["coin"] = self.name_to_coin[subscription["coin"]]
 
     def subscribe(self, subscription: Subscription, callback: Callable[[Any], None]) -> int:
-        self._validate_subscription(subscription)
+        self._remap_coin_subscription(subscription)
         if self.ws_manager is None:
             raise RuntimeError("Cannot call subscribe since skip_ws was used")
         else:
             return self.ws_manager.subscribe(subscription, callback)
 
     def unsubscribe(self, subscription: Subscription, subscription_id: int) -> bool:
-        self._validate_subscription(subscription)
+        self._remap_coin_subscription(subscription)
         if self.ws_manager is None:
             raise RuntimeError("Cannot call unsubscribe since skip_ws was used")
         else:
