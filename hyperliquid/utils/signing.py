@@ -104,6 +104,15 @@ USD_CLASS_TRANSFER_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+PERP_DEX_CLASS_TRANSFER_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "dex", "type": "string"},
+    {"name": "token", "type": "string"},
+    {"name": "amount", "type": "string"},
+    {"name": "toPerp", "type": "bool"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 TOKEN_DELEGATE_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
     {"name": "validator", "type": "address"},
@@ -341,6 +350,16 @@ def sign_usd_class_transfer_action(wallet, action, is_mainnet):
     )
 
 
+def sign_perp_dex_class_transfer_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        PERP_DEX_CLASS_TRANSFER_SIGN_TYPES,
+        "HyperliquidTransaction:PerpDexClassTransfer",
+        is_mainnet,
+    )
+
+
 def sign_convert_to_multi_sig_user_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
@@ -392,7 +411,8 @@ def sign_token_delegate_action(wallet, action, is_mainnet):
 
 
 def sign_inner(wallet, data):
-    signed = wallet.sign_typed_data(full_message=data)
+    structured_data = encode_typed_data(full_message=data)
+    signed = wallet.sign_message(structured_data)
     return {"r": to_hex(signed["r"]), "s": to_hex(signed["s"]), "v": signed["v"]}
 
 
