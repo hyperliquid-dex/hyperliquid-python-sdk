@@ -37,6 +37,7 @@ SpotAssetCtx = TypedDict(
 SpotMetaAndAssetCtxs = Tuple[SpotMeta, List[SpotAssetCtx]]
 
 AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids"]})
+BboSubscription = TypedDict("BboSubscription", {"type": Literal["bbo"], "coin": str})
 L2BookSubscription = TypedDict("L2BookSubscription", {"type": Literal["l2Book"], "coin": str})
 TradesSubscription = TypedDict("TradesSubscription", {"type": Literal["trades"], "coin": str})
 UserEventsSubscription = TypedDict("UserEventsSubscription", {"type": Literal["userEvents"], "user": str})
@@ -51,6 +52,7 @@ WebData2Subscription = TypedDict("WebData2Subscription", {"type": Literal["webDa
 # If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
 Subscription = Union[
     AllMidsSubscription,
+    BboSubscription,
     L2BookSubscription,
     TradesSubscription,
     UserEventsSubscription,
@@ -65,6 +67,8 @@ Subscription = Union[
 AllMidsData = TypedDict("AllMidsData", {"mids": Dict[str, str]})
 AllMidsMsg = TypedDict("AllMidsMsg", {"channel": Literal["allMids"], "data": AllMidsData})
 L2Level = TypedDict("L2Level", {"px": str, "sz": str, "n": int})
+BboData = TypedDict("BboData", {"coin": str, "time": int, "bbo": Tuple[Optional[L2Level], Optional[L2Level]]})
+BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
 L2BookData = TypedDict("L2BookData", {"coin": str, "levels": Tuple[List[L2Level], List[L2Level]], "time": int})
 L2BookMsg = TypedDict("L2BookMsg", {"channel": Literal["l2Book"], "data": L2BookData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
@@ -108,7 +112,7 @@ OtherWsMsg = TypedDict(
     },
     total=False,
 )
-WsMsg = Union[AllMidsMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFillsMsg, OtherWsMsg]
+WsMsg = Union[AllMidsMsg, BboMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFillsMsg, OtherWsMsg]
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
 BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
