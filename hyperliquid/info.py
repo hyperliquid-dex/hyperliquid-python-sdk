@@ -604,6 +604,7 @@ class Info(API):
             or subscription["type"] == "trades"
             or subscription["type"] == "candle"
             or subscription["type"] == "bbo"
+            or subscription["type"] == "activeAssetCtx"
         ):
             subscription["coin"] = self.name_to_coin[subscription["coin"]]
 
