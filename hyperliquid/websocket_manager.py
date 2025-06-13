@@ -66,11 +66,8 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
         return f'webData2:{ws_msg["data"]["user"].lower()}'
     elif ws_msg["channel"] == "bbo":
         return f'bbo:{ws_msg["data"]["coin"].lower()}'
-    elif ws_msg["channel"] == "activeAssetCtx":
+    elif ws_msg["channel"] == "activeAssetCtx" or ws_msg["channel"] == "activeSpotAssetCtx":
         return f'activeAssetCtx:{ws_msg["data"]["coin"].lower()}'
-    elif ws_msg["channel"] == "activeSpotAssetCtx":
-        return f'activeAssetCtx:{ws_msg["data"]["coin"].lower()}'
-    pass
 
 
 class WebsocketManager(threading.Thread):

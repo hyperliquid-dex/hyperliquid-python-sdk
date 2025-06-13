@@ -86,16 +86,16 @@ PerpAssetCtx = TypedDict(
         "premium": str,
         "oraclePx": str,
         "markPx": str,
-        "midPx": str,
-        "impactPxs": Tuple[str, str],
+        "midPx": Optional[str],
+        "impactPxs": Optional[Tuple[str, str]],
         "dayBaseVlm": str,
     },
 )
 ActiveAssetCtx = TypedDict("ActiveAssetCtx", {"coin": str, "ctx": PerpAssetCtx})
-ActiveAssetSpotCtx = TypedDict("ActiveAssetSpotCtx", {"coin": str, "ctx": SpotAssetCtx})
+ActiveSpotAssetCtx = TypedDict("ActiveSpotAssetCtx", {"coin": str, "ctx": SpotAssetCtx})
 ActiveAssetCtxMsg = TypedDict("ActiveAssetCtxMsg", {"channel": Literal["activeAssetCtx"], "data": ActiveAssetCtx})
 ActiveSpotAssetCtxMsg = TypedDict(
-    "ActiveSpotAssetCtxMsg", {"channel": Literal["activeSpotAssetCtx"], "data": ActiveAssetSpotCtx}
+    "ActiveSpotAssetCtxMsg", {"channel": Literal["activeSpotAssetCtx"], "data": ActiveSpotAssetCtx}
 )
 Fill = TypedDict(
     "Fill",
