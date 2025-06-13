@@ -49,6 +49,7 @@ UserNonFundingLedgerUpdatesSubscription = TypedDict(
     "UserNonFundingLedgerUpdatesSubscription", {"type": Literal["userNonFundingLedgerUpdates"], "user": str}
 )
 WebData2Subscription = TypedDict("WebData2Subscription", {"type": Literal["webData2"], "user": str})
+ActiveAssetCtxSubscription = TypedDict("ActiveAssetCtxSubscription", {"type": Literal["activeAssetCtx"], "coin": str})
 # If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
 Subscription = Union[
     AllMidsSubscription,
@@ -62,6 +63,7 @@ Subscription = Union[
     UserFundingsSubscription,
     UserNonFundingLedgerUpdatesSubscription,
     WebData2Subscription,
+    ActiveAssetCtxSubscription,
 ]
 
 AllMidsData = TypedDict("AllMidsData", {"mids": Dict[str, str]})
@@ -74,6 +76,27 @@ BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
 Trade = TypedDict("Trade", {"coin": str, "side": Side, "px": str, "sz": int, "hash": str, "time": int})
 TradesMsg = TypedDict("TradesMsg", {"channel": Literal["trades"], "data": List[Trade]})
+PerpAssetCtx = TypedDict(
+    "PerpAssetCtx",
+    {
+        "funding": str,
+        "openInterest": str,
+        "prevDayPx": str,
+        "dayNtlVlm": str,
+        "premium": str,
+        "oraclePx": str,
+        "markPx": str,
+        "midPx": Optional[str],
+        "impactPxs": Optional[Tuple[str, str]],
+        "dayBaseVlm": str,
+    },
+)
+ActiveAssetCtx = TypedDict("ActiveAssetCtx", {"coin": str, "ctx": PerpAssetCtx})
+ActiveSpotAssetCtx = TypedDict("ActiveSpotAssetCtx", {"coin": str, "ctx": SpotAssetCtx})
+ActiveAssetCtxMsg = TypedDict("ActiveAssetCtxMsg", {"channel": Literal["activeAssetCtx"], "data": ActiveAssetCtx})
+ActiveSpotAssetCtxMsg = TypedDict(
+    "ActiveSpotAssetCtxMsg", {"channel": Literal["activeSpotAssetCtx"], "data": ActiveSpotAssetCtx}
+)
 Fill = TypedDict(
     "Fill",
     {
@@ -112,7 +135,18 @@ OtherWsMsg = TypedDict(
     },
     total=False,
 )
-WsMsg = Union[AllMidsMsg, BboMsg, L2BookMsg, TradesMsg, UserEventsMsg, PongMsg, UserFillsMsg, OtherWsMsg]
+WsMsg = Union[
+    AllMidsMsg,
+    BboMsg,
+    L2BookMsg,
+    TradesMsg,
+    UserEventsMsg,
+    PongMsg,
+    UserFillsMsg,
+    OtherWsMsg,
+    ActiveAssetCtxMsg,
+    ActiveSpotAssetCtxMsg,
+]
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
 BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
