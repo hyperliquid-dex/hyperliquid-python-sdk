@@ -30,8 +30,8 @@ def main():
         sz_decimals[asset_info["name"]] = asset_info["szDecimals"]
 
     # For demonstration purposes we'll start with a price and size that have too many digits
-    sz = 12.345678
-    px = 1.2345678
+    sz = 12.34567
+    px = 1.234567
     coin = "OP"
     max_decimals = 6  # change to 8 for spot
 
