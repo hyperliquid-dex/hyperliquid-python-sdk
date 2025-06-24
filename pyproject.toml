@@ -43,7 +43,7 @@ python = "^3.9"
 eth-utils = ">=2.1.0,<6.0.0"
 eth-account = ">=0.10.0,<0.14.0"
 websocket-client = "^1.5.1"
-requests = "^2.31.0"
+requests = "^2.29.0"
 msgpack = "^1.0.5"
 
 [tool.poetry.group.dev.dependencies]
