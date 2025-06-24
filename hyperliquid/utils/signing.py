@@ -218,14 +218,14 @@ def user_signed_payload(primary_type, payload_types, action):
     }
 
 
-def get_l1_action_payload(wallet, action, active_pool, nonce, expires_after, is_mainnet):
+def get_l1_action_payload(action, active_pool, nonce, expires_after, is_mainnet):
     h = action_hash(action, active_pool, nonce, expires_after)
     phantom_agent = construct_phantom_agent(h, is_mainnet)
     data = l1_payload(phantom_agent)
     return data
 
 def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet):
-    data = get_l1_action_payload(wallet, action, active_pool, nonce, expires_after, is_mainnet)
+    data = get_l1_action_payload(action, active_pool, nonce, expires_after, is_mainnet)
     return sign_inner(wallet, data)
 
 def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet):
