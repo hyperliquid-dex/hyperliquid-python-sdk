@@ -84,7 +84,7 @@ Leverage = TypedDict(
     {
         "type": Union[Literal["cross"], Literal["isolated"]],
         "value": int,
-        "rawUsd": Optional[str],
+        "rawUsd": NotRequired[str],
     },
 )
 TradesMsg = TypedDict("TradesMsg", {"channel": Literal["trades"], "data": List[Trade]})
@@ -115,8 +115,8 @@ ActiveAssetData = TypedDict(
         "user": str,
         "coin": str,
         "leverage": Leverage,
-        "maxTradeSzs": List[str],
-        "availableToTrade": List[str],
+        "maxTradeSzs": Tuple[str, str],
+        "availableToTrade": Tuple[str, str],
         "markPx": str,
     },
 )
@@ -170,6 +170,7 @@ WsMsg = Union[
     OtherWsMsg,
     ActiveAssetCtxMsg,
     ActiveSpotAssetCtxMsg,
+    ActiveAssetDataMsg,
 ]
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
