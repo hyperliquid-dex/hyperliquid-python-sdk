@@ -79,14 +79,22 @@ BboData = TypedDict("BboData", {"coin": str, "time": int, "bbo": Tuple[Optional[
 BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
 Trade = TypedDict("Trade", {"coin": str, "side": Side, "px": str, "sz": int, "hash": str, "time": int})
-Leverage = TypedDict(
-    "Leverage",
+CrossLeverage = TypedDict(
+    "CrossLeverage",
     {
-        "type": Union[Literal["cross"], Literal["isolated"]],
+        "type": Literal["cross"],
         "value": int,
-        "rawUsd": NotRequired[str],
     },
 )
+IsolatedLeverage = TypedDict(
+    "IsolatedLeverage",
+    {
+        "type": Literal["isolated"],
+        "value": int,
+        "rawUsd": str,
+    },
+)
+Leverage = Union[CrossLeverage, IsolatedLeverage]
 TradesMsg = TypedDict("TradesMsg", {"channel": Literal["trades"], "data": List[Trade]})
 PerpAssetCtx = TypedDict(
     "PerpAssetCtx",
