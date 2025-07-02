@@ -26,7 +26,7 @@ from hyperliquid.utils.signing import (
     sign_convert_to_multi_sig_user_action,
     sign_l1_action,
     sign_multi_sig_action,
-    sign_perp_dex_class_transfer_action,
+    sign_send_asset_action,
     sign_spot_transfer_action,
     sign_token_delegate_action,
     sign_usd_class_transfer_action,
@@ -456,21 +456,25 @@ class Exchange(API):
             timestamp,
         )
 
-    def perp_dex_class_transfer(self, dex: str, token: str, amount: float, to_perp: bool) -> Any:
+    def send_asset(self, destination: str, source_dex: str, destination_dex: str, token: str, amount: float) -> Any:
+        """
+        For the default perp dex use the empty string "" as name. For spot use "spot".
+        Token must match the collateral token if transferring to or from a perp dex.
+        """
         timestamp = get_timestamp_ms()
         str_amount = str(amount)
-        if self.vault_address:
-            str_amount += f" subaccount:{self.vault_address}"
 
         action = {
-            "type": "PerpDexClassTransfer",
-            "dex": dex,
+            "type": "sendAsset",
+            "destination": destination,
+            "sourceDex": source_dex,
+            "destinationDex": destination_dex,
             "token": token,
             "amount": str_amount,
-            "toPerp": to_perp,
+            "fromSubAccount": self.vault_address if self.vault_address else "",
             "nonce": timestamp,
         }
-        signature = sign_perp_dex_class_transfer_action(self.wallet, action, self.base_url == MAINNET_API_URL)
+        signature = sign_send_asset_action(self.wallet, action, self.base_url == MAINNET_API_URL)
         return self._post_action(
             action,
             signature,
@@ -917,13 +921,11 @@ class Exchange(API):
         self,
         dex: str,
         oracle_pxs: Dict[str, str],
-        mark_pxs: Optional[Dict[str, str]],
+        all_mark_pxs: List[Dict[str, str]],
     ) -> Any:
         timestamp = get_timestamp_ms()
         oracle_pxs_wire = sorted(list(oracle_pxs.items()))
-        mark_pxs_wire = None
-        if mark_pxs is not None:
-            mark_pxs_wire = sorted(list(mark_pxs.items()))
+        mark_pxs_wire = [sorted(list(mark_pxs.items())) for mark_pxs in all_mark_pxs]
         action = {
             "type": "perpDeploy",
             "setOracle": {

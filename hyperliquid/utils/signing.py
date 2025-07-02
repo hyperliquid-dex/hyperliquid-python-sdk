@@ -104,12 +104,14 @@ USD_CLASS_TRANSFER_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
-PERP_DEX_CLASS_TRANSFER_SIGN_TYPES = [
+SEND_ASSET_SIGN_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
-    {"name": "dex", "type": "string"},
+    {"name": "destination", "type": "string"},
+    {"name": "sourceDex", "type": "string"},
+    {"name": "destinationDex", "type": "string"},
     {"name": "token", "type": "string"},
     {"name": "amount", "type": "string"},
-    {"name": "toPerp", "type": "bool"},
+    {"name": "fromSubAccount", "type": "string"},
     {"name": "nonce", "type": "uint64"},
 ]
 
@@ -350,12 +352,12 @@ def sign_usd_class_transfer_action(wallet, action, is_mainnet):
     )
 
 
-def sign_perp_dex_class_transfer_action(wallet, action, is_mainnet):
+def sign_send_asset_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        PERP_DEX_CLASS_TRANSFER_SIGN_TYPES,
-        "HyperliquidTransaction:PerpDexClassTransfer",
+        SEND_ASSET_SIGN_TYPES,
+        "HyperliquidTransaction:SendAsset",
         is_mainnet,
     )
 

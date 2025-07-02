@@ -15,6 +15,10 @@ DUMMY_DEX = "test"
 def main():
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
+    # get perp deploy auction status which includes auction start and gas information
+    perp_deploy_auction_status = info.query_perp_deploy_auction_status()
+    print("perp deploy auction status:", perp_deploy_auction_status)
+
     # Step 1: Registering a Perp Dex and Assets
     #
     # Takes part in the perp deploy auction and if successful, registers asset "TEST0".
@@ -50,10 +54,12 @@ def main():
             f"{DUMMY_DEX}:TEST0": "12.0",
             f"{DUMMY_DEX}:TEST1": "1.0",
         },
-        {
-            f"{DUMMY_DEX}:TEST1": "3.0",
-            f"{DUMMY_DEX}:TEST0": "14.0",
-        },
+        [
+            {
+                f"{DUMMY_DEX}:TEST1": "3.0",
+                f"{DUMMY_DEX}:TEST0": "14.0",
+            }
+        ],
     )
     print("set oracle result:", set_oracle_result)
 
