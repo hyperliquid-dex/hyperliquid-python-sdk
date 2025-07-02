@@ -39,9 +39,9 @@ def main():
             exchange.base_url == constants.MAINNET_API_URL,
             None,
             timestamp,
+            exchange.expires_after,
             multi_sig_user,
             address,
-            exchange.expires_after,
         )
         signatures.append(signature)
 
