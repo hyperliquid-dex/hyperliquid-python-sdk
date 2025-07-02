@@ -37,7 +37,6 @@ class Info(API):
         self.coin_to_asset = {}
         self.name_to_coin = {}
         self.asset_to_sz_decimals = {}
-        self.spot_meta = spot_meta
 
         # spot assets start at 10000
         for spot_info in spot_meta["universe"]:
@@ -67,6 +66,9 @@ class Info(API):
             else:
                 fresh_meta = self.meta(dex=perp_dex)
                 self.set_perp_meta(fresh_meta, offset)
+
+        self.asset_to_coin = {v:k for k,v in self.coin_to_asset.items()}
+        self.spot_meta = spot_meta
 
     def set_perp_meta(self, meta: Meta, offset: int) -> Any:
         for asset, asset_info in enumerate(meta["universe"]):
