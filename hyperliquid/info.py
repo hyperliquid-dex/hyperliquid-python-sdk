@@ -37,6 +37,7 @@ class Info(API):
         self.coin_to_asset = {}
         self.name_to_coin = {}
         self.asset_to_sz_decimals = {}
+        self.spot_meta = spot_meta
 
         # spot assets start at 10000
         for spot_info in spot_meta["universe"]:
