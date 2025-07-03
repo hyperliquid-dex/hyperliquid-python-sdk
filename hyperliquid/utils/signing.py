@@ -155,7 +155,7 @@ def address_to_bytes(address):
 
 
 def action_hash(action, vault_address, nonce, expires_after):
-    data = msgpack.packb(action)
+    data = msgpack.packb(action,use_bin_type=True)
     data += nonce.to_bytes(8, "big")
     if vault_address is None:
         data += b"\x00"
