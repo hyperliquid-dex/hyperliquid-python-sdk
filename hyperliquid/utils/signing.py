@@ -45,7 +45,6 @@ Order = TypedDict(
     "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
 )
 
-
 OrderWire = TypedDict(
     "OrderWire",
     {
@@ -155,7 +154,7 @@ def address_to_bytes(address):
 
 
 def action_hash(action, vault_address, nonce, expires_after):
-    data = msgpack.packb(action,use_bin_type=True)
+    data = msgpack.packb(action, use_bin_type=True)
     data += nonce.to_bytes(8, "big")
     if vault_address is None:
         data += b"\x00"
@@ -268,7 +267,7 @@ def add_multi_sig_fields(action, payload_multi_sig_user, outer_signer):
 
 
 def sign_multi_sig_user_signed_action_payload(
-    wallet, action, is_mainnet, sign_types, tx_type, payload_multi_sig_user, outer_signer
+        wallet, action, is_mainnet, sign_types, tx_type, payload_multi_sig_user, outer_signer
 ):
     envelope = add_multi_sig_fields(action, payload_multi_sig_user, outer_signer)
     sign_types = add_multi_sig_types(sign_types)
@@ -282,7 +281,7 @@ def sign_multi_sig_user_signed_action_payload(
 
 
 def sign_multi_sig_l1_action_payload(
-    wallet, action, is_mainnet, vault_address, timestamp, expires_after, payload_multi_sig_user, outer_signer
+        wallet, action, is_mainnet, vault_address, timestamp, expires_after, payload_multi_sig_user, outer_signer
 ):
     envelope = [payload_multi_sig_user.lower(), outer_signer.lower(), action]
     return sign_l1_action(
@@ -454,7 +453,7 @@ def float_to_usd_int(x: float) -> int:
 
 
 def float_to_int(x: float, power: int) -> int:
-    with_decimals = x * 10**power
+    with_decimals = x * 10 ** power
     if abs(round(with_decimals) - with_decimals) >= 1e-3:
         raise ValueError("float_to_int causes rounding", x)
     res: int = round(with_decimals)
