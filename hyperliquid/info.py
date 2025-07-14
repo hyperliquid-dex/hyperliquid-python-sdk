@@ -586,6 +586,9 @@ class Info(API):
         """
         return self.post("/info", {"type": "delegatorRewards", "user": address})
 
+    def max_builder_fee(self, user: str, builder: str) -> Any:
+        return self.post("/info", {"type": "maxBuilderFee", "user": user, "builder": builder})
+    
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
 
