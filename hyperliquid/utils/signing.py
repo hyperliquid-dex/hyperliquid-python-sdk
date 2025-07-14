@@ -133,6 +133,13 @@ MULTI_SIG_ENVELOPE_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+BUILDER_FEE_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "maxFeeRate", "type": "string"},
+    {"name": "builder", "type": "address"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 
 def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     if "limit" in order_type:
@@ -392,12 +399,7 @@ def sign_approve_builder_fee(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        [
-            {"name": "hyperliquidChain", "type": "string"},
-            {"name": "maxFeeRate", "type": "string"},
-            {"name": "builder", "type": "address"},
-            {"name": "nonce", "type": "uint64"},
-        ],
+        BUILDER_FEE_SIGN_TYPES,
         "HyperliquidTransaction:ApproveBuilderFee",
         is_mainnet,
     )
