@@ -24,7 +24,7 @@ def main():
     #
     # Takes part in the spot deploy auction and if successful, registers token "TEST0"
     # with sz_decimals 2 and wei_decimals 8.
-    # The max gas is $1M USDC and represents the max amount to be paid for the spot deploy auction.
+    # The max gas is 10,000 HYPE and represents the max amount to be paid for the spot deploy auction.
     register_token_result = exchange.spot_deploy_register_token("TEST0", 2, 8, 1000000000000, "Test token example")
     print(register_token_result)
     # If registration is successful, a token index will be returned. This token index is required for
