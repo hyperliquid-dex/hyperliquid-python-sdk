@@ -230,7 +230,7 @@ def sign_l1_action(wallet, action, active_pool, nonce, expires_after, is_mainnet
 def sign_user_signed_action(wallet, action, payload_types, primary_type, is_mainnet):
     # signatureChainId is the chain used by the wallet to sign and can be any chain.
     # hyperliquidChain determines the environment and prevents replaying an action on a different chain.
-    action["signatureChainId"] = "0x66eee"
+    action["signatureChainId"] = "0xa4b1" if is_mainnet else "0x66eee"
     action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
     data = user_signed_payload(primary_type, payload_types, action)
     return sign_inner(wallet, data)
