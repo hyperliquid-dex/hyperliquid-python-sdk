@@ -26,9 +26,9 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
     exchange = Exchange(account, base_url, account_address=address, perp_dexs=perp_dexs)
     return address, info, exchange
 
+
 def create_account(config):
     if config["keystore_path"]:
-        print("Using keystore to create account...")
         keystore_path = config["keystore_path"]
         keystore_path = os.path.expanduser(keystore_path)
         if not os.path.isabs(keystore_path):
