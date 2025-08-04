@@ -1,6 +1,6 @@
+import getpass
 import json
 import os
-import getpass
 
 import eth_account
 from eth_account.signers.local import LocalAccount
@@ -28,6 +28,7 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
 
 
 def create_account(config):
+    account: LocalAccount
     if config["keystore_path"]:
         keystore_path = config["keystore_path"]
         keystore_path = os.path.expanduser(keystore_path)
@@ -41,9 +42,9 @@ def create_account(config):
             keystore = json.load(f)
         password = getpass.getpass("Enter keystore password: ")
         private_key = eth_account.Account.decrypt(keystore, password)
-        account: LocalAccount = eth_account.Account.from_key(private_key)
+        account = eth_account.Account.from_key(private_key)
     else:
-        account: LocalAccount = eth_account.Account.from_key(config["secret_key"])
+        account = eth_account.Account.from_key(config["secret_key"])
     address = config["account_address"]
     if address == "":
         address = account.address
