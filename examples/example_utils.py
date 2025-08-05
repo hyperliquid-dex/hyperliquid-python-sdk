@@ -13,7 +13,14 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
     config_path = os.path.join(os.path.dirname(__file__), "config.json")
     with open(config_path) as f:
         config = json.load(f)
-    account, address = create_account(config)
+    secret_key = get_secret_key(config)
+    account: LocalAccount = eth_account.Account.from_key(secret_key)
+    address = config["account_address"]
+    if address == "":
+        address = account.address
+    print("Running with account address:", address)
+    if address != account.address:
+        print("Running with agent address:", account.address)
     info = Info(base_url, skip_ws, perp_dexs=perp_dexs)
     user_state = info.user_state(address)
     spot_user_state = info.spot_user_state(address)
@@ -27,9 +34,10 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
     return address, info, exchange
 
 
-def create_account(config):
-    account: LocalAccount
-    if config["keystore_path"]:
+def get_secret_key(config):
+    if config["secret_key"]:
+        secret_key = config["secret_key"]
+    else:
         keystore_path = config["keystore_path"]
         keystore_path = os.path.expanduser(keystore_path)
         if not os.path.isabs(keystore_path):
@@ -41,17 +49,8 @@ def create_account(config):
         with open(keystore_path) as f:
             keystore = json.load(f)
         password = getpass.getpass("Enter keystore password: ")
-        private_key = eth_account.Account.decrypt(keystore, password)
-        account = eth_account.Account.from_key(private_key)
-    else:
-        account = eth_account.Account.from_key(config["secret_key"])
-    address = config["account_address"]
-    if address == "":
-        address = account.address
-    print("Running with account address:", address)
-    if address != account.address:
-        print("Running with agent address:", account.address)
-    return account, address
+        secret_key = eth_account.Account.decrypt(keystore, password)
+    return secret_key
 
 
 def setup_multi_sig_wallets():
