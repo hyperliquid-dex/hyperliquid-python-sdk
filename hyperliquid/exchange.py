@@ -73,7 +73,7 @@ class Exchange(API):
             "action": action,
             "nonce": nonce,
             "signature": signature,
-            "vaultAddress": self.vault_address if action["type"] != "usdClassTransfer" else None,
+            "vaultAddress": self.vault_address if action["type"] not in ["usdClassTransfer", "sendAsset"] else None,
             "expiresAfter": self.expires_after,
         }
         logging.debug(payload)
@@ -701,26 +701,7 @@ class Exchange(API):
         )
 
     def spot_deploy_enable_freeze_privilege(self, token: int) -> Any:
-        timestamp = get_timestamp_ms()
-        action = {
-            "type": "spotDeploy",
-            "enableFreezePrivilege": {
-                "token": token,
-            },
-        }
-        signature = sign_l1_action(
-            self.wallet,
-            action,
-            None,
-            timestamp,
-            self.expires_after,
-            self.base_url == MAINNET_API_URL,
-        )
-        return self._post_action(
-            action,
-            signature,
-            timestamp,
-        )
+        return self.spot_deploy_token_action_inner("enableFreezePrivilege", token)
 
     def spot_deploy_freeze_user(self, token: int, user: str, freeze: bool) -> Any:
         timestamp = get_timestamp_ms()
@@ -747,10 +728,16 @@ class Exchange(API):
         )
 
     def spot_deploy_revoke_freeze_privilege(self, token: int) -> Any:
+        return self.spot_deploy_token_action_inner("revokeFreezePrivilege", token)
+
+    def spot_deploy_enable_quote_token(self, token: int) -> Any:
+        return self.spot_deploy_token_action_inner("enableQuoteToken", token)
+
+    def spot_deploy_token_action_inner(self, variant: str, token: int) -> Any:
         timestamp = get_timestamp_ms()
         action = {
             "type": "spotDeploy",
-            "revokeFreezePrivilege": {
+            variant: {
                 "token": token,
             },
         }

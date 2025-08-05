@@ -14,6 +14,8 @@ ENABLE_FREEZE_PRIVILEGE = False
 # Set to True to set the deployer trading fee share
 # See step 6 below for more details on setting the deployer trading fee share.
 SET_DEPLOYER_TRADING_FEE_SHARE = False
+# See step 7 below for more details on enabling quote token.
+ENABLE_QUOTE_TOKEN = False
 DUMMY_USER = "0x0000000000000000000000000000000000000001"
 
 
@@ -111,6 +113,14 @@ def main():
         # The default is already 100% and the smallest increment is 0.001%.
         set_deployer_trading_fee_share_result = exchange.spot_deploy_set_deployer_trading_fee_share(token, "100%")
         print(set_deployer_trading_fee_share_result)
+
+    if ENABLE_QUOTE_TOKEN:
+        # Step 7
+        #
+        # Note that deployer trading fee share must be zero.
+        # The quote token must also be allowed.
+        enable_quote_token_result = exchange.spot_deploy_enable_quote_token(token)
+        print(enable_quote_token_result)
 
 
 if __name__ == "__main__":
