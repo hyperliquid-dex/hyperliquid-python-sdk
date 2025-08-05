@@ -13,8 +13,7 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
     config_path = os.path.join(os.path.dirname(__file__), "config.json")
     with open(config_path) as f:
         config = json.load(f)
-    secret_key = get_secret_key(config)
-    account: LocalAccount = eth_account.Account.from_key(secret_key)
+    account: LocalAccount = eth_account.Account.from_key(get_secret_key(config))
     address = config["account_address"]
     if address == "":
         address = account.address
