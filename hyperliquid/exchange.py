@@ -60,12 +60,13 @@ class Exchange(API):
         account_address: Optional[str] = None,
         spot_meta: Optional[SpotMeta] = None,
         perp_dexs: Optional[List[str]] = None,
+        timeout: Optional[float] = None,
     ):
-        super().__init__(base_url)
+        super().__init__(base_url, timeout)
         self.wallet = wallet
         self.vault_address = vault_address
         self.account_address = account_address
-        self.info = Info(base_url, True, meta, spot_meta, perp_dexs)
+        self.info = Info(base_url, True, meta, spot_meta, perp_dexs, timeout)
         self.expires_after: Optional[int] = None
 
     def _post_action(self, action, signature, nonce):
