@@ -10,16 +10,17 @@ from hyperliquid.utils.types import Any
 
 
 class API:
-    def __init__(self, base_url=None):
+    def __init__(self, base_url=None, timeout=None):
         self.base_url = base_url or MAINNET_API_URL
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
         self._logger = logging.getLogger(__name__)
+        self.timeout = timeout
 
     def post(self, url_path: str, payload: Any = None) -> Any:
         payload = payload or {}
         url = self.base_url + url_path
-        response = self.session.post(url, json=payload)
+        response = self.session.post(url, json=payload, timeout=self.timeout)
         self._handle_exception(response)
         try:
             return response.json()

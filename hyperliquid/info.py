@@ -24,8 +24,9 @@ class Info(API):
         # Note that when perp_dexs is None, then "" is used as the perp dex. "" represents
         # the original dex.
         perp_dexs: Optional[List[str]] = None,
+        timeout: Optional[float] = None,
     ):  # pylint: disable=too-many-locals
-        super().__init__(base_url)
+        super().__init__(base_url, timeout)
         self.ws_manager: Optional[WebsocketManager] = None
         if not skip_ws:
             self.ws_manager = WebsocketManager(self.base_url)
