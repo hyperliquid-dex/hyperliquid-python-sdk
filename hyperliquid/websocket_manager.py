@@ -134,6 +134,14 @@ class WebsocketManager(threading.Thread):
         self.ping_sender.start()
         self.ws.run_forever()
 
+    def send_ping(self):
+        while not self.stop_event.wait(50):
+            if not self.ws.keep_running:
+                break
+            logging.debug("Websocket sending ping")
+            self.ws.send(json.dumps({"method": "ping"}))
+        logging.debug("Websocket ping sender stopped")
+
     def stop(self):
         self.stop_event.set()
         self.ws.close()
@@ -207,21 +215,6 @@ class ReconnectableWebsocketManager(WebsocketManager):
         self.ws.on_close = self.on_close
         self.ws.on_error = self.on_error
         # Lock to protect shared state (queued_subscriptions, active_subscriptions)
-
-    def send_ping(self):
-        interval = 50
-        while not self.stop_event.wait(interval):
-            try:
-                ws = getattr(self, "ws", None)
-                # 연결 미준비/끊김이면 전송 스킵 (스레드는 계속 유지)
-                if not ws or not getattr(ws, "keep_running", False) or not self.ws_ready:
-                    continue
-                logging.debug("Websocket sending app-level ping")
-                ws.send(json.dumps({"method": "ping"}))
-            except Exception:
-                # 재연결 중 교체 등으로 생길 수 있는 예외는 조용히 스킵
-                logging.debug("App-level ping skipped due to connection state", exc_info=True)
-        logging.debug("Websocket ping sender stopped")
 
     def on_open(self, _ws):
         logging.debug("on_open")
