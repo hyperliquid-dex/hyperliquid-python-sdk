@@ -1106,3 +1106,10 @@ class Exchange(API):
             signature,
             timestamp,
         )
+
+    def noop(self, nonce):
+        action = {"type": "noop"}
+        signature = sign_l1_action(
+            self.wallet, action, self.vault_address, nonce, self.expires_after, self.base_url == MAINNET_API_URL
+        )
+        return self._post_action(action, signature, nonce)
