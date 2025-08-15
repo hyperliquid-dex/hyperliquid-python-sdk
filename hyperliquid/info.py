@@ -265,7 +265,7 @@ class Info(API):
                 "startTime": start_time,
                 "endTime": end_time,
                 "aggregateByTime": aggregate_by_time,
-            }
+            },
         )
 
     def meta(self, dex: str = "") -> Meta:
