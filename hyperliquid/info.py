@@ -225,7 +225,9 @@ class Info(API):
         """
         return self.post("/info", {"type": "userFills", "user": address})
 
-    def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None, aggregate_by_time: Optional[bool] = False) -> Any:
+    def user_fills_by_time(
+        self, address: str, start_time: int, end_time: Optional[int] = None, aggregate_by_time: Optional[bool] = False
+    ) -> Any:
         """Retrieve a given user's fills by time.
 
         POST /info
@@ -256,7 +258,14 @@ class Info(API):
             ]
         """
         return self.post(
-            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time, "aggregateByTime": aggregate_by_time}
+            "/info",
+            {
+                "type": "userFillsByTime",
+                "user": address,
+                "startTime": start_time,
+                "endTime": end_time,
+                "aggregateByTime": aggregate_by_time,
+            }
         )
 
     def meta(self, dex: str = "") -> Meta:
