@@ -235,6 +235,7 @@ class Info(API):
                             e.g. 0x0000000000000000000000000000000000000000.
             start_time (int): Unix timestamp in milliseconds
             end_time (Optional[int]): Unix timestamp in milliseconds
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when a crossing order gets filled by multiple different resting orders. Resting orders filled by multiple crossing orders will not be aggregated.
 
         Returns:
             [
