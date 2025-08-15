@@ -225,7 +225,9 @@ class Info(API):
         """
         return self.post("/info", {"type": "userFills", "user": address})
 
-    def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None) -> Any:
+    def user_fills_by_time(
+        self, address: str, start_time: int, end_time: Optional[int] = None, aggregate_by_time: Optional[bool] = False
+    ) -> Any:
         """Retrieve a given user's fills by time.
 
         POST /info
@@ -235,6 +237,7 @@ class Info(API):
                             e.g. 0x0000000000000000000000000000000000000000.
             start_time (int): Unix timestamp in milliseconds
             end_time (Optional[int]): Unix timestamp in milliseconds
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when a crossing order gets filled by multiple different resting orders. Resting orders filled by multiple crossing orders will not be aggregated.
 
         Returns:
             [
@@ -255,7 +258,14 @@ class Info(API):
             ]
         """
         return self.post(
-            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
+            "/info",
+            {
+                "type": "userFillsByTime",
+                "user": address,
+                "startTime": start_time,
+                "endTime": end_time,
+                "aggregateByTime": aggregate_by_time,
+            },
         )
 
     def meta(self, dex: str = "") -> Meta:
