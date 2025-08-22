@@ -2,6 +2,7 @@ import pytest
 
 from hyperliquid.info import Info
 from hyperliquid.utils.types import L2BookData, Meta, SpotMeta
+from hyperliquid.utils.error import ServerError
 
 TEST_META: Meta = {"universe": []}
 TEST_SPOT_META: SpotMeta = {"universe": [], "tokens": []}
@@ -190,7 +191,7 @@ def test_portfolio():
 @pytest.mark.vcr()
 def test_batch_clearinghouse_states():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
-    users = ["0x5e9ee1089755c3435139848e47e6635505d5a13a", "0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2"]
+    users = ["0x31ca8395cf837de08b24da3f660e77761dfb974b", "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036"]
     # Note: This endpoint may not be available on all Hyperliquid nodes
     # It's only available on the official Hyperliquid public API
     try:
@@ -201,7 +202,7 @@ def test_batch_clearinghouse_states():
             # Each state should have the same structure as clearinghouseState
             assert "assetPositions" in state, "Each state should have assetPositions"
             assert "marginSummary" in state, "Each state should have marginSummary"
-    except (ConnectionError, TimeoutError, ValueError) as e:
+    except (ConnectionError, TimeoutError, ValueError, ServerError) as e:
         # This is expected if the endpoint is not available
         print(f"batch_clearinghouse_states not available: {e}")
 
@@ -235,7 +236,7 @@ def test_user_vault_equities():
 @pytest.mark.vcr()
 def test_user_role():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
-    response = info.user_role(user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036")
+    response = info.user_role(user="0x31ca8395cf837de08b24da3f660e77761dfb974b")
     assert isinstance(response, dict), "The response should be a dictionary"
     # User role should contain account type and role information
     assert (
@@ -256,7 +257,7 @@ def test_user_rate_limit():
 @pytest.mark.vcr()
 def test_delegator_history():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
-    response = info.delegator_history(user="0x5e9ee1089755c3435139848e47e6635505d5a13a")
+    response = info.delegator_history(user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036")
     assert isinstance(response, list), "The response should be a list"
     # Delegator history should contain delegation/undelegation events
     for event in response:
