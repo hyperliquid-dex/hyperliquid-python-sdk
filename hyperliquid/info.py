@@ -612,6 +612,138 @@ class Info(API):
     def query_perp_deploy_auction_status(self) -> Any:
         return self.post("/info", {"type": "perpDeployAuctionStatus"})
 
+    def historical_orders(self, user: str) -> Any:
+        """Retrieve a user's historical orders.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+        
+        Returns:
+            Returns at most 2000 most recent historical orders with their current 
+            status and detailed order information.
+        """
+        return self.post("/info", {"type": "historicalOrders", "user": user})
+
+    def user_non_funding_ledger_updates(self, user: str, startTime: int, endTime: Optional[int] = None) -> Any:
+        """Retrieve non-funding ledger updates for a user.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+            startTime (int): Start time in milliseconds (epoch timestamp).
+            endTime (Optional[int]): End time in milliseconds (epoch timestamp).
+        
+        Returns:
+            Comprehensive ledger updates including deposits, withdrawals, transfers,
+            liquidations, and other account activities excluding funding payments.
+        """
+        if endTime is not None:
+            return self.post("/info", {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime, "endTime": endTime})
+        return self.post("/info", {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime})
+
+    def portfolio(self, user: str) -> Any:
+        """Retrieve comprehensive portfolio performance data.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Comprehensive portfolio performance data across different time periods,
+            including account value history, PnL history, and volume metrics.
+        """
+        return self.post("/info", {"type": "portfolio", "user": user})
+
+    def batch_clearinghouse_states(self, users: List[str], dex: str = "") -> Any:
+        """Retrieve perpetuals account summaries for multiple users.
+        
+        POST /info
+        
+        Args:
+            users (List[str]): List of onchain addresses in 42-character hexadecimal format.
+            dex (str): Perp dex name. Defaults to empty string (first perp dex).
+        
+        Returns:
+            Array where each item matches the clearinghouseState schema with fields like
+            assetPositions, marginSummary, crossMarginSummary, time, and withdrawable.
+        """
+        return self.post("/info", {"type": "batchClearinghouseStates", "users": users, "dex": dex})
+
+    def user_twap_slice_fills(self, user: str) -> Any:
+        """Retrieve a user's TWAP slice fills.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Returns at most 2000 most recent TWAP slice fills with detailed 
+            execution information.
+        """
+        return self.post("/info", {"type": "userTwapSliceFills", "user": user})
+
+    def user_vault_equities(self, user: str) -> Any:
+        """Retrieve user's equity positions across all vaults.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Detailed information about user's equity positions across all vaults
+            including current values, profit/loss metrics, and withdrawal details.
+        """
+        return self.post("/info", {"type": "userVaultEquities", "user": user})
+
+    def user_role(self, user: str) -> Any:
+        """Retrieve the role and account type information for a user.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Role and account type information including account structure,
+            permissions, and relationships within the Hyperliquid ecosystem.
+        """
+        return self.post("/info", {"type": "userRole", "user": user})
+
+    def user_rate_limit(self, user: str) -> Any:
+        """Retrieve user's API rate limit configuration and usage.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Detailed information about user's API rate limit configuration
+            and current usage for managing API usage and avoiding rate limiting.
+        """
+        return self.post("/info", {"type": "userRateLimit", "user": user})
+
+    def delegator_history(self, user: str) -> Any:
+        """Retrieve comprehensive staking history for a user.
+        
+        POST /info
+        
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+        
+        Returns:
+            Comprehensive staking history including delegation and undelegation
+            events with timestamps, transaction hashes, and detailed delta information.
+        """
+        return self.post("/info", {"type": "delegatorHistory", "user": user})
+
     def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (
             subscription["type"] == "l2Book"

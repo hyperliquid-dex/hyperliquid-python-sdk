@@ -172,6 +172,10 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# VCR cassettes for test recordings
+cassettes/
+tests/cassettes/
+
 # Translations
 *.mo
 *.pot
