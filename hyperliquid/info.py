@@ -611,7 +611,7 @@ class Info(API):
 
     def query_perp_deploy_auction_status(self) -> Any:
         return self.post("/info", {"type": "perpDeployAuctionStatus"})
-    
+
     def query_spot_deploy_auction_status(self, user: str) -> Any:
         return self.post("/info", {"type": "spotDeployState", "user": user})
 
