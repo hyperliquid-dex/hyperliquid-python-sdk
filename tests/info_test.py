@@ -152,9 +152,7 @@ def test_historical_orders():
 def test_user_non_funding_ledger_updates_with_end_time():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
     response = info.user_non_funding_ledger_updates(
-        user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036", 
-        startTime=1681923833000, 
-        endTime=1682010233000
+        user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036", startTime=1681923833000, endTime=1682010233000
     )
     assert isinstance(response, list), "The response should be a list"
     for record in response:
@@ -167,8 +165,7 @@ def test_user_non_funding_ledger_updates_with_end_time():
 def test_user_non_funding_ledger_updates_without_end_time():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
     response = info.user_non_funding_ledger_updates(
-        user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036", 
-        startTime=1681923833000
+        user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036", startTime=1681923833000
     )
     assert isinstance(response, list), "The response should be a list"
 
@@ -182,21 +179,18 @@ def test_portfolio():
     if len(response) > 0:
         # Each item should be a time period with performance data
         period_data = response[0]
-        assert isinstance(period_data, list) and len(period_data) == 2, \
-            "Each item should be a [period_name, data] pair"
-        period_name, data = period_data
+        assert isinstance(period_data, list) and len(period_data) == 2, "Each item should be a [period_name, data] pair"
+        _, data = period_data
         assert isinstance(data, dict), "Period data should be a dictionary"
-        assert any(key in data for key in ["accountValueHistory", "pnlHistory", "vlm"]), \
-            "Portfolio should contain performance metrics"
+        assert any(
+            key in data for key in ["accountValueHistory", "pnlHistory", "vlm"]
+        ), "Portfolio should contain performance metrics"
 
 
 @pytest.mark.vcr()
 def test_batch_clearinghouse_states():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
-    users = [
-        "0x5e9ee1089755c3435139848e47e6635505d5a13a",
-        "0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2"
-    ]
+    users = ["0x5e9ee1089755c3435139848e47e6635505d5a13a", "0xb7b6f3cea3f66bf525f5d8f965f6dbf6d9b017b2"]
     # Note: This endpoint may not be available on all Hyperliquid nodes
     # It's only available on the official Hyperliquid public API
     try:
@@ -207,7 +201,7 @@ def test_batch_clearinghouse_states():
             # Each state should have the same structure as clearinghouseState
             assert "assetPositions" in state, "Each state should have assetPositions"
             assert "marginSummary" in state, "Each state should have marginSummary"
-    except Exception as e:
+    except (ConnectionError, TimeoutError, ValueError) as e:
         # This is expected if the endpoint is not available
         print(f"batch_clearinghouse_states not available: {e}")
 
@@ -232,8 +226,9 @@ def test_user_vault_equities():
     if len(response) > 0:
         vault_equity = response[0]
         # Check for expected vault equity fields - actual response has vaultAddress instead of vault
-        assert "vaultAddress" in vault_equity or "vault" in vault_equity, \
-            "Each vault equity should have a 'vaultAddress' or 'vault' field"
+        assert (
+            "vaultAddress" in vault_equity or "vault" in vault_equity
+        ), "Each vault equity should have a 'vaultAddress' or 'vault' field"
         assert "equity" in vault_equity, "Each vault equity should have an 'equity' field"
 
 
@@ -243,8 +238,9 @@ def test_user_role():
     response = info.user_role(user="0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036")
     assert isinstance(response, dict), "The response should be a dictionary"
     # User role should contain account type and role information
-    assert "role" in response or "type" in response or "account" in response, \
-        "Response should contain role or account type information"
+    assert (
+        "role" in response or "type" in response or "account" in response
+    ), "Response should contain role or account type information"
 
 
 @pytest.mark.vcr()
