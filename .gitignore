@@ -172,6 +172,10 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# VCR cassettes for test recordings
+cassettes/
+tests/cassettes/
+
 # Translations
 *.mo
 *.pot
@@ -616,6 +620,7 @@ healthchecksdb
 MigrationBackup/
 
 testing.py
+testing/
 
 # End of https://www.gitignore.io/api/osx,python,pycharm,windows,visualstudio,visualstudiocode
 examples/config.json
