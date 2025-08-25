@@ -1,8 +1,8 @@
 import pytest
 
 from hyperliquid.info import Info
-from hyperliquid.utils.types import L2BookData, Meta, SpotMeta
 from hyperliquid.utils.error import ServerError
+from hyperliquid.utils.types import L2BookData, Meta, SpotMeta
 
 TEST_META: Meta = {"universe": []}
 TEST_SPOT_META: SpotMeta = {"universe": [], "tokens": []}
