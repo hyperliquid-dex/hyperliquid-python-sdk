@@ -747,6 +747,10 @@ class Info(API):
         """
         return self.post("/info", {"type": "delegatorHistory", "user": user})
 
+    def query_spot_deploy_auction_status(self, user: str) -> Any:
+        return self.post("/info", {"type": "spotDeployState", "user": user})
+
+
     def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (
             subscription["type"] == "l2Book"
