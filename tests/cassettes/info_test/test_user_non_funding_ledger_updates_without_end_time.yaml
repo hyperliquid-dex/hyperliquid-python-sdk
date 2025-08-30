@@ -1,7 +1,7 @@
 interactions:
 - request:
     body: '{"type": "userNonFundingLedgerUpdates", "user": "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036",
-      "startTime": 1681923833000}'
+      "startTime": 1681923833000, "endTime": null}'
     headers:
       Accept:
       - '*/*'
@@ -10,7 +10,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '121'
+      - '138'
       Content-Type:
       - application/json
       User-Agent:
@@ -35,17 +35,17 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '32028'
+      - '40389'
       Content-Type:
       - application/json
       Date:
-      - Fri, 22 Aug 2025 11:45:20 GMT
+      - Sat, 30 Aug 2025 19:17:29 GMT
       Server:
       - nginx/1.22.1
       Via:
-      - 1.1 7dbea139a5c4f501bc4b0e9d19a50c9a.cloudfront.net (CloudFront)
+      - 1.1 e505058447bf5e74cc264f4e72f27bee.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 8jCGD2eP2sOhiKsdlltQjRcg9_raaTx9x7Liz10pwq9EPO5gfg1mTQ==
+      - MV7KMQ-PpTHyokjwV3NYgHQcJrCu9w0lFL1woFwYTBadyP8i1H5ikA==
       X-Amz-Cf-Pop:
       - FRA60-P5
       X-Cache:
