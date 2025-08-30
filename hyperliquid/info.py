@@ -594,6 +594,20 @@ class Info(API):
         """
         return self.post("/info", {"type": "delegatorRewards", "user": address})
 
+    def delegator_history(self, user: str) -> Any:
+        """Retrieve comprehensive staking history for a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Comprehensive staking history including delegation and undelegation
+            events with timestamps, transaction hashes, and detailed delta information.
+        """
+        return self.post("/info", {"type": "delegatorHistory", "user": user})
+
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
 
@@ -641,12 +655,10 @@ class Info(API):
             Comprehensive ledger updates including deposits, withdrawals, transfers,
             liquidations, and other account activities excluding funding payments.
         """
-        if endTime is not None:
-            return self.post(
-                "/info",
-                {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime, "endTime": endTime},
-            )
-        return self.post("/info", {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime})
+        return self.post(
+            "/info",
+            {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime, "endTime": endTime},
+        )
 
     def portfolio(self, user: str) -> Any:
         """Retrieve comprehensive portfolio performance data.
@@ -661,21 +673,6 @@ class Info(API):
             including account value history, PnL history, and volume metrics.
         """
         return self.post("/info", {"type": "portfolio", "user": user})
-
-    def batch_clearinghouse_states(self, users: List[str], dex: str = "") -> Any:
-        """Retrieve perpetuals account summaries for multiple users.
-
-        POST /info
-
-        Args:
-            users (List[str]): List of onchain addresses in 42-character hexadecimal format.
-            dex (str): Perp dex name. Defaults to empty string (first perp dex).
-
-        Returns:
-            Array where each item matches the clearinghouseState schema with fields like
-            assetPositions, marginSummary, crossMarginSummary, time, and withdrawable.
-        """
-        return self.post("/info", {"type": "batchClearinghouseStates", "users": users, "dex": dex})
 
     def user_twap_slice_fills(self, user: str) -> Any:
         """Retrieve a user's TWAP slice fills.
@@ -732,20 +729,6 @@ class Info(API):
             and current usage for managing API usage and avoiding rate limiting.
         """
         return self.post("/info", {"type": "userRateLimit", "user": user})
-
-    def delegator_history(self, user: str) -> Any:
-        """Retrieve comprehensive staking history for a user.
-
-        POST /info
-
-        Args:
-            user (str): Onchain address in 42-character hexadecimal format.
-
-        Returns:
-            Comprehensive staking history including delegation and undelegation
-            events with timestamps, transaction hashes, and detailed delta information.
-        """
-        return self.post("/info", {"type": "delegatorHistory", "user": user})
 
     def query_spot_deploy_auction_status(self, user: str) -> Any:
         return self.post("/info", {"type": "spotDeployState", "user": user})

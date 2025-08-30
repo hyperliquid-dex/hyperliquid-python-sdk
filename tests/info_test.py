@@ -1,7 +1,6 @@
 import pytest
 
 from hyperliquid.info import Info
-from hyperliquid.utils.error import ServerError
 from hyperliquid.utils.types import L2BookData, Meta, SpotMeta
 
 TEST_META: Meta = {"universe": []}
@@ -186,25 +185,6 @@ def test_portfolio():
         assert any(
             key in data for key in ["accountValueHistory", "pnlHistory", "vlm"]
         ), "Portfolio should contain performance metrics"
-
-
-@pytest.mark.vcr()
-def test_batch_clearinghouse_states():
-    info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
-    users = ["0x31ca8395cf837de08b24da3f660e77761dfb974b", "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036"]
-    # Note: This endpoint may not be available on all Hyperliquid nodes
-    # It's only available on the official Hyperliquid public API
-    try:
-        response = info.batch_clearinghouse_states(users=users)
-        assert isinstance(response, list), "The response should be a list"
-        assert len(response) <= len(users), "Should return at most one state per user"
-        for state in response:
-            # Each state should have the same structure as clearinghouseState
-            assert "assetPositions" in state, "Each state should have assetPositions"
-            assert "marginSummary" in state, "Each state should have marginSummary"
-    except (ConnectionError, TimeoutError, ValueError, ServerError) as e:
-        # This is expected if the endpoint is not available
-        print(f"batch_clearinghouse_states not available: {e}")
 
 
 @pytest.mark.vcr()
