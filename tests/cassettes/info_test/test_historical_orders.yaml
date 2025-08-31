@@ -1,0 +1,76 @@
+interactions:
+- request:
+    body: '{"type": "historicalOrders", "user": "0x31ca8395cf837de08b24da3f660e77761dfb974b"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '82'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.3
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"order": {"coin": "TON", "side": "B", "limitPx": "3.2502", "sz":
+        "81.7", "oid": 141682155424, "timestamp": 1755863118217, "triggerCondition":
+        "N/A", "isTrigger": false, "triggerPx": "0.0", "children": [], "isPositionTpsl":
+        false, "reduceOnly": false, "orderType": "Limit", "origSz": "81.7", "tif":
+        "Ioc", "cloid": null}, "status": "iocCancelRejected", "statusTimestamp": 1755863118217},
+        {"order": {"coin": "ORDI", "side": "B", "limitPx": "8.6328", "sz": "3.15",
+        "oid": 141682155423, "timestamp": 1755863118217, "triggerCondition": "N/A",
+        "isTrigger": false, "triggerPx": "0.0", "children": [], "isPositionTpsl":
+        false, "reduceOnly": false, "orderType": "Limit", "origSz": "3.15", "tif":
+        "Ioc", "cloid": null}, "status": "iocCancelRejected", "statusTimestamp": 1755863118217},
+        {"order": {"coin": "GRIFFAIN", "side": "B", "limitPx": "0.035057", "sz": "529.0",
+        "oid": 141682155422, "timestamp": 1755863118217, "triggerCondition": "N/A",
+        "isTrigger": false, "triggerPx": "0.0", "children": [], "isPositionTpsl":
+        false, "reduceOnly": false, "orderType": "Limit", "origSz": "529.0", "tif":
+        "Ioc", "cloid": null}, "status": "iocCancelRejected", "statusTimestamp": 1755863118217},
+        {"order": {"coin": "DYDX", "side": "B", "limitPx": "0.62613", "sz": "1500.3",
+        "oid": 141682147400, "timestamp": 1755863117780, "triggerCondition": "N/A",
+        "isTrigger": false, "triggerPx": "0.0", "children": [], "isPositionTpsl":
+        false, "reduceOnly": false, "orderType": "Limit", "origSz": "1500.3", "tif":
+        "Alo", "cloid": null}, "status": "canceled", "statusTimestamp": 1755863118217},
+        {"order": {"coin": "DYDX", "side": "B", "limitPx": "0.62689", "sz": "1614.3",
+        "oid": 141682147399, "timestamp": 1755863117780, "triggerCondition": "N/A",
+        "isTrigger": false, "triggerPx": "0.0", "children": [], "isPositionTpsl":
+        false, "reduceOnly": false, "orderType": "Limit", "origSz": "1614.3", "tif":
+        "Alo", "cloid": null}, "status": "canceled", "statusTimestamp": 1755863118217}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '689574'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 22 Aug 2025 11:45:18 GMT
+      Server:
+      - nginx/1.22.1
+      Via:
+      - 1.1 72500140cb63ff2dee8b57e4476902e6.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - JXelN_TiQqwyxr7GLuIrTUgS_CQKdomVFn3rF6_0bRtf0mUiv0U1Ag==
+      X-Amz-Cf-Pop:
+      - FRA60-P5
+      X-Cache:
+      - Miss from cloudfront
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1
