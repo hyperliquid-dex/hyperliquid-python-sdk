@@ -31,7 +31,7 @@ from hyperliquid.utils.signing import (
     sign_token_delegate_action,
     sign_usd_class_transfer_action,
     sign_usd_transfer_action,
-    sign_withdraw_from_bridge_action,
+    sign_withdraw_from_bridge_action, sign_staking_to_spot_transfer_action,
 )
 from hyperliquid.utils.types import (
     Any,
@@ -1113,3 +1113,18 @@ class Exchange(API):
             self.wallet, action, self.vault_address, nonce, self.expires_after, self.base_url == MAINNET_API_URL
         )
         return self._post_action(action, signature, nonce)
+
+    def staking_to_spot_transfer(self, wei: int) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "wei": wei,
+            "nonce": timestamp,
+            "type": "cWithdraw",
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        signature = sign_staking_to_spot_transfer_action(self.wallet, action, is_mainnet)
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
