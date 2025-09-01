@@ -135,6 +135,12 @@ MULTI_SIG_ENVELOPE_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+STAKING_TO_SPOT_TRANSFER_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "wei", "type": "uint64"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 
 def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     if "limit" in order_type:
@@ -488,3 +494,12 @@ def order_wires_to_order_action(order_wires, builder=None):
     if builder:
         action["builder"] = builder
     return action
+
+def sign_staking_to_spot_transfer_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        STAKING_TO_SPOT_TRANSFER_SIGN_TYPES,
+        "HyperliquidTransaction:CWithdraw",
+        is_mainnet,
+    )
