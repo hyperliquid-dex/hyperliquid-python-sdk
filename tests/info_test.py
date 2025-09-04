@@ -252,8 +252,8 @@ def test_extra_agents():
     response = info.extra_agents(user="0xd42f2bB0e06455eDB652e27b7374FC2bDa8448ee")
     assert isinstance(response, list), "The response should be a list"
     # Extra agents should contain agent information
-    if len(response) > 0:
-        agent = response[0]
+    assert len(response) > 0, "The response should contain at least one agent"
+    for agent in response:
         assert "name" in agent, "Each agent should have a 'name' field"
         assert "address" in agent, "Each agent should have an 'address' field"
         assert "validUntil" in agent, "Each agent should have a 'validUntil' field"
