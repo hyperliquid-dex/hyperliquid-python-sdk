@@ -733,6 +733,27 @@ class Info(API):
     def query_spot_deploy_auction_status(self, user: str) -> Any:
         return self.post("/info", {"type": "spotDeployState", "user": user})
 
+    def extra_agents(self, user: str) -> Any:
+        """Retrieve extra agents associated with a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+
+        Returns:
+            [
+                {
+                    "name": str,
+                    "address": str,
+                    "validUntil": int
+                },
+                ...
+            ]
+        """
+        return self.post("/info", {"type": "extraAgents", "user": user})
+
     def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (
             subscription["type"] == "l2Book"

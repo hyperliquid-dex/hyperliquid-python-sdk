@@ -244,3 +244,16 @@ def test_delegator_history():
         assert "delta" in event, "Each event should have a 'delta' field"
         assert "hash" in event, "Each event should have a transaction 'hash'"
         assert "time" in event, "Each event should have a 'time' field"
+
+
+@pytest.mark.vcr()
+def test_extra_agents():
+    info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
+    response = info.extra_agents(user="0xd42f2bB0e06455eDB652e27b7374FC2bDa8448ee")
+    assert isinstance(response, list), "The response should be a list"
+    # Extra agents should contain agent information
+    assert len(response) > 0, "The response should contain at least one agent"
+    for agent in response:
+        assert "name" in agent, "Each agent should have a 'name' field"
+        assert "address" in agent, "Each agent should have an 'address' field"
+        assert "validUntil" in agent, "Each agent should have a 'validUntil' field"
