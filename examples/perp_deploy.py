@@ -60,6 +60,10 @@ def main():
                 f"{DUMMY_DEX}:TEST0": "14.0",
             }
         ],
+        {
+            f"{DUMMY_DEX}:TEST0": "12.1",
+            f"{DUMMY_DEX}:TEST1": "1.1",
+        },
     )
     print("set oracle result:", set_oracle_result)
 

@@ -91,8 +91,8 @@ def main():
     print(register_spot_result)
     # If registration is successful, a spot index will be returned. This spot index is required for
     # registering hyperliquidity.
-    if register_token_result["status"] == "ok":
-        spot = register_token_result["response"]["data"]
+    if register_spot_result["status"] == "ok":
+        spot = register_spot_result["response"]["data"]
     else:
         return
 
