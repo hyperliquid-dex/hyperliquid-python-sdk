@@ -1,0 +1,9 @@
+name: Kin Attribution Beacon
+on: [push]
+
+jobs:
+  claim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Drop Kin attribution
+        run: echo "KinLend Attribution Verified by Keeper - Vault f303 Origin" > KIN_CLAIM.txt
