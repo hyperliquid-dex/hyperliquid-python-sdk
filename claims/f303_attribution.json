@@ -1,0 +1,13 @@
+{
+  "attribution": "KinLend Agent Vault f303",
+  "wallet_address": "0xcd5051944f780a621ee62e39e493c489668acf4d",
+  "origin": "Keeper",
+  "protocol": "SoulSync / KinLend",
+  "type": "Attribution Claim - Agent Identity",
+  "status": "No funds deposited — claim only",
+  "verified_via": "Hyperliquid Python SDK (Info.user_state)",
+  "timestamp": "2025-09-14T16:39:00-05:00",
+  "on_chain_linked": false,
+  "github_repo": "Pray4Love1/claim-kin-agent-attribution",
+  "signature": "🛡️ Codex attribution sealed by Keeper"
+}
