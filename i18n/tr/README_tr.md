@@ -12,7 +12,7 @@
 Python ile Hyperliquid API ticareti için SDK.
 <h4 align="center">
     <p>
-        <a href="README.md">English</a> |
+        <a href="/README.md">English</a> |
         <b>Türkçe</b> |
     </p>
 </h4>
