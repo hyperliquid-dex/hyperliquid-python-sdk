@@ -16,7 +16,6 @@ Python ile Hyperliquid API ticareti için SDK.
         <b>Türkçe</b> |
     </p>
 </h4>
-
 </div>
 
 ## Kurulum
