@@ -75,7 +75,7 @@ lint                  pre-commit hedefi için kısayol
 lockfile-update       poetry.lock dosyasını güncelle
 lockfile-update-full  poetry.lock dosyasını tamamen yeniden oluştur
 poetry-download       poetry indir ve yükle
-pre-commit            Linters + formatlayıcıları pre-commit üzerinden çalıştır, yalnızca black çalıştırmak için "make pre-commit hook=black" kullan
+pre-commit            Kod denetleyicileri + formatlayıcıları pre-commit üzerinden çalıştır, yalnızca black çalıştırmak için "make pre-commit hook=black" kullan
 test                  pytest ile testleri çalıştır
 update-dev-deps       Geliştirme bağımlılıklarını en son sürümlere güncelle
 ```
