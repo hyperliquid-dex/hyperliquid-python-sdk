@@ -31,6 +31,7 @@ from hyperliquid.utils.signing import (
     sign_token_delegate_action,
     sign_usd_class_transfer_action,
     sign_usd_transfer_action,
+    sign_user_dex_abstraction_action,
     sign_withdraw_from_bridge_action,
 )
 from hyperliquid.utils.types import (
@@ -1104,6 +1105,40 @@ class Exchange(API):
             self.expires_after,
             self.base_url == MAINNET_API_URL,
         )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def agent_enable_dex_abstraction(self) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "agentEnableDexAbstraction",
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            self.vault_address,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
+    def user_dex_abstraction(self, user: str, enabled: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "userDexAbstraction",
+            "user": user.lower(),
+            "enabled": enabled,
+            "nonce": timestamp,
+        }
+        signature = sign_user_dex_abstraction_action(self.wallet, action, self.base_url == MAINNET_API_URL)
         return self._post_action(
             action,
             signature,

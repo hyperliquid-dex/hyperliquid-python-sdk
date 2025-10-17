@@ -1,7 +1,7 @@
 import example_utils
 
 from hyperliquid.utils import constants
-from hyperliquid.utils.signing import USD_SEND_SIGN_TYPES, get_timestamp_ms, sign_multi_sig_user_signed_action_payload
+from hyperliquid.utils.signing import SEND_ASSET_SIGN_TYPES, get_timestamp_ms, sign_multi_sig_user_signed_action_payload
 
 
 def main():
@@ -19,12 +19,16 @@ def main():
 
     # Define the multi-sig inner action - in this case, sending USD
     action = {
-        "type": "usdSend",
+        "type": "sendAsset",
         "signatureChainId": "0x66eee",
         "hyperliquidChain": "Testnet",
         "destination": "0x0000000000000000000000000000000000000000",
+        "sourceDex": "",
+        "destinationDex": "",
+        "token": "USDC",
         "amount": "100.0",
-        "time": timestamp,
+        "fromSubAccount": "",
+        "nonce": timestamp,
     }
     signatures = []
 
@@ -35,8 +39,8 @@ def main():
             wallet,
             action,
             exchange.base_url == constants.MAINNET_API_URL,
-            USD_SEND_SIGN_TYPES,
-            "HyperliquidTransaction:UsdSend",
+            SEND_ASSET_SIGN_TYPES,
+            "HyperliquidTransaction:SendAsset",
             multi_sig_user,
             address,
         )

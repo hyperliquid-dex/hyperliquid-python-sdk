@@ -115,6 +115,13 @@ SEND_ASSET_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+USER_DEX_ABSTRACTION_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "user", "type": "address"},
+    {"name": "enabled", "type": "bool"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 TOKEN_DELEGATE_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
     {"name": "validator", "type": "address"},
@@ -358,6 +365,16 @@ def sign_send_asset_action(wallet, action, is_mainnet):
         action,
         SEND_ASSET_SIGN_TYPES,
         "HyperliquidTransaction:SendAsset",
+        is_mainnet,
+    )
+
+
+def sign_user_dex_abstraction_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        USER_DEX_ABSTRACTION_SIGN_TYPES,
+        "HyperliquidTransaction:UserDexAbstraction",
         is_mainnet,
     )
 
