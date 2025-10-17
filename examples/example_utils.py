@@ -9,8 +9,8 @@ from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info
 
 
-def setup(base_url=None, skip_ws=False, perp_dexs=None):
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+def setup(base_url=None, skip_ws=False, perp_dexs=None, file_name="config.json"):
+    config_path = os.path.join(os.path.dirname(__file__), file_name)
     with open(config_path) as f:
         config = json.load(f)
     account: LocalAccount = eth_account.Account.from_key(get_secret_key(config))
@@ -52,8 +52,8 @@ def get_secret_key(config):
     return secret_key
 
 
-def setup_multi_sig_wallets():
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+def setup_multi_sig_wallets(file_name="config.json"):
+    config_path = os.path.join(os.path.dirname(__file__), file_name)
     with open(config_path) as f:
         config = json.load(f)
 
