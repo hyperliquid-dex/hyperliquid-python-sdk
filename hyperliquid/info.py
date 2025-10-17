@@ -626,6 +626,9 @@ class Info(API):
     def query_perp_deploy_auction_status(self) -> Any:
         return self.post("/info", {"type": "perpDeployAuctionStatus"})
 
+    def query_user_dex_abstraction_state(self, user: str) -> Any:
+        return self.post("/info", {"type": "userDexAbstraction", "user": user})
+
     def historical_orders(self, user: str) -> Any:
         """Retrieve a user's historical orders.
 
