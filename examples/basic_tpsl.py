@@ -11,18 +11,18 @@ def main():
     parser.add_argument("--is_buy", action="store_true")
     args = parser.parse_args()
 
-    address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
-    market = "SOL"
+    coin = "SOL"
     position_is_long = args.is_buy
     quantity = 1
     px = 184.80
-    tp = px * 1.05  # take profit at +4%
-    sl = px * 0.95  # stop loss at -4%
+    tp = px * 1.05  # take profit at +5%
+    sl = px * 0.95  # stop loss at -5%
 
-    orders: list[OrderRequest] = [
+    orders = [
         {
-            "coin": market,
+            "coin": coin,
             "is_buy": position_is_long,
             "sz": quantity,
             "limit_px": px,
@@ -31,7 +31,7 @@ def main():
             "reduce_only": False,
         },
         {
-            "coin": market,
+            "coin": coin,
             "is_buy": not position_is_long,
             "sz": quantity,
             "limit_px": tp,
@@ -45,7 +45,7 @@ def main():
             "reduce_only": True,
         },
         {
-            "coin": market,
+            "coin": coin,
             "is_buy": not position_is_long,
             "sz": quantity,
             "limit_px": sl,
@@ -59,15 +59,12 @@ def main():
             "reduce_only": True,
         },
     ]
-    resp = exchange.bulk_orders(orders, grouping="normalTpsl")
 
-    if resp["status"] == "ok":
-        for status in resp["response"]["data"]["statuses"]:
-            try:
-                filled = status["filled"]
-                print(f"{position_is_long} Order #{filled["oid"]} filled {filled["totalSz"]} @{filled["avgPx"]}")
-            except KeyError:
-                print(f'Error: {status["error"]}')
+    try:
+        resp = exchange.bulk_orders(orders, grouping="normalTpsl")
+        print(resp)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
