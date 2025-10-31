@@ -496,11 +496,11 @@ def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
     return order_wire
 
 
-def order_wires_to_order_action(order_wires, builder=None):
+def order_wires_to_order_action(order_wires, builder=None, grouping: Grouping = "na"):
     action = {
         "type": "order",
         "orders": order_wires,
-        "grouping": "na",
+        "grouping": grouping,
     }
     if builder:
         action["builder"] = builder
