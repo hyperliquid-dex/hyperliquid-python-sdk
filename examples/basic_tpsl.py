@@ -1,8 +1,8 @@
 import argparse
-
+from ast import List
 import example_utils
-
 from hyperliquid.utils import constants
+from hyperliquid.utils.signing import OrderRequest
 
 
 def main():
@@ -10,36 +10,63 @@ def main():
     parser.add_argument("--is_buy", action="store_true")
     args = parser.parse_args()
 
-    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+    address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
 
-    is_buy = args.is_buy
-    # Place an order that should execute by setting the price very aggressively
-    order_result = exchange.order("ETH", is_buy, 0.02, 2500 if is_buy else 1500, {"limit": {"tif": "Gtc"}})
-    print(order_result)
+    market = "SOL"
+    position_is_long = args.is_buy
+    quantity = 1
+    px = 184.80
+    tp = px * 1.05  # take profit at +4%
+    sl = px * 0.95  # stop loss at -4%
 
-    # Place a stop order
-    stop_order_type = {"trigger": {"triggerPx": 1600 if is_buy else 2400, "isMarket": True, "tpsl": "sl"}}
-    stop_result = exchange.order("ETH", not is_buy, 0.02, 1500 if is_buy else 2500, stop_order_type, reduce_only=True)
-    print(stop_result)
+    orders: List[OrderRequest] = [
+        {
+            "coin": market,
+            "is_buy": position_is_long,
+            "sz": quantity,
+            "limit_px": px,
+            # "order_type": {"limit": {"tif": "Gtc"}},
+            "order_type": {"limit": {"tif": "Ioc"}},
+            "reduce_only": False,
+        },
+        {
+            "coin": market,
+            "is_buy": not position_is_long,
+            "sz": quantity,
+            "limit_px": tp,
+            "order_type": {
+                "trigger": {
+                    "isMarket": True,
+                    "triggerPx": tp,
+                    "tpsl": "tp",
+                }
+            },
+            "reduce_only": True,
+        },
+        {
+            "coin": market,
+            "is_buy": not position_is_long,
+            "sz": quantity,
+            "limit_px": sl,
+            "order_type": {
+                "trigger": {
+                    "isMarket": True,
+                    "triggerPx": sl,
+                    "tpsl": "sl",
+                }
+            },
+            "reduce_only": True,
+        },
+    ]
+    resp = exchange.bulk_orders(orders, grouping="normalTpsl")
 
-    # Cancel the order
-    if stop_result["status"] == "ok":
-        status = stop_result["response"]["data"]["statuses"][0]
-        if "resting" in status:
-            cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
-            print(cancel_result)
-
-    # Place a tp order
-    tp_order_type = {"trigger": {"triggerPx": 1600 if is_buy else 2400, "isMarket": True, "tpsl": "tp"}}
-    tp_result = exchange.order("ETH", not is_buy, 0.02, 2500 if is_buy else 1500, tp_order_type, reduce_only=True)
-    print(tp_result)
-
-    # Cancel the order
-    if tp_result["status"] == "ok":
-        status = tp_result["response"]["data"]["statuses"][0]
-        if "resting" in status:
-            cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
-            print(cancel_result)
+    if resp["status"] == "ok":
+        for status in resp["response"]["data"]["statuses"]:
+            try:
+                filled = status["filled"]
+                print(f"{position_is_long} Order #{filled["oid"]} filled {filled["totalSz"]} @{filled["avgPx"]}")
+            except KeyError:
+                print(f'Error: {status["error"]}')
 
 
 if __name__ == "__main__":
