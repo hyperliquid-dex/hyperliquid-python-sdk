@@ -1,6 +1,7 @@
 import argparse
-from ast import List
+
 import example_utils
+
 from hyperliquid.utils import constants
 from hyperliquid.utils.signing import OrderRequest
 
@@ -19,7 +20,7 @@ def main():
     tp = px * 1.05  # take profit at +4%
     sl = px * 0.95  # stop loss at -4%
 
-    orders: List[OrderRequest] = [
+    orders: list[OrderRequest] = [
         {
             "coin": market,
             "is_buy": position_is_long,

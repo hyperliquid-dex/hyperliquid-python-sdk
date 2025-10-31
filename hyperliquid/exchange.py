@@ -142,7 +142,7 @@ class Exchange(API):
 
         if builder:
             builder["b"] = builder["b"].lower()
-        order_action = order_wires_to_order_action(order_wires, builder)
+        order_action = order_wires_to_order_action(order_wires, builder, grouping)
 
         signature = sign_l1_action(
             self.wallet,
