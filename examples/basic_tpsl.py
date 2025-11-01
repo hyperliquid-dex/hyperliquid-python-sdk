@@ -3,7 +3,6 @@ import argparse
 import example_utils
 
 from hyperliquid.utils import constants
-from hyperliquid.utils.signing import OrderRequest
 
 
 def main():
