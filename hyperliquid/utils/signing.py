@@ -498,7 +498,7 @@ def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
     return order_wire
 
 
-def order_wires_to_order_action(order_wires: list[OrderWire], builder=None, grouping: Grouping = "na") -> Any:
+def order_wires_to_order_action(order_wires: list[OrderWire], builder: Any = None, grouping: Grouping = "na") -> Any:
     action = {
         "type": "order",
         "orders": order_wires,
