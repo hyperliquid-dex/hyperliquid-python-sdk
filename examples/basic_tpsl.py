@@ -12,34 +12,57 @@ def main():
 
     address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
 
-    is_buy = args.is_buy
-    # Place an order that should execute by setting the price very aggressively
-    order_result = exchange.order("ETH", is_buy, 0.02, 2500 if is_buy else 1500, {"limit": {"tif": "Gtc"}})
-    print(order_result)
+    coin = "SOL"
+    position_is_long = args.is_buy
+    quantity = 1
+    px = 184.80
+    tpsl_percent = 0.05  # 5%
 
-    # Place a stop order
-    stop_order_type = {"trigger": {"triggerPx": 1600 if is_buy else 2400, "isMarket": True, "tpsl": "sl"}}
-    stop_result = exchange.order("ETH", not is_buy, 0.02, 1500 if is_buy else 2500, stop_order_type, reduce_only=True)
-    print(stop_result)
+    tp = px * (1 + (tpsl_percent * (1 if position_is_long else -1)))
+    sl = px * (1 - (tpsl_percent * (1 if position_is_long else -1)))
 
-    # Cancel the order
-    if stop_result["status"] == "ok":
-        status = stop_result["response"]["data"]["statuses"][0]
-        if "resting" in status:
-            cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
-            print(cancel_result)
+    orders = [
+        {
+            "coin": coin,
+            "is_buy": position_is_long,
+            "sz": quantity,
+            "limit_px": px,
+            # "order_type": {"limit": {"tif": "Gtc"}},
+            "order_type": {"limit": {"tif": "Ioc"}},
+            "reduce_only": False,
+        },
+        {
+            "coin": coin,
+            "is_buy": not position_is_long,
+            "sz": quantity,
+            "limit_px": tp,
+            "order_type": {
+                "trigger": {
+                    "isMarket": True,
+                    "triggerPx": tp,
+                    "tpsl": "tp",
+                }
+            },
+            "reduce_only": True,
+        },
+        {
+            "coin": coin,
+            "is_buy": not position_is_long,
+            "sz": quantity,
+            "limit_px": sl,
+            "order_type": {
+                "trigger": {
+                    "isMarket": True,
+                    "triggerPx": sl,
+                    "tpsl": "sl",
+                }
+            },
+            "reduce_only": True,
+        },
+    ]
 
-    # Place a tp order
-    tp_order_type = {"trigger": {"triggerPx": 1600 if is_buy else 2400, "isMarket": True, "tpsl": "tp"}}
-    tp_result = exchange.order("ETH", not is_buy, 0.02, 2500 if is_buy else 1500, tp_order_type, reduce_only=True)
-    print(tp_result)
-
-    # Cancel the order
-    if tp_result["status"] == "ok":
-        status = tp_result["response"]["data"]["statuses"][0]
-        if "resting" in status:
-            cancel_result = exchange.cancel("ETH", status["resting"]["oid"])
-            print(cancel_result)
+    resp = exchange.bulk_orders(orders, grouping="normalTpsl")
+    print(resp)
 
 
 if __name__ == "__main__":
