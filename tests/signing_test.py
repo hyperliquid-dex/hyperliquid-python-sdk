@@ -5,6 +5,7 @@ from eth_utils import to_hex
 from hyperliquid.utils.signing import (
     OrderRequest,
     ScheduleCancelAction,
+    TwapRequest,
     action_hash,
     construct_phantom_agent,
     float_to_int_for_hashing,
@@ -13,6 +14,7 @@ from hyperliquid.utils.signing import (
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
+    twap_request_to_twap_wire,
 )
 from hyperliquid.utils.types import Cloid
 
@@ -271,3 +273,97 @@ def test_schedule_cancel_action():
     assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
     assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
     assert signature_testnet["v"] == 27
+
+
+def test_twap_request_to_twap_wire():
+    twap_request: TwapRequest = {
+        "coin": "ETH",
+        "is_buy": True,
+        "sz": 100.5,
+        "reduce_only": False,
+        "minutes": 5,
+        "randomize": False,
+    }
+    twap_wire = twap_request_to_twap_wire(twap_request, 1)
+    assert twap_wire["a"] == 1
+    assert twap_wire["b"] is True
+    assert twap_wire["s"] == "100.5"
+    assert twap_wire["r"] is False
+    assert twap_wire["m"] == 5
+    assert twap_wire["t"] is False
+
+
+def test_twap_order_action_signing():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    twap_request: TwapRequest = {
+        "coin": "BTC",
+        "is_buy": True,
+        "sz": 1.5,
+        "reduce_only": False,
+        "minutes": 10,
+        "randomize": False,
+    }
+    twap_wire = twap_request_to_twap_wire(twap_request, 0)
+    twap_action = {
+        "type": "twapOrder",
+        "twap": twap_wire,
+    }
+    timestamp = 0
+
+    signature_mainnet = sign_l1_action(
+        wallet,
+        twap_action,
+        None,
+        timestamp,
+        None,
+        True,
+    )
+    assert signature_mainnet["r"] == "0x459e5dd4a30e60252536cf864a946be1a69da80d937f7841382a1bb471a6ccef"
+    assert signature_mainnet["s"] == "0x37229416621aaab0b74e4377e87a01e88cb5f946c0eeed4581b640aa859a9bfc"
+    assert signature_mainnet["v"] == 27
+
+    signature_testnet = sign_l1_action(
+        wallet,
+        twap_action,
+        None,
+        timestamp,
+        None,
+        False,
+    )
+    assert signature_testnet["r"] == "0x8c99939356b65ea42731d12d5dcecf9c750ab49c9f5112e5356f13d6b94077c2"
+    assert signature_testnet["s"] == "0x1523831a22a41779ae772cdba6206eaba1cef79081d965bf912a16fd9a6363ab"
+    assert signature_testnet["v"] == 28
+
+
+def test_twap_cancel_action_signing():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    twap_cancel_action = {
+        "type": "twapCancel",
+        "a": 10001,  # Spot asset (10000 + index 1)
+        "t": 12345,  # TWAP ID
+    }
+    timestamp = 0
+
+    signature_mainnet = sign_l1_action(
+        wallet,
+        twap_cancel_action,
+        None,
+        timestamp,
+        None,
+        True,
+    )
+    assert signature_mainnet["r"] == "0x459fdfa693f77f07defb7e4bf9302f5f887234d31129cdd0bb9894e0888af54d"
+    assert signature_mainnet["s"] == "0x46c4f00b90a53c9b51d8825e899188eab52671206a2cb39bcb1e3fade009a1da"
+    assert signature_mainnet["v"] == 27
+
+    signature_testnet = sign_l1_action(
+        wallet,
+        twap_cancel_action,
+        None,
+        timestamp,
+        None,
+        False,
+    )
+    assert signature_testnet["r"] == "0x638e0b4fa50bef42ce84ef765423670c6f25da43a9af1c9cfb9f367d628b3226"
+    assert signature_testnet["s"] == "0x7ffb43b336be19ada86138bd79cde5c6680e97bb479ab222f6e3055daa83bb9e"
+    assert signature_testnet["v"] == 28

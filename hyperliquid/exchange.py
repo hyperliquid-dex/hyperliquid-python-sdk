@@ -33,6 +33,7 @@ from hyperliquid.utils.signing import (
     sign_usd_transfer_action,
     sign_user_dex_abstraction_action,
     sign_withdraw_from_bridge_action,
+    twap_request_to_twap_wire,
 )
 from hyperliquid.utils.types import (
     Any,
@@ -351,6 +352,95 @@ class Exchange(API):
         )
         return self._post_action(
             schedule_cancel_action,
+            signature,
+            timestamp,
+        )
+
+    def twap_order(
+        self,
+        name: str,
+        is_buy: bool,
+        sz: float,
+        minutes: int,
+        reduce_only: bool = False,
+        randomize: bool = False,
+    ) -> Any:
+        """Place a TWAP (Time-Weighted Average Price) order.
+
+        Args:
+            name: Asset name (e.g., "BTC", "ETH", "PURR/USDC")
+            is_buy: True for buy, False for sell
+            sz: Total size to execute over the duration
+            minutes: Duration in minutes to spread the order
+            reduce_only: If True, order will only reduce position
+            randomize: If True, randomize execution timing
+
+        Returns:
+            Response containing twapId in response.data.status.running.twapId
+        """
+        timestamp = get_timestamp_ms()
+
+        twap_wire = twap_request_to_twap_wire(
+            {
+                "coin": name,
+                "is_buy": is_buy,
+                "sz": sz,
+                "reduce_only": reduce_only,
+                "minutes": minutes,
+                "randomize": randomize,
+            },
+            self.info.name_to_asset(name),
+        )
+
+        twap_action = {
+            "type": "twapOrder",
+            "twap": twap_wire,
+        }
+
+        signature = sign_l1_action(
+            self.wallet,
+            twap_action,
+            self.vault_address,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            twap_action,
+            signature,
+            timestamp,
+        )
+
+    def cancel_twap(self, name: str, twap_id: int) -> Any:
+        """Cancel a TWAP order.
+
+        Args:
+            name: Asset name (e.g., "BTC", "ETH", "PURR/USDC")
+            twap_id: The TWAP order ID to cancel
+
+        Returns:
+            Response with success/error status
+        """
+        timestamp = get_timestamp_ms()
+
+        twap_cancel_action = {
+            "type": "twapCancel",
+            "a": self.info.name_to_asset(name),
+            "t": twap_id,
+        }
+
+        signature = sign_l1_action(
+            self.wallet,
+            twap_cancel_action,
+            self.vault_address,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+
+        return self._post_action(
+            twap_cancel_action,
             signature,
             timestamp,
         )

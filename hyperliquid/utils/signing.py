@@ -39,6 +39,18 @@ ModifyRequest = TypedDict(
 )
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": Cloid})
+TwapRequest = TypedDict(
+    "TwapRequest",
+    {
+        "coin": str,
+        "is_buy": bool,
+        "sz": float,
+        "reduce_only": bool,
+        "minutes": int,
+        "randomize": bool,
+    },
+)
+TwapCancelRequest = TypedDict("TwapCancelRequest", {"coin": str, "twap_id": int})
 
 Grouping = Union[Literal["na"], Literal["normalTpsl"], Literal["positionTpsl"]]
 Order = TypedDict(
@@ -64,6 +76,18 @@ ModifyWire = TypedDict(
     {
         "oid": int,
         "order": OrderWire,
+    },
+)
+
+TwapWire = TypedDict(
+    "TwapWire",
+    {
+        "a": int,
+        "b": bool,
+        "s": str,
+        "r": bool,
+        "m": int,
+        "t": bool,
     },
 )
 
@@ -494,6 +518,17 @@ def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
     if "cloid" in order and order["cloid"] is not None:
         order_wire["c"] = order["cloid"].to_raw()
     return order_wire
+
+
+def twap_request_to_twap_wire(twap: TwapRequest, asset: int) -> TwapWire:
+    return {
+        "a": asset,
+        "b": twap["is_buy"],
+        "s": float_to_wire(twap["sz"]),
+        "r": twap["reduce_only"],
+        "m": twap["minutes"],
+        "t": twap["randomize"],
+    }
 
 
 def order_wires_to_order_action(order_wires, builder=None):
