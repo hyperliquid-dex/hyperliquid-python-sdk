@@ -16,8 +16,10 @@ def main():
     position_is_long = args.is_buy
     quantity = 1
     px = 184.80
-    tp = px * 1.05  # take profit at +5%
-    sl = px * 0.95  # stop loss at -5%
+    tpsl_percent = 0.05  # 5%
+
+    tp = px * (1 + (tpsl_percent * (1 if position_is_long else -1)))
+    sl = px * (1 - (tpsl_percent * (1 if position_is_long else -1)))
 
     orders = [
         {
@@ -59,11 +61,8 @@ def main():
         },
     ]
 
-    try:
-        resp = exchange.bulk_orders(orders, grouping="normalTpsl")
-        print(resp)
-    except Exception as e:
-        print(e)
+    resp = exchange.bulk_orders(orders, grouping="normalTpsl")
+    print(resp)
 
 
 if __name__ == "__main__":
