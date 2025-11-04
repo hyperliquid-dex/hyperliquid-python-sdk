@@ -91,7 +91,8 @@ class Exchange(API):
         coin = self.info.name_to_coin[name]
         if not px:
             # Get midprice
-            px = float(self.info.all_mids()[coin])
+            dex = coin.split(":")[0] if ":" in coin else ""
+            px = float(self.info.all_mids(dex)[coin])
 
         asset = self.info.coin_to_asset[coin]
         # spot assets start at 10000
