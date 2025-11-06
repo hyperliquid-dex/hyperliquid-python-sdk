@@ -11,6 +11,7 @@ from hyperliquid.utils.constants import MAINNET_API_URL
 from hyperliquid.utils.signing import (
     CancelByCloidRequest,
     CancelRequest,
+    Grouping,
     ModifyRequest,
     OidOrCloid,
     OrderRequest,
@@ -132,7 +133,12 @@ class Exchange(API):
             order["cloid"] = cloid
         return self.bulk_orders([order], builder)
 
-    def bulk_orders(self, order_requests: List[OrderRequest], builder: Optional[BuilderInfo] = None) -> Any:
+    def bulk_orders(
+        self,
+        order_requests: List[OrderRequest],
+        builder: Optional[BuilderInfo] = None,
+        grouping: Grouping = "na",
+    ) -> Any:
         order_wires: List[OrderWire] = [
             order_request_to_order_wire(order, self.info.name_to_asset(order["coin"])) for order in order_requests
         ]
@@ -140,7 +146,7 @@ class Exchange(API):
 
         if builder:
             builder["b"] = builder["b"].lower()
-        order_action = order_wires_to_order_action(order_wires, builder)
+        order_action = order_wires_to_order_action(order_wires, builder, grouping)
 
         signature = sign_l1_action(
             self.wallet,
