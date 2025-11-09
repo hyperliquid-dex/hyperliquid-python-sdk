@@ -277,4 +277,3 @@ def test_spot_asset_ctx():
     midPx = float(response["midPx"])
     diff = abs(markPx - midPx) / midPx
     assert diff < 0.05, "markPx and midPx differ by more than 5%"
-    
