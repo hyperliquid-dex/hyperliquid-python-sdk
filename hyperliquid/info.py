@@ -399,12 +399,12 @@ class Info(API):
         """
         return cast(SpotMetaAndAssetCtxs, self.post("/info", {"type": "spotMetaAndAssetCtxs"}))
     
-    def spot_asset_ctx(self, basetAsset: str, quoteAsset: str) -> SpotAssetCtx:
+    def spot_asset_ctx(self, baseAsset: str, quoteAsset: str) -> SpotAssetCtx:
         """Retrieve exchange spot asset contexts for a given trading pair
         Fetches all asset contexts and filters for the specified trading pair
         POST /info
         Args:
-            basetAsset (str): Base asset of the trading pair. I.e. UBTC for BTC/USDC
+            baseAsset (str): Base asset of the trading pair. I.e. UBTC for BTC/USDC
             quoteAsset (str): Quote asset of the trading pair. Most commonly USDC.
         Returns:
             {
@@ -417,17 +417,29 @@ class Info(API):
             }
         """
         spot_metadata_and_ctxs = self.spot_meta_and_asset_ctxs()
+
+        # filter for token metadata by symbol, to obtain index information
         token_infos = list(
-            filter(lambda token: token['name'] in [basetAsset, quoteAsset], spot_metadata_and_ctxs[0]["tokens"])
+            filter(lambda token: token['name'] in [baseAsset, quoteAsset], spot_metadata_and_ctxs[0]["tokens"])
         )
         assert len(token_infos) == 2, "Tokens not found in Hyperliquid spot markets"
-        ctxs = list(filter(
+        
+        # filter markets for matching token indexes to obtain market index
+        markets = list(filter(
             lambda market:
-                (market['tokens'][0] == token_infos[0]["index"] and market['tokens'][1] == token_infos[1]["index"]),
+                (market['tokens'][0] == token_infos[0]["index"] and market['tokens'][1] == token_infos[1]["index"])
+                or (market['tokens'][0] == token_infos[1]["index"] and market['tokens'][1] == token_infos[0]["index"]),
             spot_metadata_and_ctxs[0]['universe']
         ))
-        assert len(ctxs) == 1, "Market not found in Hyperliquid spot markets"
-        return cast(SpotAssetCtx, ctxs[0])
+        assert len(markets) == 1, "Market not found in Hyperliquid spot markets"
+        market = markets[0]
+
+        # assumes that if a market exists, then a corresponding context exists one-to-one
+        ctx = list(filter(
+            lambda ctx: ctx['coin'] == market['name'],
+            spot_metadata_and_ctxs[1]
+        ))[0]
+        return cast(SpotAssetCtx, ctx)
 
     def funding_history(self, name: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin
