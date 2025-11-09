@@ -1,4 +1,3 @@
-from unittest import result
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
     Any,
