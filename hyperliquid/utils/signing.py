@@ -142,6 +142,11 @@ MULTI_SIG_ENVELOPE_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+CDEPOSIT_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "wei", "type": "uint64"},
+    {"name": "nonce", "type": "uint64"},
+]
 
 def order_type_to_wire(order_type: OrderType) -> OrderTypeWire:
     if "limit" in order_type:
