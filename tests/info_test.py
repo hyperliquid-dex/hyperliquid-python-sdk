@@ -257,3 +257,23 @@ def test_extra_agents():
         assert "name" in agent, "Each agent should have a 'name' field"
         assert "address" in agent, "Each agent should have an 'address' field"
         assert "validUntil" in agent, "Each agent should have a 'validUntil' field"
+
+@pytest.mark.vcr()
+def test_spot_asset_ctx():
+    info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
+
+    baseAsset = "UBTC"
+    quoteAsset = "USDC"
+    response = info.spot_asset_ctx(baseAsset, quoteAsset)
+    assert response["coin"] == "@142"
+    assert "dayNtlVlm" in response
+    assert "markPx" in response
+    assert "midPx" in response
+    assert "prevDayPx" in response
+    assert "circulatingSupply" in response
+
+    # loosely assert that markPx and midPx are within 5% of each other
+    markPx = float(response["markPx"])
+    midPx = float(response["midPx"])
+    diff = abs(markPx - midPx) / midPx
+    assert diff < 0.05, "markPx and midPx differ by more than 5%"
