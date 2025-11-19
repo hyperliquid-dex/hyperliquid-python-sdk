@@ -27,7 +27,321 @@ pip install hyperliquid-python-sdk
 ### [Optional] Generate a new API key for an API Wallet
 Generate and authorize a new API private key on https://app.hyperliquid.xyz/API, and set the API wallet's private key as the `secret_key` in examples/config.json. Note that you must still set the public key of the main wallet *not* the API wallet as the `account_address` in examples/config.json
 
+## Quick Start
+
+```python
+from hyperliquid.info import Info
+from hyperliquid.exchange import Exchange
+from hyperliquid.utils import constants
+import eth_account
+
+# Create wallet from private key
+wallet = eth_account.Account.from_key("your_private_key")
+
+# Initialize Info and Exchange instances
+info = Info(constants.TESTNET_API_URL)  # Use MAINNET_API_URL for mainnet
+exchange = Exchange(wallet, constants.TESTNET_API_URL)
+
+# Get user state
+user_state = info.user_state(wallet.address)
+print(user_state)
+
+# Place a limit order
+order_result = exchange.order(
+    name="ETH",        # Asset name
+    is_buy=True,       # True for buy, False for sell
+    sz=0.1,            # Order size
+    limit_px=1800,     # Limit price
+    order_type={"limit": {"tif": "Gtc"}}  # Good-till-cancel order
+)
+```
+
+## Core Concepts
+
+### Info Class
+
+The `Info` class provides methods to query market data and user information. The full [API specs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint) are available in the documentation.
+
+```python
+from hyperliquid.info import Info
+
+info = Info(constants.TESTNET_API_URL)
+
+# Get order book
+l2_book = info.l2_book("ETH")
+
+# Get user's open orders
+open_orders = info.open_orders(wallet.address)
+
+# Get all asset mid prices
+mid_prices = info.all_mids()
+```
+
+### Exchange Class
+
+The `Exchange` class handles all trading operations.  The full [API specs](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint) are available in the documentation.
+
+```python
+from hyperliquid.exchange import Exchange
+
+exchange = Exchange(wallet, constants.TESTNET_API_URL)
+
+# Market order
+exchange.market_open(
+    name="BTC",
+    is_buy=True,
+    sz=0.01,
+    slippage=0.001  # 0.1% slippage tolerance
+)
+
+# Close position
+exchange.market_close("BTC")
+
+# Cancel order
+exchange.cancel("ETH", order_id)
+```
+
+### Websockets
+The SDK provides real-time market data and user events through WebSocket connections. The WebSocket manager automatically handles connection maintenance and reconnection.  The full specs are available on the [documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/websocket/subscriptions).
+
+#### Basic Websockets Connection
+```python
+from hyperliquid.info import Info
+from hyperliquid.utils import constants
+
+def handle_orderbook(message):
+    bids, asks = message["data"]
+    print(f"Top bid: {bids[0]['px']} | Top ask: {asks[0]['px']}")
+
+def handle_trades(message):
+    for trade in message["data"]:
+        print(f"Trade: {trade['sz']} @ {trade['px']}")
+
+def handle_user_events(message):
+    print(f"User event: {message}")
+
+# Initialize Info instance with WebSocket support
+info = Info(constants.TESTNET_API_URL)
+
+# Subscribe to different data streams
+info.subscribe(
+    {"type": "l2Book", "coin": "ETH"}, 
+    handle_orderbook
+)
+
+info.subscribe(
+    {"type": "trades", "coin": "BTC"}, 
+    handle_trades
+)
+
+info.subscribe(
+    {"type": "userEvents", "user": wallet.address}, 
+    handle_user_events
+)
+
+# The WebSocket connection will remain active and process messages
+# until the program exits or the connection is explicitly closed
+```
+
+#### Available Subscription Types
+1. Market Data
+
+```python
+# All mid prices
+info.subscribe({"type": "allMids"}, callback)
+
+# L2 Order Book for specific asset
+info.subscribe({"type": "l2Book", "coin": "ETH"}, callback)
+
+# Recent trades for specific asset
+info.subscribe({"type": "trades", "coin": "BTC"}, callback)
+
+# Candlestick data
+info.subscribe({
+    "type": "candle", 
+    "coin": "ETH", 
+    "interval": "1m"  # Available intervals: 1m, 5m, 15m, 1h, 4h, 1d
+}, callback)
+```
+
+2. User
+```python
+# All user events (orders, fills, etc.)
+info.subscribe({"type": "userEvents", "user": wallet.address}, callback)
+
+# User trade fills
+info.subscribe({"type": "userFills", "user": wallet.address}, callback)
+
+# Order status updates
+info.subscribe({"type": "orderUpdates", "user": wallet.address}, callback)
+
+# Funding payments
+info.subscribe({"type": "userFundings", "user": wallet.address}, callback)
+
+# Non-funding ledger updates
+info.subscribe({"type": "userNonFundingLedgerUpdates", "user": wallet.address}, callback)
+
+# Web data updates
+info.subscribe({"type": "webData2", "user": wallet.address}, callback)
+```
+
+#### Message Formats
+1. L2 Book
+
+```python
+{
+    "channel": "l2Book",
+    "data": [
+        # Bids array
+        [
+            {"px": "1900.5", "sz": "1.5", "n": 3},  # price, size, number of orders
+            # ... more bid levels
+        ],
+        # Asks array
+        [
+            {"px": "1901.0", "sz": "2.1", "n": 2},
+            # ... more ask levels
+        ]
+    ]
+}
+```
+
+2. Trades
+```python
+{
+    "channel": "trades",
+    "data": [
+        {
+            "coin": "ETH",
+            "side": "A",  # "A" for ask (sell), "B" for bid (buy)
+            "px": "1900.5",
+            "sz": "1.5",
+            "hash": "0x...",
+            "timestamp": 1234567890
+        }
+        # ... more trades
+    ]
+}
+```
+
+3. User
+```python
+{
+    "channel": "userEvents",
+    "data": {
+        "type": "fill",  # or "order", "cancel", etc.
+        "data": {
+            # Event specific data
+            "oid": 123,
+            "px": "1900.5",
+            "sz": "1.5",
+            # ... other fields
+        }
+    }
+}
+```
+
+#### Websocket Management
+The WebSocket connection is automatically managed by the SDK, but you can control it if needed:
+
+```python
+# Initialize Info with WebSocket support
+info = Info(constants.TESTNET_API_URL)
+
+# Access the WebSocket manager
+ws_manager = info.ws_manager
+
+# Check connection status
+is_connected = ws_manager.is_connected()
+
+# Manually reconnect if needed
+ws_manager.reconnect()
+
+# Close WebSocket connection
+ws_manager.close()
+```
+
+#### Error Handling in WebSocket Callbacks
+```python
+def safe_callback(message):
+    try:
+        # Process the message
+        print(f"Received: {message}")
+        
+        # Add your processing logic here
+        if message["channel"] == "l2Book":
+            bids, asks = message["data"]
+            # Process order book data
+        elif message["channel"] == "trades":
+            # Process trades data
+            pass
+            
+    except Exception as e:
+        print(f"Error processing message: {e}")
+        # Handle the error appropriately
+        
+# Subscribe with error-handled callback
+info.subscribe({"type": "l2Book", "coin": "ETH"}, safe_callback)
+```
+
+## Advanced Features
+
+### Vault/SubAccount Trading
+```python
+# Create Exchange instance with vault address
+vault_exchange = Exchange(wallet, base_url, vault_address="vault_address")
+
+# Place order through vault
+vault_exchange.order("ETH", True, 0.1, 1800, {"limit": {"tif": "Gtc"}})
+```
+
+### Client Order ID (cloid)
+
+```python
+from hyperliquid.utils.types import Cloid
+
+# Create CLOID
+cloid = Cloid.from_str("0x00000000000000000000000000000001")
+
+# Place order with CLOID
+exchange.order(
+    "ETH", 
+    True, 
+    0.1, 
+    1800, 
+    {"limit": {"tif": "Gtc"}}, 
+    cloid=cloid
+)
+
+# Query order by CLOID
+order_status = info.query_order_by_cloid(wallet.address, cloid)
+```
+
+## Error Handling
+The SDK uses custom error classes for better error handling:
+
+```python
+from hyperliquid.utils.error import ClientError, ServerError
+
+try:
+    result = exchange.order(...)
+except ClientError as e:
+    print(f"Client error: {e.error_message}")
+except ServerError as e:
+    print(f"Server error: {e.message}")
+```
+
+
 ## Usage Examples
+
+Check out the [examples](examples) directory for more complete examples:
+- Basic order placement and management
+- Market making strategies
+- WebSocket usage
+- Vault trading
+- Leverage adjustment
+- Asset transfers
+
 ```python
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
@@ -36,10 +350,16 @@ info = Info(constants.TESTNET_API_URL, skip_ws=True)
 user_state = info.user_state("0xcd5051944f780a621ee62e39e493c489668acf4d")
 print(user_state)
 ```
-See [examples](examples) for more complete examples. You can also checkout the repo and run any of the examples after configuring your private key e.g. 
+
+You can also checkout the repo and run any of the examples after configuring your private key e.g. 
 ```bash
+# Create a copy of the config template
 cp examples/config.json.example examples/config.json
+
+# Update the config with your key
 vim examples/config.json
+
+# Run a basic order
 python examples/basic_order.py
 ```
 
