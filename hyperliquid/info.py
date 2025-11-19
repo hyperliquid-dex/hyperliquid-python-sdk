@@ -705,6 +705,21 @@ class Info(API):
         """
         return self.post("/info", {"type": "userVaultEquities", "user": user})
 
+    def vault_details(self, vaultAddress: str, user: Optional[str] = None) -> Any:
+        """Retrieve details for a vault.
+
+        POST /info
+
+        Args:
+            vaultAddress (str): Onchain vault address in 42-character hexadecimal format.
+            user (Optional[str]): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Detailed information about a given vault.
+            If a user is given, this will also show information about the users equity in the vault.
+        """
+        return self.post("/info", {"type": "vaultDetails", "vaultAddress": vaultAddress, "user": user})
+
     def user_role(self, user: str) -> Any:
         """Retrieve the role and account type information for a user.
 
