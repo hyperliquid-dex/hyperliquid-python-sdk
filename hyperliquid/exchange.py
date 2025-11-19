@@ -1160,3 +1160,23 @@ class Exchange(API):
             self.wallet, action, self.vault_address, nonce, self.expires_after, self.base_url == MAINNET_API_URL
         )
         return self._post_action(action, signature, nonce)
+
+    def reserve_request_weight(self, weight: int) -> Any:
+        timestamp = get_timestamp_ms()
+        reserve_action = {
+            "type": "reserveRequestWeight",
+            "weight": weight,
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            reserve_action,
+            self.vault_address,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            reserve_action,
+            signature,
+            timestamp,
+        )
