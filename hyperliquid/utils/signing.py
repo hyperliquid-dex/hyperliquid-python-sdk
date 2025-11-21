@@ -1,3 +1,5 @@
+from typing import Any
+
 import time
 from decimal import Decimal
 
@@ -104,12 +106,21 @@ USD_CLASS_TRANSFER_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
-PERP_DEX_CLASS_TRANSFER_SIGN_TYPES = [
+SEND_ASSET_SIGN_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
-    {"name": "dex", "type": "string"},
+    {"name": "destination", "type": "string"},
+    {"name": "sourceDex", "type": "string"},
+    {"name": "destinationDex", "type": "string"},
     {"name": "token", "type": "string"},
     {"name": "amount", "type": "string"},
-    {"name": "toPerp", "type": "bool"},
+    {"name": "fromSubAccount", "type": "string"},
+    {"name": "nonce", "type": "uint64"},
+]
+
+USER_DEX_ABSTRACTION_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "user", "type": "address"},
+    {"name": "enabled", "type": "bool"},
     {"name": "nonce", "type": "uint64"},
 ]
 
@@ -360,12 +371,22 @@ def sign_usd_class_transfer_action(wallet, action, is_mainnet):
     )
 
 
-def sign_perp_dex_class_transfer_action(wallet, action, is_mainnet):
+def sign_send_asset_action(wallet, action, is_mainnet):
     return sign_user_signed_action(
         wallet,
         action,
-        PERP_DEX_CLASS_TRANSFER_SIGN_TYPES,
-        "HyperliquidTransaction:PerpDexClassTransfer",
+        SEND_ASSET_SIGN_TYPES,
+        "HyperliquidTransaction:SendAsset",
+        is_mainnet,
+    )
+
+
+def sign_user_dex_abstraction_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        USER_DEX_ABSTRACTION_SIGN_TYPES,
+        "HyperliquidTransaction:UserDexAbstraction",
         is_mainnet,
     )
 
@@ -482,11 +503,11 @@ def order_request_to_order_wire(order: OrderRequest, asset: int) -> OrderWire:
     return order_wire
 
 
-def order_wires_to_order_action(order_wires, builder=None):
+def order_wires_to_order_action(order_wires: list[OrderWire], builder: Any = None, grouping: Grouping = "na") -> Any:
     action = {
         "type": "order",
         "orders": order_wires,
-        "grouping": "na",
+        "grouping": grouping,
     }
     if builder:
         action["builder"] = builder

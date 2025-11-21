@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: '{"type": "delegatorHistory", "user": "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '82'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.3
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"time":1751382238782,"hash":"0xaea14981ae79c88826b104269e1e61020161008a69327e1bd0716a870eb0032e","delta":{"delegate":{"validator":"0xb8f45222a3246a2b0104696a1df26842007c5bc5","amount":"89968.0","isUndelegate":false}}},{"time":1751382217852,"hash":"0xa41a74f16345b8b0ba4e04269e1d5d018200756676283eee1bbc9d4e86d0d942","delta":{"cDeposit":{"amount":"89968.0"}}},{"time":1746636092325,"hash":"0x1520bf77c0dae738c8130422ff52cf01cc00f7c6f145792f2eeca62d178cd048","delta":{"delegate":{"validator":"0xb8f45222a3246a2b0104696a1df26842007c5bc5","amount":"10000.1","isUndelegate":false}}},{"time":1746636051729,"hash":"0x88f45bda40a6b572ef230422ff50cf01e20075ab01e3a48566ea9979a7ac6313","delta":{"cDeposit":{"amount":"10000.1"}}}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '721'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 22 Aug 2025 11:45:24 GMT
+      Server:
+      - nginx/1.22.1
+      Via:
+      - 1.1 628e5146add9b3daeb91ab8792398818.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - B6JLp5pY_ZwV5Maq5tZMTGwlfJSngY7VdiQZMSn9iMwnWap6HroQEg==
+      X-Amz-Cf-Pop:
+      - FRA60-P5
+      X-Cache:
+      - Miss from cloudfront
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

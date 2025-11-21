@@ -50,6 +50,9 @@ UserNonFundingLedgerUpdatesSubscription = TypedDict(
 )
 WebData2Subscription = TypedDict("WebData2Subscription", {"type": Literal["webData2"], "user": str})
 ActiveAssetCtxSubscription = TypedDict("ActiveAssetCtxSubscription", {"type": Literal["activeAssetCtx"], "coin": str})
+ActiveAssetDataSubscription = TypedDict(
+    "ActiveAssetDataSubscription", {"type": Literal["activeAssetData"], "user": str, "coin": str}
+)
 # If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
 Subscription = Union[
     AllMidsSubscription,
@@ -64,6 +67,7 @@ Subscription = Union[
     UserNonFundingLedgerUpdatesSubscription,
     WebData2Subscription,
     ActiveAssetCtxSubscription,
+    ActiveAssetDataSubscription,
 ]
 
 AllMidsData = TypedDict("AllMidsData", {"mids": Dict[str, str]})
@@ -75,6 +79,22 @@ BboData = TypedDict("BboData", {"coin": str, "time": int, "bbo": Tuple[Optional[
 BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
 Trade = TypedDict("Trade", {"coin": str, "side": Side, "px": str, "sz": int, "hash": str, "time": int})
+CrossLeverage = TypedDict(
+    "CrossLeverage",
+    {
+        "type": Literal["cross"],
+        "value": int,
+    },
+)
+IsolatedLeverage = TypedDict(
+    "IsolatedLeverage",
+    {
+        "type": Literal["isolated"],
+        "value": int,
+        "rawUsd": str,
+    },
+)
+Leverage = Union[CrossLeverage, IsolatedLeverage]
 TradesMsg = TypedDict("TradesMsg", {"channel": Literal["trades"], "data": List[Trade]})
 PerpAssetCtx = TypedDict(
     "PerpAssetCtx",
@@ -97,6 +117,18 @@ ActiveAssetCtxMsg = TypedDict("ActiveAssetCtxMsg", {"channel": Literal["activeAs
 ActiveSpotAssetCtxMsg = TypedDict(
     "ActiveSpotAssetCtxMsg", {"channel": Literal["activeSpotAssetCtx"], "data": ActiveSpotAssetCtx}
 )
+ActiveAssetData = TypedDict(
+    "ActiveAssetData",
+    {
+        "user": str,
+        "coin": str,
+        "leverage": Leverage,
+        "maxTradeSzs": Tuple[str, str],
+        "availableToTrade": Tuple[str, str],
+        "markPx": str,
+    },
+)
+ActiveAssetDataMsg = TypedDict("ActiveAssetDataMsg", {"channel": Literal["activeAssetData"], "data": ActiveAssetData})
 Fill = TypedDict(
     "Fill",
     {
@@ -146,6 +178,7 @@ WsMsg = Union[
     OtherWsMsg,
     ActiveAssetCtxMsg,
     ActiveSpotAssetCtxMsg,
+    ActiveAssetDataMsg,
 ]
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point

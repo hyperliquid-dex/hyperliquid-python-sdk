@@ -24,8 +24,9 @@ class Info(API):
         # Note that when perp_dexs is None, then "" is used as the perp dex. "" represents
         # the original dex.
         perp_dexs: Optional[List[str]] = None,
+        timeout: Optional[float] = None,
     ):  # pylint: disable=too-many-locals
-        super().__init__(base_url)
+        super().__init__(base_url, timeout)
         self.ws_manager: Optional[WebsocketManager] = None
         if not skip_ws:
             self.ws_manager = WebsocketManager(self.base_url)
@@ -227,7 +228,9 @@ class Info(API):
         """
         return self.post("/info", {"type": "userFills", "user": address})
 
-    def user_fills_by_time(self, address: str, start_time: int, end_time: Optional[int] = None) -> Any:
+    def user_fills_by_time(
+        self, address: str, start_time: int, end_time: Optional[int] = None, aggregate_by_time: Optional[bool] = False
+    ) -> Any:
         """Retrieve a given user's fills by time.
 
         POST /info
@@ -237,6 +240,7 @@ class Info(API):
                             e.g. 0x0000000000000000000000000000000000000000.
             start_time (int): Unix timestamp in milliseconds
             end_time (Optional[int]): Unix timestamp in milliseconds
+            aggregate_by_time (Optional[bool]): When true, partial fills are combined when a crossing order gets filled by multiple different resting orders. Resting orders filled by multiple crossing orders will not be aggregated.
 
         Returns:
             [
@@ -257,7 +261,14 @@ class Info(API):
             ]
         """
         return self.post(
-            "/info", {"type": "userFillsByTime", "user": address, "startTime": start_time, "endTime": end_time}
+            "/info",
+            {
+                "type": "userFillsByTime",
+                "user": address,
+                "startTime": start_time,
+                "endTime": end_time,
+                "aggregateByTime": aggregate_by_time,
+            },
         )
 
     def meta(self, dex: str = "") -> Meta:
@@ -589,6 +600,20 @@ class Info(API):
     def max_builder_fee(self, user: str, builder: str) -> Any:
         return self.post("/info", {"type": "maxBuilderFee", "user": user, "builder": builder})
     
+    def delegator_history(self, user: str) -> Any:
+        """Retrieve comprehensive staking history for a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Comprehensive staking history including delegation and undelegation
+            events with timestamps, transaction hashes, and detailed delta information.
+        """
+        return self.post("/info", {"type": "delegatorHistory", "user": user})
+
     def query_order_by_oid(self, user: str, oid: int) -> Any:
         return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
 
@@ -603,6 +628,140 @@ class Info(API):
 
     def query_user_to_multi_sig_signers(self, multi_sig_user: str) -> Any:
         return self.post("/info", {"type": "userToMultiSigSigners", "user": multi_sig_user})
+
+    def query_perp_deploy_auction_status(self) -> Any:
+        return self.post("/info", {"type": "perpDeployAuctionStatus"})
+
+    def query_user_dex_abstraction_state(self, user: str) -> Any:
+        return self.post("/info", {"type": "userDexAbstraction", "user": user})
+
+    def historical_orders(self, user: str) -> Any:
+        """Retrieve a user's historical orders.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+
+        Returns:
+            Returns at most 2000 most recent historical orders with their current
+            status and detailed order information.
+        """
+        return self.post("/info", {"type": "historicalOrders", "user": user})
+
+    def user_non_funding_ledger_updates(self, user: str, startTime: int, endTime: Optional[int] = None) -> Any:
+        """Retrieve non-funding ledger updates for a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+            startTime (int): Start time in milliseconds (epoch timestamp).
+            endTime (Optional[int]): End time in milliseconds (epoch timestamp).
+
+        Returns:
+            Comprehensive ledger updates including deposits, withdrawals, transfers,
+            liquidations, and other account activities excluding funding payments.
+        """
+        return self.post(
+            "/info",
+            {"type": "userNonFundingLedgerUpdates", "user": user, "startTime": startTime, "endTime": endTime},
+        )
+
+    def portfolio(self, user: str) -> Any:
+        """Retrieve comprehensive portfolio performance data.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Comprehensive portfolio performance data across different time periods,
+            including account value history, PnL history, and volume metrics.
+        """
+        return self.post("/info", {"type": "portfolio", "user": user})
+
+    def user_twap_slice_fills(self, user: str) -> Any:
+        """Retrieve a user's TWAP slice fills.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Returns at most 2000 most recent TWAP slice fills with detailed
+            execution information.
+        """
+        return self.post("/info", {"type": "userTwapSliceFills", "user": user})
+
+    def user_vault_equities(self, user: str) -> Any:
+        """Retrieve user's equity positions across all vaults.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Detailed information about user's equity positions across all vaults
+            including current values, profit/loss metrics, and withdrawal details.
+        """
+        return self.post("/info", {"type": "userVaultEquities", "user": user})
+
+    def user_role(self, user: str) -> Any:
+        """Retrieve the role and account type information for a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Role and account type information including account structure,
+            permissions, and relationships within the Hyperliquid ecosystem.
+        """
+        return self.post("/info", {"type": "userRole", "user": user})
+
+    def user_rate_limit(self, user: str) -> Any:
+        """Retrieve user's API rate limit configuration and usage.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+
+        Returns:
+            Detailed information about user's API rate limit configuration
+            and current usage for managing API usage and avoiding rate limiting.
+        """
+        return self.post("/info", {"type": "userRateLimit", "user": user})
+
+    def query_spot_deploy_auction_status(self, user: str) -> Any:
+        return self.post("/info", {"type": "spotDeployState", "user": user})
+
+    def extra_agents(self, user: str) -> Any:
+        """Retrieve extra agents associated with a user.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+
+        Returns:
+            [
+                {
+                    "name": str,
+                    "address": str,
+                    "validUntil": int
+                },
+                ...
+            ]
+        """
+        return self.post("/info", {"type": "extraAgents", "user": user})
 
     def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (

@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: '{"type": "extraAgents", "user": "0xd42f2bB0e06455eDB652e27b7374FC2bDa8448ee"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '77'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.3
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"name":"ok","address":"0x286edfa08c04f6899dab3bfdecf2dd133f9733b9","validUntil":1767776120478},{"name":"new","address":"0xc06e6617005c1888aeb8b3017fe00f82b7b84fc0","validUntil":1771174068515}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '194'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 04 Sep 2025 13:52:30 GMT
+      Server:
+      - nginx/1.22.1
+      Via:
+      - 1.1 a5613e7afb4b10039b3efde5527e95c2.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - yc2KyjT9MRCS_a0SdoUv_9O1CH3UFOcK0Mik61PTbLkaVvCt4pFmHg==
+      X-Amz-Cf-Pop:
+      - IAD61-P5
+      X-Cache:
+      - Miss from cloudfront
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

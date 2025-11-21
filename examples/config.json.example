@@ -4,11 +4,14 @@
         Fill in your secret key e.g. 0x0000000000000000000000000000000000000000000000000000000000000000
         If you are using an Agent/API Wallet you MUST also specify the public address of your account, not the
         address of the Agent/API Wallet.
-        Otherwise, feel free to leave it blank and it will be automatically derived from the secret key.
+        Otherwise, feel free to leave it blank and it will be automatically derived from the secret key. Alternatively, 
+        you can specify a local `keystore_path` which will prompt you for the keystore password interactively. 
+        Note: If both `secret_key` and `keystore_path` are provided, the `secret_key` will take precedence.
 
         You can also populate the "multi_sig" section with the secret keys of the authorized user wallets that you
         wish to sign multi-sig actions for.
     ",
+    "keystore_path": "",
     "secret_key": "",
     "account_address": "",
     "multi_sig": {

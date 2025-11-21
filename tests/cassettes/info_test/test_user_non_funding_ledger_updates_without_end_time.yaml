@@ -1,0 +1,64 @@
+interactions:
+- request:
+    body: '{"type": "userNonFundingLedgerUpdates", "user": "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036",
+      "startTime": 1681923833000, "endTime": null}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '138'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.3
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"time": 1731999196516, "hash": "0x09ddd9f712b5df0945af34b055bbb3329c88ca001aff41bbfd4341d80bc760ce",
+        "delta": {"type": "deposit", "usdc": "2703997.4500000002"}}, {"time": 1732834706761,
+        "hash": "0x1ddfe341d6a65a05392a0417f410fd014100a311417ccf11da13fcddea1429c9",
+        "delta": {"type": "accountClassTransfer", "usdc": "12.0", "toPerp": false}},
+        {"time": 1732834825313, "hash": "0x2ceac78e94d15a1af8660417f418400175003b84f5f2d86615b352360e4d48ac",
+        "delta": {"type": "spotTransfer", "token": "USDC", "amount": "10.5", "usdcValue":
+        "10.5", "user": "0x2ba553d9f990a3b66b03b2dc0d030dfc1c061036", "destination":
+        "0xaaa0c2769cb990f4f37db951a9e48de2385c2733", "fee": "1.0", "nativeTokenFee":
+        "0.0", "nonce": null, "feeToken": ""}}, {"time": 1732865846906, "hash": "0xb43e5536dbe1e0393ac60417fb7e2301a400281569835033a92471582fbc705a",
+        "delta": {"type": "accountClassTransfer", "usdc": "2684105.0099999998", "toPerp":
+        false}}, {"time": 1732867345893, "hash": "0xfba2579369bfd93f45b5ea54942e59f81aa72b422064d8969917a0feb0c68694",
+        "delta": {"type": "deposit", "usdc": "1099994.98"}}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '40389'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 30 Aug 2025 19:17:29 GMT
+      Server:
+      - nginx/1.22.1
+      Via:
+      - 1.1 e505058447bf5e74cc264f4e72f27bee.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - MV7KMQ-PpTHyokjwV3NYgHQcJrCu9w0lFL1woFwYTBadyP8i1H5ikA==
+      X-Amz-Cf-Pop:
+      - FRA60-P5
+      X-Cache:
+      - Miss from cloudfront
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1

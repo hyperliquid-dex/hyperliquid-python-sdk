@@ -14,6 +14,8 @@ ENABLE_FREEZE_PRIVILEGE = False
 # Set to True to set the deployer trading fee share
 # See step 6 below for more details on setting the deployer trading fee share.
 SET_DEPLOYER_TRADING_FEE_SHARE = False
+# See step 7 below for more details on enabling quote token.
+ENABLE_QUOTE_TOKEN = False
 DUMMY_USER = "0x0000000000000000000000000000000000000001"
 
 
@@ -24,7 +26,7 @@ def main():
     #
     # Takes part in the spot deploy auction and if successful, registers token "TEST0"
     # with sz_decimals 2 and wei_decimals 8.
-    # The max gas is $1M USDC and represents the max amount to be paid for the spot deploy auction.
+    # The max gas is 10,000 HYPE and represents the max amount to be paid for the spot deploy auction.
     register_token_result = exchange.spot_deploy_register_token("TEST0", 2, 8, 1000000000000, "Test token example")
     print(register_token_result)
     # If registration is successful, a token index will be returned. This token index is required for
@@ -89,8 +91,8 @@ def main():
     print(register_spot_result)
     # If registration is successful, a spot index will be returned. This spot index is required for
     # registering hyperliquidity.
-    if register_token_result["status"] == "ok":
-        spot = register_token_result["response"]["data"]
+    if register_spot_result["status"] == "ok":
+        spot = register_spot_result["response"]["data"]
     else:
         return
 
@@ -111,6 +113,14 @@ def main():
         # The default is already 100% and the smallest increment is 0.001%.
         set_deployer_trading_fee_share_result = exchange.spot_deploy_set_deployer_trading_fee_share(token, "100%")
         print(set_deployer_trading_fee_share_result)
+
+    if ENABLE_QUOTE_TOKEN:
+        # Step 7
+        #
+        # Note that deployer trading fee share must be zero.
+        # The quote token must also be allowed.
+        enable_quote_token_result = exchange.spot_deploy_enable_quote_token(token)
+        print(enable_quote_token_result)
 
 
 if __name__ == "__main__":

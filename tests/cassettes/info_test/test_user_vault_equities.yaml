@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: '{"type": "userVaultEquities", "user": "0x2b804617c6f63c040377e95bb276811747006f4b"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '83'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.32.3
+    method: POST
+    uri: https://api.hyperliquid.xyz/info
+  response:
+    body:
+      string: '[{"vaultAddress":"0x07fd993f0fa3a185f7207adccd29f7a87404689d","equity":"688536.0314879999","lockedUntilTimestamp":1737697731869},{"vaultAddress":"0x7f6ce756bdee0db22a8fbda15aa48023aae5a8be","equity":"100.003834","lockedUntilTimestamp":1749857239300}]'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '250'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 22 Aug 2025 11:45:22 GMT
+      Server:
+      - nginx/1.22.1
+      Via:
+      - 1.1 97e94c27c00c2a3986c6b205fc51001e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 2CH_ECe71RIoJahSDb3xW6rMam7sgqt7RXjfOZQvw9JuUYSm98pjgg==
+      X-Amz-Cf-Pop:
+      - FRA60-P5
+      X-Cache:
+      - Miss from cloudfront
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - '*'
+      vary:
+      - origin
+      - access-control-request-method
+      - access-control-request-headers
+    status:
+      code: 200
+      message: OK
+version: 1
