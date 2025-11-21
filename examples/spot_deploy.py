@@ -1,126 +1,256 @@
-# Example script to deploy HIP-1 and HIP-2 assets
-# See https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/deploying-hip-1-and-hip-2-assets
-# for the spec.
+# deploy_hip_assets.py - Optimized script to deploy HIP-1 and HIP-2 assets
 #
-# IMPORTANT: Replace any arguments for the exchange calls below to match your deployment requirements.
+# This script orchestrates the full asset deployment workflow on Hyperliquid.
+# IMPORTANT: All deployment arguments (amounts, addresses) must be verified 
+# to match the final production requirements before execution.
+
+import sys
+import logging
+from typing import List, Tuple
 
 import example_utils
-
 from hyperliquid.utils import constants
 
-# Set to True to enable freeze functionality for the deployed token
-# See step 2-a below for more details on freezing.
-ENABLE_FREEZE_PRIVILEGE = False
-# Set to True to set the deployer trading fee share
-# See step 6 below for more details on setting the deployer trading fee share.
-SET_DEPLOYER_TRADING_FEE_SHARE = False
-# See step 7 below for more details on enabling quote token.
-ENABLE_QUOTE_TOKEN = False
-DUMMY_USER = "0x0000000000000000000000000000000000000001"
+# --- Configuration Flags ---
 
+# Enables the deployer to freeze/unfreeze users after genesis.
+ENABLE_FREEZE_PRIVILEGE = False
+# Enables setting a deployer trading fee share (default is 100%).
+SET_DEPLOYER_TRADING_FEE_SHARE = False
+# Enables the token to be used as a quote asset.
+ENABLE_QUOTE_TOKEN = False
+
+# Constants
+DUMMY_USER = "0x0000000000000000000000000000000000000001"
+# Hyperliquid's official address for hyperliquidity
+HYPERLIQUIDITY_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff"
+# Total supply for the genesis block (300 Trillion wei in the original example)
+TOTAL_GENESIS_SUPPLY = "300_000_000_000_000" 
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+# --- Core Deployment Functions ---
+
+def register_token_and_get_index(exchange) -> int | None:
+    """Step 1: Registers the token and retrieves the token index."""
+    logging.info("Step 1: Registering token 'TEST0'...")
+    try:
+        # sz_decimals=2, wei_decimals=8. Max gas for auction is 10,000 HYPE (10^12 wei).
+        register_token_result = exchange.spot_deploy_register_token(
+            "TEST0", 
+            2, 
+            8, 
+            1_000_000_000_000, # Use underscores for better readability
+            "Test token example"
+        )
+        
+        # Check for 'ok' status, otherwise raise an exception.
+        if register_token_result.get("status") != "ok":
+             raise ValueError(f"Registration failed: {register_token_result.get('error')}")
+
+        token_index = register_token_result["response"]["data"]
+        logging.info(f"Token registration successful. Index: {token_index}")
+        return token_index
+    except Exception as e:
+        logging.error(f"Failed to register token: {e}")
+        return None
+
+
+def execute_user_genesis(exchange, token_index: int):
+    """Step 2: Associates initial balances with specific users and holders."""
+    logging.info("Step 2: Executing user genesis...")
+    
+    # Balance allocations for specific addresses (address, amount_in_wei)
+    initial_balances: List[Tuple[str, str]] = [
+        (DUMMY_USER, "100_000_000_000_000"), 
+        (HYPERLIQUIDITY_ADDRESS, "100_000_000_000_000"),
+    ]
+    
+    # Weighted distribution to existing holders of another token (index 1)
+    weighted_allocations: List[Tuple[int, str]] = [
+        (1, "100_000_000_000_000")
+    ]
+    
+    # OPTIMIZATION: Combine all non-empty genesis allocations into a single, clean call.
+    try:
+        user_genesis_result = exchange.spot_deploy_user_genesis(
+            token_index,
+            initial_balances,
+            weighted_allocations,
+        )
+        if user_genesis_result.get("status") != "ok":
+             raise ValueError(f"User genesis failed: {user_genesis_result.get('error')}")
+             
+        logging.info("User genesis executed successfully.")
+    except Exception as e:
+        logging.error(f"Failed during user genesis: {e}")
+        raise # Re-raise to halt deployment if this step is crucial
+
+
+def handle_freeze_privilege(exchange, token_index: int):
+    """Step 2-a: Handles enabling and testing the freeze privilege."""
+    if not ENABLE_FREEZE_PRIVILEGE:
+        return
+        
+    logging.info("Step 2-a: Enabling and testing freeze privilege...")
+    try:
+        exchange.spot_deploy_enable_freeze_privilege(token_index)
+        logging.info("Freeze privilege enabled.")
+        
+        # Freeze and Unfreeze the dummy user for testing the privilege
+        exchange.spot_deploy_freeze_user(token_index, DUMMY_USER, True)
+        logging.info(f"User {DUMMY_USER} frozen.")
+        exchange.spot_deploy_freeze_user(token_index, DUMMY_USER, False)
+        logging.info(f"User {DUMMY_USER} unfrozen.")
+    except Exception as e:
+        logging.error(f"Failed to handle freeze privilege: {e}")
+
+
+def finalize_genesis(exchange, token_index: int):
+    """Step 3: Finalizes the token genesis."""
+    logging.info("Step 3: Finalizing genesis...")
+    # 'noHyperliquidity=False' means Hyperliquidity is enabled and must have received an allocation in Step 2.
+    try:
+        genesis_result = exchange.spot_deploy_genesis(token_index, TOTAL_GENESIS_SUPPLY, False)
+        if genesis_result.get("status") != "ok":
+             raise ValueError(f"Genesis finalization failed: {genesis_result.get('error')}")
+        logging.info("Genesis finalized successfully.")
+    except Exception as e:
+        logging.error(f"Failed to finalize genesis: {e}")
+        raise
+
+
+def register_spot_pair(exchange, token_index: int) -> int | None:
+    """Step 4: Registers the spot trading pair (TEST0/USDC)."""
+    logging.info("Step 4: Registering spot pair (Base/Quote)...")
+    
+    # 0 is the fixed index for USDC (Quote Token)
+    QUOTE_TOKEN_INDEX = 0 
+    
+    try:
+        register_spot_result = exchange.spot_deploy_register_spot(token_index, QUOTE_TOKEN_INDEX)
+        
+        if register_spot_result.get("status") != "ok":
+             raise ValueError(f"Spot registration failed: {register_spot_result.get('error')}")
+
+        spot_index = register_spot_result["response"]["data"]
+        logging.info(f"Spot pair registration successful. Index: {spot_index}")
+        return spot_index
+    except Exception as e:
+        logging.error(f"Failed to register spot pair: {e}")
+        return None
+
+
+def register_hyperliquidity(exchange, spot_index: int):
+    """Step 5: Registers initial Hyperliquidity parameters."""
+    logging.info("Step 5: Registering hyperliquidity...")
+    
+    # Example parameters: Starting price $2, order size 4 units, 100 total orders.
+    START_PRICE = 2.0
+    ORDER_SIZE = 4.0
+    N_ORDERS = 100
+    
+    try:
+        register_hyperliquidity_result = exchange.spot_deploy_register_hyperliquidity(
+            spot_index, 
+            START_PRICE, 
+            ORDER_SIZE, 
+            N_ORDERS, 
+            None # Placeholder for optional third party address
+        )
+        if register_hyperliquidity_result.get("status") != "ok":
+             raise ValueError(f"Hyperliquidity registration failed: {register_hyperliquidity_result.get('error')}")
+        
+        logging.info("Hyperliquidity registered successfully.")
+    except Exception as e:
+        logging.error(f"Failed to register hyperliquidity: {e}")
+        raise
+
+
+def handle_trading_fee_share(exchange, token_index: int):
+    """Step 6: Optionally sets the deployer's trading fee share."""
+    if not SET_DEPLOYER_TRADING_FEE_SHARE:
+        return
+        
+    logging.info("Step 6: Setting deployer trading fee share...")
+    try:
+        # The default is 100%. Set to the desired percentage string (e.g., "50%").
+        set_fee_share_result = exchange.spot_deploy_set_deployer_trading_fee_share(token_index, "100%")
+        if set_fee_share_result.get("status") != "ok":
+             raise ValueError(f"Fee share setting failed: {set_fee_share_result.get('error')}")
+        logging.info("Deployer trading fee share set successfully.")
+    except Exception as e:
+        logging.error(f"Failed to set deployer trading fee share: {e}")
+
+
+def handle_enable_quote_token(exchange, token_index: int):
+    """Step 7: Optionally enables the token to be used as a quote asset."""
+    if not ENABLE_QUOTE_TOKEN:
+        return
+        
+    logging.info("Step 7: Enabling quote token capability...")
+    # NOTE: Deployer trading fee share MUST be zero before this step.
+    try:
+        enable_quote_token_result = exchange.spot_deploy_enable_quote_token(token_index)
+        if enable_quote_token_result.get("status") != "ok":
+             raise ValueError(f"Enable quote token failed: {enable_quote_token_result.get('error')}")
+        logging.info("Quote token capability enabled successfully.")
+    except Exception as e:
+        logging.error(f"Failed to enable quote token: {e}")
+
+
+# --- Main Orchestration ---
 
 def main():
-    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+    """Orchestrates the entire asset deployment workflow."""
+    # Initialization and Connection
+    try:
+        address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+        logging.info(f"Deployer address set: {address}")
+    except Exception as e:
+        logging.critical(f"Setup failed: {e}")
+        sys.exit(1)
 
-    # Step 1: Registering the Token
-    #
-    # Takes part in the spot deploy auction and if successful, registers token "TEST0"
-    # with sz_decimals 2 and wei_decimals 8.
-    # The max gas is 10,000 HYPE and represents the max amount to be paid for the spot deploy auction.
-    register_token_result = exchange.spot_deploy_register_token("TEST0", 2, 8, 1000000000000, "Test token example")
-    print(register_token_result)
-    # If registration is successful, a token index will be returned. This token index is required for
-    # later steps in the spot deploy process.
-    if register_token_result["status"] == "ok":
-        token = register_token_result["response"]["data"]
-    else:
-        return
+    # 1. Register Token
+    token_index = register_token_and_get_index(exchange)
+    if token_index is None:
+        sys.exit(1)
 
-    # Step 2: User Genesis
-    #
-    # User genesis can be called multiple times to associate balances to specific users and/or
-    # tokens for genesis.
-    #
-    # Associate 100000000000000 wei with user 0x0000000000000000000000000000000000000001
-    # Associate 100000000000000 wei with hyperliquidity
-    user_genesis_result = exchange.spot_deploy_user_genesis(
-        token,
-        [
-            (DUMMY_USER, "100000000000000"),
-            ("0xffffffffffffffffffffffffffffffffffffffff", "100000000000000"),
-        ],
-        [],
-    )
-    print(user_genesis_result)
-    # No-op
-    user_genesis_result = exchange.spot_deploy_user_genesis(token, [], [])
-    print(user_genesis_result)
-    # Distribute 100000000000000 wei on a weighted basis to all holders of token with index 1
-    user_genesis_result = exchange.spot_deploy_user_genesis(token, [], [(1, "100000000000000")])
-    print(user_genesis_result)
+    # 2. User Genesis
+    try:
+        execute_user_genesis(exchange, token_index)
+    except Exception:
+        sys.exit(1)
+        
+    # 2-a. Freeze Privilege (Optional)
+    handle_freeze_privilege(exchange, token_index)
 
-    if ENABLE_FREEZE_PRIVILEGE:
-        # Step 2-a: Enables the deployer to freeze/unfreeze users. Freezing a user means
-        # that user cannot trade, send, or receive this token.
-        enable_freeze_privilege_result = exchange.spot_deploy_enable_freeze_privilege(token)
-        print(enable_freeze_privilege_result)
+    # 3. Finalize Genesis
+    try:
+        finalize_genesis(exchange, token_index)
+    except Exception:
+        sys.exit(1)
 
-        # Freeze user for token
-        freeze_user_result = exchange.spot_deploy_freeze_user(token, DUMMY_USER, True)
-        print(freeze_user_result)
+    # 4. Register Spot Pair
+    spot_index = register_spot_pair(exchange, token_index)
+    if spot_index is None:
+        sys.exit(1)
 
-        # Unfreeze user for token
-        unfreeze_user_result = exchange.spot_deploy_freeze_user(token, DUMMY_USER, False)
-        print(unfreeze_user_result)
+    # 5. Register Hyperliquidity
+    try:
+        register_hyperliquidity(exchange, spot_index)
+    except Exception:
+        sys.exit(1)
 
-    # Step 3: Genesis
-    #
-    # Finalize genesis. The max supply of 300000000000000 wei needs to match the total
-    # allocation above from user genesis.
-    #
-    # "noHyperliquidity" can also be set to disable hyperliquidity. In that case, no balance
-    # should be associated with hyperliquidity from step 2 (user genesis).
-    genesis_result = exchange.spot_deploy_genesis(token, "300000000000000", False)
-    print(genesis_result)
+    # 6. Set Trading Fee Share (Optional)
+    handle_trading_fee_share(exchange, token_index)
 
-    # Step 4: Register Spot
-    #
-    # Register the spot pair (TEST0/USDC) given base and quote token indices. 0 represents USDC.
-    # The base token is the first token in the pair and the quote token is the second token.
-    register_spot_result = exchange.spot_deploy_register_spot(token, 0)
-    print(register_spot_result)
-    # If registration is successful, a spot index will be returned. This spot index is required for
-    # registering hyperliquidity.
-    if register_spot_result["status"] == "ok":
-        spot = register_spot_result["response"]["data"]
-    else:
-        return
-
-    # Step 5: Register Hyperliquidity
-    #
-    # Registers hyperliquidity for the spot pair. In this example, hyperliquidity is registered
-    # with a starting price of $2, an order size of 4, and 100 total orders.
-    #
-    # This step is required even if "noHyperliquidity" was set to True.
-    # If "noHyperliquidity" was set to True during step 3 (genesis), then "n_orders" is required to be 0.
-    register_hyperliquidity_result = exchange.spot_deploy_register_hyperliquidity(spot, 2.0, 4.0, 100, None)
-    print(register_hyperliquidity_result)
-
-    if SET_DEPLOYER_TRADING_FEE_SHARE:
-        # Step 6
-        #
-        # Note that the deployer trading fee share cannot increase.
-        # The default is already 100% and the smallest increment is 0.001%.
-        set_deployer_trading_fee_share_result = exchange.spot_deploy_set_deployer_trading_fee_share(token, "100%")
-        print(set_deployer_trading_fee_share_result)
-
-    if ENABLE_QUOTE_TOKEN:
-        # Step 7
-        #
-        # Note that deployer trading fee share must be zero.
-        # The quote token must also be allowed.
-        enable_quote_token_result = exchange.spot_deploy_enable_quote_token(token)
-        print(enable_quote_token_result)
+    # 7. Enable Quote Token (Optional)
+    handle_enable_quote_token(exchange, token_index)
+    
+    logging.info("Deployment workflow completed successfully.")
 
 
 if __name__ == "__main__":
