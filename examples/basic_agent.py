@@ -1,6 +1,6 @@
 import eth_account
 import example_utils
-from eth_account.signers.local import LocalAccount
+from eth_account.signers.base import BaseAccount
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
@@ -36,7 +36,7 @@ def main():
 
     # Create the agent's local account using the agent's private key.
     # We use `eth_account.Account.from_key()` to securely generate the agent's account from its private key.
-    agent_account: LocalAccount = eth_account.Account.from_key(agent_key)
+    agent_account: BaseAccount = eth_account.Account.from_key(agent_key)
     print("Running with agent address:", agent_account.address)
 
     # Create a new exchange instance for the agent, providing it with the agent's account information and exchange URL.
@@ -68,7 +68,7 @@ def main():
         return
 
     # Create the extra agent account using its private key and the same process as above.
-    extra_agent_account: LocalAccount = eth_account.Account.from_key(extra_agent_key)
+    extra_agent_account: BaseAccount = eth_account.Account.from_key(extra_agent_key)
     extra_agent_exchange = Exchange(extra_agent_account, constants.TESTNET_API_URL, account_address=address)
     print("Running with extra agent address:", extra_agent_account.address)
 

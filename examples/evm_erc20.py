@@ -2,7 +2,7 @@ from typing import Literal, TypedDict, Union
 
 import requests
 from eth_account import Account
-from eth_account.signers.local import LocalAccount
+from eth_account.signers.base import BaseAccount
 from web3 import Web3
 from web3.middleware import SignAndSendRawMiddlewareBuilder
 
@@ -43,7 +43,7 @@ w3 = Web3(Web3.HTTPProvider(rpc_url))
 # You can also switch this to create an account a different way if you don't want to include a secret key in code
 if PRIVATE_KEY == "0xPRIVATE_KEY":
     raise Exception("must set private key or create account another way")
-account: LocalAccount = Account.from_key(PRIVATE_KEY)
+account: BaseAccount = Account.from_key(PRIVATE_KEY)
 print(f"Running with address {account.address}")
 w3.middleware_onion.add(SignAndSendRawMiddlewareBuilder.build(account))
 w3.eth.default_account = account.address
