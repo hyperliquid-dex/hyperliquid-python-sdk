@@ -37,6 +37,8 @@ def subscription_to_identifier(subscription: Subscription) -> str:
         return f'activeAssetCtx:{subscription["coin"].lower()}'
     elif subscription["type"] == "activeAssetData":
         return f'activeAssetData:{subscription["coin"].lower()},{subscription["user"].lower()}'
+    elif subscription['type'] == "twapStates":
+        return f'twapStates:{subscription["user"].lower()}'
 
 
 def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
@@ -72,6 +74,8 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
         return f'activeAssetCtx:{ws_msg["data"]["coin"].lower()}'
     elif ws_msg["channel"] == "activeAssetData":
         return f'activeAssetData:{ws_msg["data"]["coin"].lower()},{ws_msg["data"]["user"].lower()}'
+    elif ws_msg["channel"] == "twapStates":
+        return f'twapStates:{ws_msg["data"]["user"].lower()}'
 
 
 class WebsocketManager(threading.Thread):
