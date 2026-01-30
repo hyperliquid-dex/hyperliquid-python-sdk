@@ -307,6 +307,7 @@ class Info(API):
                         ...
                     ]
                 },
+            ],
             [
                 {
                     "dayNtlVlm": float string,
