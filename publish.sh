@@ -80,7 +80,7 @@ fi
 # Run tests unless skipped
 if [ "$SKIP_TESTS" = false ]; then
     echo "Running tests..."
-    poetry run pytest --cov-report=term-missing --cov=hyperliquid -x || {
+    poetry run pytest tests/ --cov-report=term-missing --cov=hyperliquid -x || {
         echo "Tests failed! Aborting publish."
         exit 1
     }
