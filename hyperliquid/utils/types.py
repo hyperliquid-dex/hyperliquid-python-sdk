@@ -183,6 +183,8 @@ WsMsg = Union[
 
 # b is the public address of the builder, f is the amount of the fee in tenths of basis points. e.g. 10 means 1 basis point
 BuilderInfo = TypedDict("BuilderInfo", {"b": str, "f": int})
+Abstraction = Literal["unifiedAccount", "portfolioMargin", "disabled"]
+AgentAbstraction = Literal["u", "p", "i"]
 
 PerpDexSchemaInput = TypedDict(
     "PerpDexSchemaInput", {"fullName": str, "collateralToken": int, "oracleUpdater": Optional[str]}

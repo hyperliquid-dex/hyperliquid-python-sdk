@@ -33,7 +33,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install poetry
-        run: make poetry-download
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Set up cache
         uses: actions/cache@v4
@@ -42,9 +46,7 @@ jobs:
           key: venv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('poetry.lock') }}
 
       - name: Install dependencies
-        run: |
-          poetry config virtualenvs.in-project true
-          poetry install
+        run: poetry install
 
       - name: Run tests
         run: |
