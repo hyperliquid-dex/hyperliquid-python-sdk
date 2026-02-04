@@ -1,4 +1,5 @@
 # See https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#enable-hip-3-dex-abstraction for more details
+# NOTE: setting dex_abstraction is legacy. Prefer setting user_abstraction in user_abstraction.py
 import example_utils
 
 from hyperliquid.exchange import Exchange

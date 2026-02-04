@@ -629,6 +629,9 @@ class Info(API):
     def query_user_dex_abstraction_state(self, user: str) -> Any:
         return self.post("/info", {"type": "userDexAbstraction", "user": user})
 
+    def query_user_abstraction_state(self, user: str) -> Any:
+        return self.post("/info", {"type": "userAbstraction", "user": user})
+
     def historical_orders(self, user: str) -> Any:
         """Retrieve a user's historical orders.
 
