@@ -241,7 +241,7 @@ class Exchange(API):
 
     def market_close(
         self,
-        coin: str,
+        name: str,
         sz: Optional[float] = None,
         px: Optional[float] = None,
         slippage: float = DEFAULT_SLIPPAGE,
@@ -253,21 +253,21 @@ class Exchange(API):
             address = self.account_address
         if self.vault_address:
             address = self.vault_address
-        dex = _get_dex(coin)
+        dex = _get_dex(name)
         positions = self.info.user_state(address, dex)["assetPositions"]
         for position in positions:
             item = position["position"]
-            if coin != item["coin"]:
+            if name != item["coin"]:
                 continue
             szi = float(item["szi"])
             if not sz:
                 sz = abs(szi)
             is_buy = True if szi < 0 else False
             # Get aggressive Market Price
-            px = self._slippage_price(coin, is_buy, slippage, px)
+            px = self._slippage_price(name, is_buy, slippage, px)
             # Market Order is an aggressive Limit Order IoC
             return self.order(
-                coin,
+                name,
                 is_buy,
                 sz,
                 px,
@@ -1078,9 +1078,11 @@ class Exchange(API):
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
+        is_mainnet = self.base_url == MAINNET_API_URL
+        chain_id = "0xa4b1" if is_mainnet else "0x66eee"
         multi_sig_action = {
             "type": "multiSig",
-            "signatureChainId": "0x66eee",
+            "signatureChainId": chain_id,
             "signatures": signatures,
             "payload": {
                 "multiSigUser": multi_sig_user,
@@ -1088,7 +1090,6 @@ class Exchange(API):
                 "action": inner_action,
             },
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_multi_sig_action(
             self.wallet,
             multi_sig_action,
