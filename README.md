@@ -50,7 +50,10 @@ python examples/basic_order.py
    - Note that Poetry v2 is not supported, so you'll need to specify a specific version e.g. curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.1 python3 - 
 
 2. Point poetry to correct version of python. For development we require python 3.10 exactly. Some dependencies have issues on 3.11, while older versions don't have correct typing support.
-`brew install python@3.10 && poetry env use /opt/homebrew/Cellar/python@3.10/3.10.16/bin/python3.10`
+```
+brew install python@3.10 && poetry env use 3.10
+```
+  - You can also bind the environment directly to the Homebrew path using:`poetry env use $(brew --prefix python@3.10)/bin/python3.10`
 
 3. Install dependencies:
 
