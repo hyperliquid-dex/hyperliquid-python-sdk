@@ -287,7 +287,7 @@ class Info(API):
         """
         return cast(Meta, self.post("/info", {"type": "meta", "dex": dex}))
 
-    def meta_and_asset_ctxs(self) -> Any:
+    def meta_and_asset_ctxs(self, dex: str = "") -> Any:
         """Retrieve exchange MetaAndAssetCtxs
 
         POST /info
@@ -320,7 +320,7 @@ class Info(API):
                 ...
             ]
         """
-        return self.post("/info", {"type": "metaAndAssetCtxs"})
+        return self.post("/info", {"type": "metaAndAssetCtxs", "dex": dex})
 
     def perp_dexs(self) -> Any:
         return self.post("/info", {"type": "perpDexs"})
@@ -629,6 +629,9 @@ class Info(API):
 
     def query_user_dex_abstraction_state(self, user: str) -> Any:
         return self.post("/info", {"type": "userDexAbstraction", "user": user})
+
+    def query_user_abstraction_state(self, user: str) -> Any:
+        return self.post("/info", {"type": "userAbstraction", "user": user})
 
     def historical_orders(self, user: str) -> Any:
         """Retrieve a user's historical orders.

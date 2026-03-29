@@ -124,6 +124,13 @@ USER_DEX_ABSTRACTION_SIGN_TYPES = [
     {"name": "nonce", "type": "uint64"},
 ]
 
+USER_SET_ABSTRACTION_SIGN_TYPES = [
+    {"name": "hyperliquidChain", "type": "string"},
+    {"name": "user", "type": "address"},
+    {"name": "abstraction", "type": "string"},
+    {"name": "nonce", "type": "uint64"},
+]
+
 TOKEN_DELEGATE_TYPES = [
     {"name": "hyperliquidChain", "type": "string"},
     {"name": "validator", "type": "address"},
@@ -377,6 +384,16 @@ def sign_user_dex_abstraction_action(wallet, action, is_mainnet):
         action,
         USER_DEX_ABSTRACTION_SIGN_TYPES,
         "HyperliquidTransaction:UserDexAbstraction",
+        is_mainnet,
+    )
+
+
+def sign_user_set_abstraction_action(wallet, action, is_mainnet):
+    return sign_user_signed_action(
+        wallet,
+        action,
+        USER_SET_ABSTRACTION_SIGN_TYPES,
+        "HyperliquidTransaction:UserSetAbstraction",
         is_mainnet,
     )
 
