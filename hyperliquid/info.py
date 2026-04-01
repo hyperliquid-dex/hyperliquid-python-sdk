@@ -286,7 +286,7 @@ class Info(API):
         """
         return cast(Meta, self.post("/info", {"type": "meta", "dex": dex}))
 
-    def meta_and_asset_ctxs(self) -> Any:
+    def meta_and_asset_ctxs(self, dex: str = "") -> Any:
         """Retrieve exchange MetaAndAssetCtxs
 
         POST /info
@@ -319,7 +319,7 @@ class Info(API):
                 ...
             ]
         """
-        return self.post("/info", {"type": "metaAndAssetCtxs"})
+        return self.post("/info", {"type": "metaAndAssetCtxs", "dex": dex})
 
     def perp_dexs(self) -> Any:
         return self.post("/info", {"type": "perpDexs"})
