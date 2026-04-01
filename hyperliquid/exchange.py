@@ -1078,9 +1078,11 @@ class Exchange(API):
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
+        is_mainnet = self.base_url == MAINNET_API_URL
+        chain_id = "0xa4b1" if is_mainnet else "0x66eee"
         multi_sig_action = {
             "type": "multiSig",
-            "signatureChainId": "0x66eee",
+            "signatureChainId": chain_id,
             "signatures": signatures,
             "payload": {
                 "multiSigUser": multi_sig_user,
@@ -1088,7 +1090,6 @@ class Exchange(API):
                 "action": inner_action,
             },
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_multi_sig_action(
             self.wallet,
             multi_sig_action,
