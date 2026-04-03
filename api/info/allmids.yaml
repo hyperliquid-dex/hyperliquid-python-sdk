@@ -1,20 +1,25 @@
 openapi: 3.0.1
 info:
   title: Hyperliquid
-  description: API for interacting with the Hyperliquid DEX
-  version: '0.1'
+  description: API for interacting with the Hyperliquid Decentralized Exchange (DEX).
+  version: '0.1.0' # Use standard SemVer notation
+
 servers:
   - url: https://api.hyperliquid.xyz
-    description: Mainnet
+    description: Hyperliquid Mainnet API endpoint
   - url: https://api.hyperliquid-testnet.xyz
-    description: Testnet
+    description: Hyperliquid Testnet API endpoint
   - url: http://localhost:3001
-    description: Local
+    description: Local development endpoint
+
 paths:
   /info:
     post:
-      summary: Retrieve all mids for all actively traded coins
+      summary: Retrieve the Mid-Price (mid) for all actively traded perpetuals.
+      operationId: getAllMids
+      
       requestBody:
+        description: Request body to specify the type of query.
         required: true
         content:
           application/json:
@@ -23,22 +28,36 @@ paths:
               properties:
                 type:
                   type: string
-                  enum: [allMids]
+                  # Use const instead of enum if only one value is currently supported. 
+                  # This provides cleaner documentation for single-purpose fields.
+                  const: allMids 
               required:
                 - type
             example:
               type: allMids
+
       responses:
         '200':
-          description: A successful response
+          description: Successful response returning coin symbols mapped to mid-prices.
           content:
             application/json:
               schema:
                 type: object
+                # The response structure is a map (dictionary) where keys are coin symbols (e.g., APE, ARB).
                 additionalProperties:
-                  $ref: "../components.yaml#/components/schemas/FloatString"
+                  $ref: '#/components/schemas/FloatString'
               example:
                 APE: "4.36255"
                 ARB: "1.22965"
-                ATOM: "11.2585"
                 AVAX: "18.3695"
+        '400':
+          description: Bad request (e.g., missing required fields in request body).
+        '500':
+          description: Internal server error (e.g., issues retrieving data).
+
+components:
+  schemas:
+    FloatString:
+      type: string
+      description: A price or quantity represented as a string to maintain full floating-point precision.
+      example: "4.36255"
