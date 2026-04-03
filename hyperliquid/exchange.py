@@ -3,7 +3,7 @@ import logging
 import secrets
 
 import eth_account
-from eth_account.signers.local import LocalAccount
+from eth_account.signers.base import BaseAccount
 
 from hyperliquid.api import API
 from hyperliquid.info import Info
@@ -62,7 +62,7 @@ class Exchange(API):
 
     def __init__(
         self,
-        wallet: LocalAccount,
+        wallet: BaseAccount,
         base_url: Optional[str] = None,
         meta: Optional[Meta] = None,
         vault_address: Optional[str] = None,
