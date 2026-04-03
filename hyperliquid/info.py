@@ -39,14 +39,16 @@ class Info(API):
         self.name_to_coin = {}
         self.asset_to_sz_decimals = {}
 
+        token_index_to_token_info = {token_info["index"]: token_info for token_info in spot_meta["tokens"]}
+
         # spot assets start at 10000
         for spot_info in spot_meta["universe"]:
             asset = spot_info["index"] + 10000
             self.coin_to_asset[spot_info["name"]] = asset
             self.name_to_coin[spot_info["name"]] = spot_info["name"]
             base, quote = spot_info["tokens"]
-            base_info = spot_meta["tokens"][base]
-            quote_info = spot_meta["tokens"][quote]
+            base_info = token_index_to_token_info[base]
+            quote_info = token_index_to_token_info[quote]
             self.asset_to_sz_decimals[asset] = base_info["szDecimals"]
             name = f'{base_info["name"]}/{quote_info["name"]}'
             if name not in self.name_to_coin:
