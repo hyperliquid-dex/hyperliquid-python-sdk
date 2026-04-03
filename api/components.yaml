@@ -1,14 +1,86 @@
 components:
   schemas:
+    # -------------------------------------------------------------------------
+    # Primitive Types & Formats
+    # -------------------------------------------------------------------------
     FloatString:
       type: string
-      pattern: "^\\d+\\.?\\d*$"
+      # Regex: Allow optional negative sign, integers, decimals.
+      # Excludes scientific notation for safety, but allows "0.5", "-10.00".
+      pattern: "^-?\\d+(\\.\\d+)?$"
+      description: "Decimal number serialized as a string to preserve precision (avoiding IEEE 754 floating point errors)."
+      example: "1250.50"
+
     Address:
       type: string
+      # Standard EVM address pattern (0x followed by 40 hex chars).
       pattern: "^0x[a-fA-F0-9]{40}$"
+      description: "Ethereum Virtual Machine (EVM) compatible wallet or contract address."
+      example: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+
+    # -------------------------------------------------------------------------
+    # Domain Objects
+    # -------------------------------------------------------------------------
     AssetPosition:
       type: object
+      description: "Represents a user's current holding or leverage position in an asset."
+      required:
+        - assetAddress
+        - size
+        - unrealizedPnl
+      properties:
+        assetAddress:
+          $ref: "#/components/schemas/Address"
+        symbol:
+          type: string
+          description: "Human-readable ticker symbol (e.g., 'WETH')."
+          example: "WETH"
+        size:
+          $ref: "#/components/schemas/FloatString"
+          description: "The size of the position in asset units."
+        entryPrice:
+          $ref: "#/components/schemas/FloatString"
+        unrealizedPnl:
+          $ref: "#/components/schemas/FloatString"
+          description: "Current unrealized profit or loss."
+
     MarginSummary:
       type: object
+      description: "Summary of the account's margin health and leverage details."
+      required:
+        - totalEquity
+        - usedMargin
+        - freeMargin
+      properties:
+        totalEquity:
+          $ref: "#/components/schemas/FloatString"
+          description: "Total account value (Balance + Unrealized PnL)."
+        usedMargin:
+          $ref: "#/components/schemas/FloatString"
+          description: "Margin currently locked in open positions."
+        freeMargin:
+          $ref: "#/components/schemas/FloatString"
+          description: "Available margin for opening new positions."
+        marginLevelPercentage:
+          type: number
+          format: float
+          description: "Health ratio usually calculated as (Equity / Used Margin) * 100."
+          example: 150.5
+
     L2Level:
       type: object
+      description: "A single level in the Order Book (Level 2 Data)."
+      required:
+        - price
+        - size
+      properties:
+        price:
+          $ref: "#/components/schemas/FloatString"
+          description: "The price point for this order level."
+        size:
+          $ref: "#/components/schemas/FloatString"
+          description: "Total volume/liquidity available at this price."
+        orderCount:
+          type: integer
+          description: "Number of individual orders at this price level (optional)."
+          example: 5
