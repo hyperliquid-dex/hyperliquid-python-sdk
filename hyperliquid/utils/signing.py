@@ -42,7 +42,8 @@ ModifyRequest = TypedDict(
 CancelRequest = TypedDict("CancelRequest", {"coin": str, "oid": int})
 CancelByCloidRequest = TypedDict("CancelByCloidRequest", {"coin": str, "cloid": Cloid})
 
-Grouping = Union[Literal["na"], Literal["normalTpsl"], Literal["positionTpsl"]]
+PriorityGrouping = TypedDict("PriorityGrouping", {"p": int})
+Grouping = Union[Literal["na"], Literal["normalTpsl"], Literal["positionTpsl"], PriorityGrouping]
 Order = TypedDict(
     "Order", {"asset": int, "isBuy": bool, "limitPx": float, "sz": float, "reduceOnly": bool, "cloid": Optional[Cloid]}
 )

@@ -1198,3 +1198,11 @@ class Exchange(API):
             self.wallet, action, self.vault_address, nonce, self.expires_after, self.base_url == MAINNET_API_URL
         )
         return self._post_action(action, signature, nonce)
+
+    def gossip_priority_bid(self, slot_id, ip, max_gas):
+        nonce = get_timestamp_ms()
+        action = {"type": "gossipPriorityBid", "slotId": slot_id, "ip": ip, "maxGas": max_gas}
+        signature = sign_l1_action(
+            self.wallet, action, self.vault_address, nonce, self.expires_after, self.base_url == MAINNET_API_URL
+        )
+        return self._post_action(action, signature, nonce)
