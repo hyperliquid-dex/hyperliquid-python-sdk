@@ -75,7 +75,7 @@ def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
 
 
 class WebsocketManager(threading.Thread):
-    def __init__(self, base_url):
+    def __init__(self, base_url, reconnect_ws: Optional[int] = None):
         super().__init__()
         self.subscription_id_counter = 0
         self.ws_ready = False
@@ -85,10 +85,11 @@ class WebsocketManager(threading.Thread):
         self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
         self.ping_sender = threading.Thread(target=self.send_ping)
         self.stop_event = threading.Event()
+        self.reconnect_ws: Optional[int] = reconnect_ws  # Exposed reconnect parameter to auto-reconnect
 
     def run(self):
         self.ping_sender.start()
-        self.ws.run_forever()
+        self.ws.run_forever(reconnect=self.reconnect_ws)
 
     def send_ping(self):
         while not self.stop_event.wait(50):
