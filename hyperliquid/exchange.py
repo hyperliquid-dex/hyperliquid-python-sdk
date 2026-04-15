@@ -952,6 +952,29 @@ class Exchange(API):
             timestamp,
         )
 
+    def perp_deploy_halt_trading(self, coin: str, is_halted: bool) -> Any:
+        timestamp = get_timestamp_ms()
+        action = {
+            "type": "perpDeploy",
+            "haltTrading": {
+                "coin": coin,
+                "isHalted": is_halted,
+            },
+        }
+        signature = sign_l1_action(
+            self.wallet,
+            action,
+            None,
+            timestamp,
+            self.expires_after,
+            self.base_url == MAINNET_API_URL,
+        )
+        return self._post_action(
+            action,
+            signature,
+            timestamp,
+        )
+
     def c_signer_unjail_self(self) -> Any:
         return self.c_signer_inner("unjailSelf")
 
