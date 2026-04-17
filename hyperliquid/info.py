@@ -91,6 +91,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
         Returns:
             {
                 assetPositions: [
@@ -138,6 +140,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
         Returns: [
             {
                 coin: str,
@@ -159,6 +163,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
         Returns: [
             {
                 children:
@@ -189,6 +195,10 @@ class Info(API):
 
         POST /info
 
+        Args:
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
+
         Returns:
             {
               ATOM: float string,
@@ -198,7 +208,7 @@ class Info(API):
         """
         return self.post("/info", {"type": "allMids", "dex": dex})
 
-    def user_fills(self, address: str) -> Any:
+    def user_fills(self, address: str, dex: str = "") -> Any:
         """Retrieve a given user's fills.
 
         POST /info
@@ -206,6 +216,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
 
         Returns:
             [
@@ -225,10 +237,15 @@ class Info(API):
               ...
             ]
         """
-        return self.post("/info", {"type": "userFills", "user": address})
+        return self.post("/info", {"type": "userFills", "user": address, "dex": dex})
 
     def user_fills_by_time(
-        self, address: str, start_time: int, end_time: Optional[int] = None, aggregate_by_time: Optional[bool] = False
+        self,
+        address: str,
+        start_time: int,
+        end_time: Optional[int] = None,
+        aggregate_by_time: Optional[bool] = False,
+        dex: str = "",
     ) -> Any:
         """Retrieve a given user's fills by time.
 
@@ -240,6 +257,8 @@ class Info(API):
             start_time (int): Unix timestamp in milliseconds
             end_time (Optional[int]): Unix timestamp in milliseconds
             aggregate_by_time (Optional[bool]): When true, partial fills are combined when a crossing order gets filled by multiple different resting orders. Resting orders filled by multiple crossing orders will not be aggregated.
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
 
         Returns:
             [
@@ -267,6 +286,7 @@ class Info(API):
                 "startTime": start_time,
                 "endTime": end_time,
                 "aggregateByTime": aggregate_by_time,
+                "dex": dex,
             },
         )
 
@@ -274,6 +294,10 @@ class Info(API):
         """Retrieve exchange perp metadata
 
         POST /info
+
+        Args:
+            dex (str): Dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the original dex).
 
         Returns:
             {
