@@ -662,6 +662,37 @@ class Exchange(API):
             timestamp,
         )
 
+    def create_convert_from_multi_sig_user_action(self, threshold: int = 0) -> Dict[str, Any]:
+        """
+        Create an inner action for converting a multi-sig account back to a regular account.
+        
+        Note: As of SDK version 0.22.0, the Hyperliquid backend may reject threshold=0
+        when authorizedUsers is empty, returning "Invalid multi-sig threshold". If you
+        encounter this error, try threshold=1 or contact Hyperliquid support.
+        
+        Args:
+            threshold: The threshold for the multi-sig conversion. Should be 0 when
+                authorizedUsers is empty, but the backend may require threshold >= 1.
+        
+        Returns:
+            A dictionary representing the inner action, ready to be used with `multi_sig()`.
+        """
+        timestamp = get_timestamp_ms()
+        signers = {
+            "authorizedUsers": [],
+            "threshold": threshold,
+        }
+        is_mainnet = self.base_url == MAINNET_API_URL
+        chain_id = "0xa4b1" if is_mainnet else "0x66eee"
+        hyperliquid_chain = "Mainnet" if is_mainnet else "Testnet"
+        return {
+            "type": "convertToMultiSigUser",
+            "signatureChainId": chain_id,
+            "hyperliquidChain": hyperliquid_chain,
+            "signers": json.dumps(signers),
+            "nonce": timestamp,
+        }
+
     def spot_deploy_register_token(
         self, token_name: str, sz_decimals: int, wei_decimals: int, max_gas: int, full_name: str
     ) -> Any:
@@ -1078,9 +1109,11 @@ class Exchange(API):
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
+        is_mainnet = self.base_url == MAINNET_API_URL
+        chain_id = "0xa4b1" if is_mainnet else "0x66eee"
         multi_sig_action = {
             "type": "multiSig",
-            "signatureChainId": "0x66eee",
+            "signatureChainId": chain_id,
             "signatures": signatures,
             "payload": {
                 "multiSigUser": multi_sig_user,
@@ -1088,7 +1121,6 @@ class Exchange(API):
                 "action": inner_action,
             },
         }
-        is_mainnet = self.base_url == MAINNET_API_URL
         signature = sign_multi_sig_action(
             self.wallet,
             multi_sig_action,
