@@ -3,7 +3,7 @@ import json
 import os
 
 import eth_account
-from eth_account.signers.local import LocalAccount
+from eth_account.signers.base import BaseAccount
 
 from hyperliquid.exchange import Exchange
 from hyperliquid.info import Info
@@ -13,7 +13,7 @@ def setup(base_url=None, skip_ws=False, perp_dexs=None):
     config_path = os.path.join(os.path.dirname(__file__), "config.json")
     with open(config_path) as f:
         config = json.load(f)
-    account: LocalAccount = eth_account.Account.from_key(get_secret_key(config))
+    account: BaseAccount = eth_account.Account.from_key(get_secret_key(config))
     address = config["account_address"]
     if address == "":
         address = account.address
@@ -59,7 +59,7 @@ def setup_multi_sig_wallets():
 
     authorized_user_wallets = []
     for wallet_config in config["multi_sig"]["authorized_users"]:
-        account: LocalAccount = eth_account.Account.from_key(wallet_config["secret_key"])
+        account: BaseAccount = eth_account.Account.from_key(wallet_config["secret_key"])
         address = wallet_config["account_address"]
         if account.address != address:
             raise Exception(f"provided authorized user address {address} does not match private key")
