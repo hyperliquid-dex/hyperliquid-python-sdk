@@ -18,7 +18,7 @@ def main():
     print(exchange.update_leverage(21, "ETH"))
 
     # Set the ETH leverage to 22x (isolated margin)
-    print(exchange.update_leverage(21, "ETH", False))
+    print(exchange.update_leverage(22, "ETH", False))
 
     # Add 1 dollar of extra margin to the ETH position
     print(exchange.update_isolated_margin(1, "ETH"))
