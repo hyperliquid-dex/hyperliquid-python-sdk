@@ -100,13 +100,21 @@ class Exchange(API):
             px = float(self.info.all_mids(dex)[coin])
 
         asset = self.info.coin_to_asset[coin]
-        # spot assets start at 10000
-        is_spot = asset >= 10_000
+        # asset id ranges:
+        #   < 10_000           → perp main / HIP-3 builder dex (price decimals = 6 - sz_decimals)
+        #   10_000..99_999_999 → spot                          (price decimals = 8 - sz_decimals)
+        #   100_000_000+       → HIP-4 outcomes                (price decimals = 5, binary 0..1)
+        is_outcome = asset >= 100_000_000
+        is_spot = (not is_outcome) and asset >= 10_000
 
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)
-        # We round px to 5 significant figures and 6 decimals for perps, 8 decimals for spot
-        return round(float(f"{px:.5g}"), (6 if not is_spot else 8) - self.info.asset_to_sz_decimals[asset])
+        # Round px to 5 significant figures and decimal count per asset class.
+        if is_outcome:
+            decimals = 5
+        else:
+            decimals = (6 if not is_spot else 8) - self.info.asset_to_sz_decimals[asset]
+        return round(float(f"{px:.5g}"), decimals)
 
     # expires_after will cause actions to be rejected after that timestamp in milliseconds
     # expires_after is not supported on user_signed actions (e.g. usd_transfer) and must be None in order for those

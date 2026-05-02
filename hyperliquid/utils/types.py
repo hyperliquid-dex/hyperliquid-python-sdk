@@ -36,6 +36,18 @@ SpotAssetCtx = TypedDict(
 )
 SpotMetaAndAssetCtxs = Tuple[SpotMeta, List[SpotAssetCtx]]
 
+# HIP-4 outcome markets (binary / multi-outcome contracts).
+# Asset id = OUTCOME_ASSET_OFFSET + 10*outcome + side
+# Book/trades/allMids coin name = "#<encoding>"
+# spotClearinghouseState balance coin name = "+<encoding>"
+OUTCOME_ASSET_OFFSET = 100_000_000
+OutcomeSideSpec = TypedDict("OutcomeSideSpec", {"name": str})
+OutcomeInfo = TypedDict(
+    "OutcomeInfo",
+    {"outcome": int, "name": str, "description": str, "sideSpecs": List[OutcomeSideSpec]},
+)
+OutcomeMeta = TypedDict("OutcomeMeta", {"outcomes": List[OutcomeInfo], "questions": List[Any]})
+
 AllMidsSubscription = TypedDict("AllMidsSubscription", {"type": Literal["allMids"]})
 BboSubscription = TypedDict("BboSubscription", {"type": Literal["bbo"], "coin": str})
 L2BookSubscription = TypedDict("L2BookSubscription", {"type": Literal["l2Book"], "coin": str})

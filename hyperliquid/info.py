@@ -1,11 +1,13 @@
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
+    OUTCOME_ASSET_OFFSET,
     Any,
     Callable,
     Cloid,
     List,
     Meta,
     Optional,
+    OutcomeMeta,
     SpotMeta,
     SpotMetaAndAssetCtxs,
     Subscription,
@@ -24,6 +26,11 @@ class Info(API):
         # Note that when perp_dexs is None, then "" is used as the perp dex. "" represents
         # the original dex.
         perp_dexs: Optional[List[str]] = None,
+        outcome_meta: Optional[OutcomeMeta] = None,
+        # When True (default), the constructor fetches outcomeMeta and indexes
+        # HIP-4 outcome assets into coin_to_asset / asset_to_sz_decimals. Set
+        # False to skip outcomes if they're not needed (saves one /info call).
+        load_outcomes: bool = True,
         timeout: Optional[float] = None,
     ):  # pylint: disable=too-many-locals
         super().__init__(base_url, timeout)
@@ -68,6 +75,18 @@ class Info(API):
                 fresh_meta = self.meta(dex=perp_dex)
                 self.set_perp_meta(fresh_meta, offset)
 
+        # HIP-4 outcomes: index after perp/spot so the asset_to_coin reverse
+        # map below picks them up. Caller can disable via load_outcomes=False
+        # or pass a prefetched outcome_meta to skip the network call.
+        if load_outcomes:
+            if outcome_meta is None:
+                try:
+                    outcome_meta = self.outcome_meta()
+                except Exception:  # noqa: BLE001 — keep the constructor compatible with hosts that don't enable HIP-4
+                    outcome_meta = None
+            if outcome_meta is not None:
+                self.set_outcome_meta(outcome_meta)
+
         self.asset_to_coin = {v:k for k,v in self.coin_to_asset.items()}
         self.spot_meta = spot_meta
 
@@ -77,6 +96,35 @@ class Info(API):
             self.coin_to_asset[asset_info["name"]] = asset
             self.name_to_coin[asset_info["name"]] = asset_info["name"]
             self.asset_to_sz_decimals[asset] = asset_info["szDecimals"]
+
+    def set_outcome_meta(self, outcome_meta: OutcomeMeta) -> None:
+        """Index HIP-4 outcome assets into coin_to_asset / name_to_coin /
+        asset_to_sz_decimals.
+
+        For each outcome `i` and each side index `s`, encoding = 10*i + s
+        produces:
+          - asset id   = OUTCOME_ASSET_OFFSET + encoding         (e.g. 100000010)
+          - book coin  = "#<encoding>"                           (used in l2Book / trades / allMids)
+          - token name = "+<encoding>"                           (used in spotClearinghouseState balances)
+
+        Both coin forms are mapped so callers can pass either to
+        `name_to_asset()`. Outcomes are fully collateralized binary contracts
+        (phase 1) traded in integer contract counts, so szDecimals is 0.
+        """
+        for outcome_info in outcome_meta.get("outcomes", []):
+            outcome_id = int(outcome_info["outcome"])
+            for side_idx, _ in enumerate(outcome_info.get("sideSpecs", [])):
+                encoding = 10 * outcome_id + side_idx
+                asset = OUTCOME_ASSET_OFFSET + encoding
+                book_coin = f"#{encoding}"
+                token_name = f"+{encoding}"
+                self.coin_to_asset[book_coin] = asset
+                self.coin_to_asset[token_name] = asset
+                self.name_to_coin[book_coin] = book_coin
+                # Spot-token form (e.g. "+1") routes to the book coin so
+                # name_to_asset("+1") and name_to_asset("#1") both work.
+                self.name_to_coin[token_name] = book_coin
+                self.asset_to_sz_decimals[asset] = 0
 
     def disconnect_websocket(self):
         if self.ws_manager is None:
@@ -358,6 +406,28 @@ class Info(API):
             }
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
+
+    def outcome_meta(self) -> OutcomeMeta:
+        """Retrieve HIP-4 outcome catalog.
+
+        POST /info
+
+        Returns:
+            {
+                outcomes: [
+                    {
+                        outcome: int,
+                        name: str,                   # e.g. "Recurring"
+                        description: str,            # pipe-encoded settlement spec, e.g.
+                                                     #   "class:priceBinary|underlying:BTC|expiry:20260503-0600|targetPrice:78213|period:1d"
+                        sideSpecs: [{"name": "Yes"}, {"name": "No"}, ...]
+                    },
+                    ...
+                ],
+                questions: [...],
+            }
+        """
+        return cast(OutcomeMeta, self.post("/info", {"type": "outcomeMeta"}))
 
     def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
         """Retrieve exchange spot asset contexts
