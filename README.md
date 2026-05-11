@@ -1,5 +1,7 @@
 # hyperliquid-python-sdk
 
+[![Tracked on web3-discover](https://web3-discover.vercel.app/badge/hyperliquid-hype-season-2.svg)](https://web3-discover.vercel.app/airdrops/hyperliquid-hype-season-2)
+
 <div align="center">
 
 [![Dependencies Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/hyperliquid-dex/hyperliquid-python-sdk/pulls?utf8=%E2%9C%93&q=is%3Apr%20author%3Aapp%2Fdependabot)
