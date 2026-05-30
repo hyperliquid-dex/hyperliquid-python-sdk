@@ -2,6 +2,7 @@ import eth_account
 import pytest
 from eth_utils import to_hex
 
+from hyperliquid.exchange import _multi_sig_payload_action
 from hyperliquid.utils.signing import (
     OrderRequest,
     ScheduleCancelAction,
@@ -209,6 +210,22 @@ def test_sign_withdraw_from_bridge_action():
     assert signature["r"] == "0x8363524c799e90ce9bc41022f7c39b4e9bdba786e5f9c72b20e43e1462c37cf9"
     assert signature["s"] == "0x58b1411a775938b83e29182e8ef74975f9054c8e97ebf5ec2dc8d51bfc893881"
     assert signature["v"] == 28
+
+
+def test_multi_sig_user_set_abstraction_payload_uses_wire_enum():
+    action = {
+        "type": "userSetAbstraction",
+        "signatureChainId": "0x66eee",
+        "hyperliquidChain": "Testnet",
+        "user": "0x3b4d2cc2e144a0044002506c8b44508e9ace82e9",
+        "abstraction": "disabled",
+        "nonce": 1780130409592,
+    }
+
+    payload_action = _multi_sig_payload_action(action)
+
+    assert payload_action["abstraction"] == "i"
+    assert action["abstraction"] == "disabled"
 
 
 def test_create_sub_account_action():

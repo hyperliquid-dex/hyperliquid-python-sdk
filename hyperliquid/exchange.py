@@ -56,6 +56,28 @@ def _get_dex(coin: str) -> str:
     return coin.split(":")[0] if ":" in coin else ""
 
 
+USER_SET_ABSTRACTION_WIRE_VALUES = {
+    "default": "e",
+    "disabled": "i",
+    "dexAbstraction": "d",
+    "unifiedAccount": "u",
+    "portfolioMargin": "p",
+}
+
+
+def _multi_sig_payload_action(inner_action):
+    if inner_action.get("type") != "userSetAbstraction":
+        return inner_action
+
+    abstraction = inner_action.get("abstraction")
+    if abstraction not in USER_SET_ABSTRACTION_WIRE_VALUES:
+        return inner_action
+
+    payload_action = inner_action.copy()
+    payload_action["abstraction"] = USER_SET_ABSTRACTION_WIRE_VALUES[abstraction]
+    return payload_action
+
+
 class Exchange(API):
     # Default Max Slippage for Market Orders 5%
     DEFAULT_SLIPPAGE = 0.05
@@ -1078,6 +1100,7 @@ class Exchange(API):
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
+        payload_action = _multi_sig_payload_action(inner_action)
         multi_sig_action = {
             "type": "multiSig",
             "signatureChainId": "0x66eee",
@@ -1085,7 +1108,7 @@ class Exchange(API):
             "payload": {
                 "multiSigUser": multi_sig_user,
                 "outerSigner": self.wallet.address.lower(),
-                "action": inner_action,
+                "action": payload_action,
             },
         }
         is_mainnet = self.base_url == MAINNET_API_URL
