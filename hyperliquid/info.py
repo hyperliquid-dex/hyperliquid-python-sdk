@@ -47,6 +47,13 @@ class Info(API):
             self.coin_to_asset[spot_info["name"]] = asset
             self.name_to_coin[spot_info["name"]] = spot_info["name"]
             base, quote = spot_info["tokens"]
+            # Skip pairs whose token indices are not in the tokens list.
+            # The HL API can return a universe/tokens pair that is briefly out
+            # of sync — a new spot pair referencing a token index not yet
+            # present in the tokens list. Without this guard, Info() raises
+            # KeyError and every client crashes until HL repairs the response.
+            if base not in token_by_index or quote not in token_by_index:
+                continue
             base_info = token_by_index[base]
             quote_info = token_by_index[quote]
             self.asset_to_sz_decimals[asset] = base_info["szDecimals"]
