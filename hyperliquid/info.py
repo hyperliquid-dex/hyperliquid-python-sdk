@@ -47,8 +47,10 @@ class Info(API):
             self.coin_to_asset[spot_info["name"]] = asset
             self.name_to_coin[spot_info["name"]] = spot_info["name"]
             base, quote = spot_info["tokens"]
-            base_info = token_by_index[base]
-            quote_info = token_by_index[quote]
+            base_info = token_by_index.get(base)
+            quote_info = token_by_index.get(quote)
+            if base_info is None or quote_info is None:
+                continue
             self.asset_to_sz_decimals[asset] = base_info["szDecimals"]
             name = f'{base_info["name"]}/{quote_info["name"]}'
             if name not in self.name_to_coin:

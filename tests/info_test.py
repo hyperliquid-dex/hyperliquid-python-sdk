@@ -257,3 +257,38 @@ def test_extra_agents():
         assert "name" in agent, "Each agent should have a 'name' field"
         assert "address" in agent, "Each agent should have an 'address' field"
         assert "validUntil" in agent, "Each agent should have a 'validUntil' field"
+
+
+def test_spot_universe_with_out_of_range_token_index_is_skipped():
+    spot_meta: SpotMeta = {
+        "universe": [
+            {"index": 0, "name": "PURR/USDC", "tokens": [1, 0], "isCanonical": True},
+            {"index": 1, "name": "@999", "tokens": [479, 0], "isCanonical": False},
+        ],
+        "tokens": [
+            {
+                "name": "USDC",
+                "szDecimals": 8,
+                "weiDecimals": 8,
+                "index": 0,
+                "tokenId": "0x" + "0" * 64,
+                "isCanonical": True,
+                "evmContract": None,
+                "fullName": None,
+            },
+            {
+                "name": "PURR",
+                "szDecimals": 0,
+                "weiDecimals": 5,
+                "index": 1,
+                "tokenId": "0x" + "1" * 64,
+                "isCanonical": True,
+                "evmContract": None,
+                "fullName": None,
+            },
+        ],
+    }
+    info = Info(skip_ws=True, meta=TEST_META, spot_meta=spot_meta)
+    assert info.coin_to_asset["PURR/USDC"] == 10000
+    assert "PURR/USDC" in info.name_to_coin
+    assert "@999" in info.coin_to_asset
