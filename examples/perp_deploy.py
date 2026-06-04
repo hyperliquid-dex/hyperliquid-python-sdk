@@ -10,6 +10,12 @@ from hyperliquid.utils import constants
 REGISTER_PERP_DEX = False
 
 DUMMY_DEX = "test"
+COIN_0 = f"{DUMMY_DEX}:TEST0"
+COIN_1 = f"{DUMMY_DEX}:TEST1"
+
+# Trading on a newly deployed perp is halted by default.
+# Set to True to enable trading on the new perp.
+ENABLE_TRADING = True
 
 
 def main():
@@ -34,7 +40,7 @@ def main():
     register_asset_result = exchange.perp_deploy_register_asset(
         dex=DUMMY_DEX,
         max_gas=1000000000000,
-        coin=f"{DUMMY_DEX}:TEST0",
+        coin=COIN_0,
         sz_decimals=2,
         oracle_px="10.0",
         margin_table_id=10,
@@ -45,24 +51,28 @@ def main():
     # If registration is successful, the "dex" that was used can serve as the index into this clearinghouse for later asset
     # registrations and oracle updates.
 
+    if ENABLE_TRADING:
+        print(f"\nEnabling trading on {COIN_0}...")
+        halt_result = exchange.perp_deploy_halt_trading(coin=COIN_0, is_halted=False)
+
     # Step 2: Set the Oracle Prices
     #
     # Oracle updates can be sent multiple times
     set_oracle_result = exchange.perp_deploy_set_oracle(
         DUMMY_DEX,
         {
-            f"{DUMMY_DEX}:TEST0": "12.0",
-            f"{DUMMY_DEX}:TEST1": "1.0",
+            COIN_0: "12.0",
+            COIN_1": "1.0",
         },
         [
             {
-                f"{DUMMY_DEX}:TEST1": "3.0",
-                f"{DUMMY_DEX}:TEST0": "14.0",
+                COIN_1: "3.0",
+                COIN_0: "14.0",
             }
         ],
         {
-            f"{DUMMY_DEX}:TEST0": "12.1",
-            f"{DUMMY_DEX}:TEST1": "1.1",
+            COIN_0: "12.1",
+            COIN_1: "1.1",
         },
     )
     print("set oracle result:", set_oracle_result)
