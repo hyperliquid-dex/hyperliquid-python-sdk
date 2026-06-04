@@ -57,9 +57,7 @@ def _get_dex(coin: str) -> str:
 
 
 USER_SET_ABSTRACTION_WIRE_VALUES = {
-    "default": "e",
     "disabled": "i",
-    "dexAbstraction": "d",
     "unifiedAccount": "u",
     "portfolioMargin": "p",
 }

@@ -9,7 +9,7 @@ from hyperliquid.utils.signing import (
 
 
 def main():
-    _address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
+    address, info, exchange = example_utils.setup(constants.TESTNET_API_URL, skip_ws=True)
     multi_sig_wallets = example_utils.setup_multi_sig_wallets()
 
     # The outer signer is required to be an authorized user or an agent of an authorized user of the multi-sig user.
@@ -23,8 +23,9 @@ def main():
     abstraction = "disabled"
     timestamp = get_timestamp_ms()
 
-    # Use the human abstraction string here. Exchange.multi_sig canonicalizes this action to the wire enum value
-    # when it builds and signs the outer multi-sig payload.
+    # Must use the human abstraction string here. Exchange.multi_sig canonicalizes this action to the wire enum value
+    # when it builds and signs the outer multi-sig payload. It is expected that the different signatures need different
+    # versions of this value.
     action = {
         "type": "userSetAbstraction",
         "signatureChainId": "0x66eee",
@@ -44,7 +45,7 @@ def main():
             USER_SET_ABSTRACTION_SIGN_TYPES,
             "HyperliquidTransaction:UserSetAbstraction",
             multi_sig_user,
-            exchange.wallet.address,
+            address,
         )
         signatures.append(signature)
 
