@@ -15,6 +15,32 @@ def test_get_user_state():
     assert response["marginSummary"]["accountValue"] == "1182.312496"
 
 
+def test_active_asset_data_posts_expected_payload(monkeypatch):
+    info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)
+    user = "0x0000000000000000000000000000000000000000"
+    expected_response = {
+        "user": user,
+        "coin": "ETH",
+        "leverage": {"type": "cross", "value": 20},
+        "maxTradeSzs": ("1.0", "2.0"),
+        "availableToTrade": ("3.0", "4.0"),
+        "markPx": "2000.0",
+    }
+    posted = {}
+
+    def fake_post(url_path, payload):
+        posted["url_path"] = url_path
+        posted["payload"] = payload
+        return expected_response
+
+    monkeypatch.setattr(info, "post", fake_post)
+
+    response = info.active_asset_data(user, "ETH")
+
+    assert response == expected_response
+    assert posted == {"url_path": "/info", "payload": {"type": "activeAssetData", "user": user, "coin": "ETH"}}
+
+
 @pytest.mark.vcr()
 def test_get_open_orders():
     info = Info(skip_ws=True, meta=TEST_META, spot_meta=TEST_SPOT_META)

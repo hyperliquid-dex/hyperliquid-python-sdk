@@ -1,5 +1,6 @@
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
+    ActiveAssetData,
     Any,
     Callable,
     Cloid,
@@ -126,6 +127,32 @@ class Info(API):
                 }
         """
         return self.post("/info", {"type": "clearinghouseState", "user": address, "dex": dex})
+
+    def active_asset_data(self, user: str, coin: str) -> ActiveAssetData:
+        """Retrieve a user's active data for a specific asset.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+            coin (str): Perp coin name, e.g. "ETH".
+
+        Returns:
+            {
+                user: str,
+                coin: str,
+                leverage: {
+                    type: "cross" | "isolated",
+                    value: int,
+                    rawUsd: float string  # only if type is "isolated"
+                },
+                maxTradeSzs: [float string, float string],
+                availableToTrade: [float string, float string],
+                markPx: float string,
+            }
+        """
+        return cast(ActiveAssetData, self.post("/info", {"type": "activeAssetData", "user": user, "coin": coin}))
 
     def spot_user_state(self, address: str) -> Any:
         return self.post("/info", {"type": "spotClearinghouseState", "user": address})
