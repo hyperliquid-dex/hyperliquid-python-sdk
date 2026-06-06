@@ -357,7 +357,7 @@ class Info(API):
         """
         return cast(SpotMeta, self.post("/info", {"type": "spotMeta"}))
 
-    def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
+    def spot_meta_and_asset_ctxs(self, dex: str = "") -> SpotMetaAndAssetCtxs:
         """Retrieve exchange spot asset contexts
         POST /info
         Returns:
@@ -397,7 +397,7 @@ class Info(API):
                 ]
             ]
         """
-        return cast(SpotMetaAndAssetCtxs, self.post("/info", {"type": "spotMetaAndAssetCtxs"}))
+        return cast(SpotMetaAndAssetCtxs, self.post("/info", {"type": "spotMetaAndAssetCtxs", "dex": dex}))
 
     def funding_history(self, name: str, startTime: int, endTime: Optional[int] = None) -> Any:
         """Retrieve funding history for a given coin
@@ -610,11 +610,35 @@ class Info(API):
         """
         return self.post("/info", {"type": "delegatorHistory", "user": user})
 
-    def query_order_by_oid(self, user: str, oid: int) -> Any:
-        return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid})
+    def query_order_by_oid(self, user: str, oid: int, dex: str = "") -> Any:
+        """Query order status by order ID.
 
-    def query_order_by_cloid(self, user: str, cloid: Cloid) -> Any:
-        return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw()})
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+            oid (int): Order ID.
+            dex (str): Optional DEX identifier (defaults to "" for the original DEX).
+
+        Returns:
+            Order status.
+        """
+        return self.post("/info", {"type": "orderStatus", "user": user, "oid": oid, "dex": dex})
+
+    def query_order_by_cloid(self, user: str, cloid: Cloid, dex: str = "") -> Any:
+        """Query order status by client order ID.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format.
+            cloid (Cloid): Client order ID.
+            dex (str): Optional DEX identifier (defaults to "" for the original DEX).
+
+        Returns:
+            Order status.
+        """
+        return self.post("/info", {"type": "orderStatus", "user": user, "oid": cloid.to_raw(), "dex": dex})
 
     def query_referral_state(self, user: str) -> Any:
         return self.post("/info", {"type": "referral", "user": user})
