@@ -2,13 +2,63 @@ components:
   schemas:
     FloatString:
       type: string
-      pattern: "^\\d+\\.?\\d*$"
+      description: "A numeric value represented as a string. This is commonly used in decentralized finance (DeFi) APIs to maintain full precision for large or fractional numbers."
+      pattern: "^-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?$"
+      example: "123.4567890123" # Ensures high precision is represented clearly.
+    
     Address:
       type: string
+      description: "A standard Ethereum-style wallet address."
       pattern: "^0x[a-fA-F0-9]{40}$"
+      example: "0x1A2b3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T"
+      
     AssetPosition:
       type: object
+      description: "Represents the current holdings and financial position for a specific asset."
+      required:
+        - symbol
+        - amount
+        - collateral
+      properties:
+        symbol:
+          type: string
+          description: "The trading symbol of the asset (e.g., 'ETH', 'BTC')."
+          example: "ETH"
+        amount:
+          $ref: '#/components/schemas/FloatString'
+          description: "The total quantity of the asset held."
+        collateral:
+          $ref: '#/components/schemas/FloatString'
+          description: "The amount used as collateral for leveraged positions."
+          
     MarginSummary:
       type: object
+      description: "A summary of the user's overall margin health and collateralization."
+      required:
+        - totalCollateral
+        - marginRatio
+      properties:
+        totalCollateral:
+          $ref: '#/components/schemas/FloatString'
+          description: "The total value of all assets used as collateral, denominated in USD or a reference currency."
+        marginRatio:
+          $ref: '#/components/schemas/FloatString'
+          description: "The current margin ratio (or health ratio). Lower values indicate higher risk."
+          example: "1.5234"
+        maintenanceMargin:
+          $ref: '#/components/schemas/FloatString'
+          description: "The minimum required margin to avoid liquidation."
+          
     L2Level:
       type: object
+      description: "Represents a single price level in a Level 2 (L2) order book."
+      required:
+        - price
+        - size
+      properties:
+        price:
+          $ref: '#/components/schemas/FloatString'
+          description: "The price of the order book level."
+        size:
+          $ref: '#/components/schemas/FloatString'
+          description: "The cumulative size (amount) available at this price level."
