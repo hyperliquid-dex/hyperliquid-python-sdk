@@ -4,6 +4,10 @@ class Error(Exception):
 
 class ClientError(Error):
     def __init__(self, status_code, error_code, error_message, header, error_data=None):
+        if error_code is None:
+            super().__init__(f"({status_code}) {error_message}")
+        else:
+            super().__init__(f"({status_code}, {error_code}) {error_message}")
         self.status_code = status_code
         self.error_code = error_code
         self.error_message = error_message
@@ -13,5 +17,6 @@ class ClientError(Error):
 
 class ServerError(Error):
     def __init__(self, status_code, message):
+        super().__init__(f"({status_code}) {message}")
         self.status_code = status_code
         self.message = message
