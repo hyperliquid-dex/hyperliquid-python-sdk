@@ -53,7 +53,7 @@ ActiveAssetCtxSubscription = TypedDict("ActiveAssetCtxSubscription", {"type": Li
 ActiveAssetDataSubscription = TypedDict(
     "ActiveAssetDataSubscription", {"type": Literal["activeAssetData"], "user": str, "coin": str}
 )
-# If adding new subscription types that contain coin's don't forget to handle automatically rewrite name to coin in info.subscribe
+# If adding new subscription types that contain coins, don't forget to automatically rewrite name to coin in info.subscribe
 Subscription = Union[
     AllMidsSubscription,
     BboSubscription,
