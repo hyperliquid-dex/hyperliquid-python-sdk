@@ -91,6 +91,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Perp dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the first perp dex).
         Returns:
             {
                 assetPositions: [
@@ -138,6 +140,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Perp dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the first perp dex).
         Returns: [
             {
                 coin: str,
@@ -159,6 +163,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): Perp dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the first perp dex).
         Returns: [
             {
                 children:
@@ -188,6 +194,10 @@ class Info(API):
         """Retrieve all mids for all actively traded coins.
 
         POST /info
+
+        Args:
+            dex (str): Perp dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the first perp dex).
 
         Returns:
             {
@@ -274,6 +284,10 @@ class Info(API):
         """Retrieve exchange perp metadata
 
         POST /info
+
+        Args:
+            dex (str): Perp dex name for HIP-3 builder-deployed perpetuals.
+                       Defaults to "" (the first perp dex).
 
         Returns:
             {
