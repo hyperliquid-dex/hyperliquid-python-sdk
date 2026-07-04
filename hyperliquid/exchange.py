@@ -1,6 +1,7 @@
 import json
 import logging
 import secrets
+import warnings
 
 import eth_account
 from eth_account.signers.local import LocalAccount
@@ -163,6 +164,14 @@ class Exchange(API):
     def bulk_orders(
         self, order_requests: List[OrderRequest], builder: Optional[BuilderInfo] = None, grouping: Grouping = "na"
     ) -> Any:
+        for order in order_requests:
+            if ":" in order["coin"] and order.get("cloid") is not None:
+                warnings.warn(
+                    f"cloid on HIP-3 (builder-deployed) asset {order['coin']!r} is silently rejected by the API; "
+                    "the order will not execute. Omit cloid for HIP-3 orders. See issue #251.",
+                    UserWarning,
+                    stacklevel=2,
+                )
         order_wires: List[OrderWire] = [
             order_request_to_order_wire(order, self.info.name_to_asset(order["coin"])) for order in order_requests
         ]
