@@ -359,7 +359,29 @@ class Info(API):
 
     def spot_meta_and_asset_ctxs(self) -> SpotMetaAndAssetCtxs:
         """Retrieve exchange spot asset contexts
+
         POST /info
+
+        Note:
+            The two returned lists are NOT parallel. Pair a universe entry with its context
+            through the entry's own `index` field, never through its position:
+
+                meta, ctxs = info.spot_meta_and_asset_ctxs()
+                ctx = ctxs[entry["index"]]        # correct
+                ctx = ctxs[i]                     # wrong for i >= 71
+
+            On mainnet (2026-08-10) `universe` has 324 entries and `assetCtxs` has 715.
+            Positions 0-70 happen to line up, so zipping the two looks correct on every asset
+            you are likely to eyeball, and returns another asset's prices past that point:
+            at position 71 (`@72`) zipping gives markPx 1.0 where the asset's own context
+            says 0.72847.
+
+            Note this differs from `meta_and_asset_ctxs()` (perps), where the two lists ARE
+            parallel and the asset id IS the list position. This class already encodes the
+            distinction in `__init__` — perps use `enumerate(...)`, spot uses
+            `spot_info["index"] + 10000` — so carrying the perp intuition over to spot is
+            the mistake this note exists to prevent.
+
         Returns:
             [
                 {
