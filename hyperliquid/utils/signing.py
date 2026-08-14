@@ -465,6 +465,7 @@ def recover_agent_or_user_from_l1_action(action, signature, active_pool, nonce, 
 
 
 def recover_user_from_user_signed_action(action, signature, payload_types, primary_type, is_mainnet):
+    action["signatureChainId"] = "0x66eee"
     action["hyperliquidChain"] = "Mainnet" if is_mainnet else "Testnet"
     data = user_signed_payload(primary_type, payload_types, action)
     structured_data = encode_typed_data(full_message=data)

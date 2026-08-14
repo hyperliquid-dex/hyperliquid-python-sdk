@@ -4,6 +4,7 @@ from eth_utils import to_hex
 
 from hyperliquid.exchange import _multi_sig_payload_action
 from hyperliquid.utils.signing import (
+    USD_SEND_SIGN_TYPES,
     OrderRequest,
     ScheduleCancelAction,
     action_hash,
@@ -11,6 +12,7 @@ from hyperliquid.utils.signing import (
     float_to_int_for_hashing,
     order_request_to_order_wire,
     order_wires_to_order_action,
+    recover_user_from_user_signed_action,
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
@@ -288,3 +290,25 @@ def test_schedule_cancel_action():
     assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
     assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
     assert signature_testnet["v"] == 27
+
+
+def test_user_signed_action_recover_roundtrip():
+    # Regression test: recover_user_from_user_signed_action must set signatureChainId
+    # symmetrically with sign_user_signed_action. A verifier reconstructs the action
+    # without signatureChainId, so recover has to add it -- otherwise user_signed_payload
+    # raises KeyError: 'signatureChainId'.
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+
+    def fresh_action():
+        return {
+            "destination": "0x0000000000000000000000000000000000000001",
+            "amount": "1",
+            "time": 1677777606040,
+        }
+
+    for is_mainnet in (True, False):
+        signature = sign_usd_transfer_action(wallet, fresh_action(), is_mainnet)
+        recovered = recover_user_from_user_signed_action(
+            fresh_action(), signature, USD_SEND_SIGN_TYPES, "HyperliquidTransaction:UsdSend", is_mainnet
+        )
+        assert recovered == wallet.address
