@@ -665,7 +665,7 @@ class Exchange(API):
 
     def convert_to_multi_sig_user(self, authorized_users: List[str], threshold: int) -> Any:
         timestamp = get_timestamp_ms()
-        authorized_users = sorted(authorized_users)
+        authorized_users = sorted(authorized_user.lower() for authorized_user in authorized_users)
         signers = {
             "authorizedUsers": authorized_users,
             "threshold": threshold,
