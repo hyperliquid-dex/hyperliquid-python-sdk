@@ -9,6 +9,7 @@ from hyperliquid.utils.signing import (
     action_hash,
     construct_phantom_agent,
     float_to_int_for_hashing,
+    float_to_wire,
     order_request_to_order_wire,
     order_wires_to_order_action,
     sign_l1_action,
@@ -184,6 +185,15 @@ def test_float_to_int_for_hashing():
     assert float_to_int_for_hashing(1.033) == 103300000
     with pytest.raises(ValueError):
         float_to_int_for_hashing(0.000012312312)
+
+
+def test_float_to_wire_normalizes_negative_zero():
+    assert float_to_wire(-0.0) == "0"
+    assert float_to_wire(0.0) == "0"
+    assert float_to_wire(-1e-13) == "0"
+    assert float_to_wire(-1.5) == "-1.5"
+    assert float_to_wire(1.5) == "1.5"
+    assert float_to_wire(0.00001231) == "0.00001231"
 
 
 def test_sign_usd_transfer_action():
