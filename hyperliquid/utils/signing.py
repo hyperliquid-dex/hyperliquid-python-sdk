@@ -273,7 +273,11 @@ def add_multi_sig_types(sign_types):
                 }
             )
     if not enriched:
-        print('"hyperliquidChain" missing from sign_types. sign_types was not enriched with multi-sig signing types')
+        raise ValueError(
+            '"hyperliquidChain" missing from sign_types, so sign_types cannot be enriched with the multi-sig '
+            "signing types. Without payloadMultiSigUser and outerSigner the signature is not bound to the "
+            "multi-sig user or the outer signer and will not be accepted."
+        )
     return enriched_sign_types
 
 

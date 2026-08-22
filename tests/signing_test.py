@@ -4,14 +4,17 @@ from eth_utils import to_hex
 
 from hyperliquid.exchange import _multi_sig_payload_action
 from hyperliquid.utils.signing import (
+    USD_SEND_SIGN_TYPES,
     OrderRequest,
     ScheduleCancelAction,
     action_hash,
+    add_multi_sig_types,
     construct_phantom_agent,
     float_to_int_for_hashing,
     order_request_to_order_wire,
     order_wires_to_order_action,
     sign_l1_action,
+    sign_multi_sig_user_signed_action_payload,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
 )
@@ -226,6 +229,43 @@ def test_multi_sig_user_set_abstraction_payload_uses_wire_enum():
 
     assert payload_action["abstraction"] == "i"
     assert action["abstraction"] == "disabled"
+
+
+def test_add_multi_sig_types_rejects_types_without_hyperliquid_chain():
+    # eth_account ignores message keys that have no matching entry in the EIP-712 types, so if the
+    # multi-sig fields are silently left out the resulting signature is byte-identical to a plain
+    # single-signer one and carries no binding to the multi-sig user or the outer signer.
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    types_without_chain = [t for t in USD_SEND_SIGN_TYPES if t["name"] != "hyperliquidChain"]
+    action = {
+        "destination": "0x5e9ee1089755c3435139848e47e6635505d5a13a",
+        "amount": "1",
+        "time": 1687816341423,
+    }
+
+    with pytest.raises(ValueError):
+        add_multi_sig_types(types_without_chain)
+
+    with pytest.raises(ValueError):
+        sign_multi_sig_user_signed_action_payload(
+            wallet,
+            action,
+            False,
+            types_without_chain,
+            "HyperliquidTransaction:UsdSend",
+            "0x0000000000000000000000000000000000000005",
+            wallet.address,
+        )
+
+    enriched = add_multi_sig_types(USD_SEND_SIGN_TYPES)
+    assert [t["name"] for t in enriched] == [
+        "hyperliquidChain",
+        "payloadMultiSigUser",
+        "outerSigner",
+        "destination",
+        "amount",
+        "time",
+    ]
 
 
 def test_create_sub_account_action():
