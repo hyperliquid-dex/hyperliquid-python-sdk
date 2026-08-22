@@ -1,8 +1,10 @@
+import json
+
 import eth_account
 import pytest
 from eth_utils import to_hex
 
-from hyperliquid.exchange import _multi_sig_payload_action
+from hyperliquid.exchange import Exchange, _multi_sig_payload_action
 from hyperliquid.utils.signing import (
     OrderRequest,
     ScheduleCancelAction,
@@ -226,6 +228,39 @@ def test_multi_sig_user_set_abstraction_payload_uses_wire_enum():
 
     assert payload_action["abstraction"] == "i"
     assert action["abstraction"] == "disabled"
+
+
+def test_convert_to_multi_sig_user_signers_do_not_depend_on_input_casing():
+    # The sort exists to give the signers list a canonical order, but sorting mixed-case
+    # addresses orders on ASCII, so the result depends on how the caller cased its input.
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    checksummed = [
+        "0xB1C4b0f9E7fD0B9d2F0c0F6C0B0D0E0F0A0b0C0D",
+        "0xa2c4B0F9e7Fd0b9D2f0C0f6c0b0d0e0f0A0B0c0D",
+    ]
+    expected = sorted(authorized_user.lower() for authorized_user in checksummed)
+
+    posted = {}
+
+    class CapturingExchange(Exchange):
+        def post(self, url_path, payload=None):
+            posted.update(payload)
+            return {}
+
+    def signers_for(authorized_users):
+        posted.clear()
+        exchange = CapturingExchange(
+            wallet,
+            "https://api.hyperliquid-testnet.xyz",
+            meta={"universe": []},
+            spot_meta={"universe": [], "tokens": []},
+        )
+        exchange.convert_to_multi_sig_user(authorized_users, 2)
+        return json.loads(posted["action"]["signers"])["authorizedUsers"]
+
+    assert signers_for(checksummed) == expected
+    assert signers_for(expected) == expected
+    assert signers_for(list(reversed(checksummed))) == expected
 
 
 def test_create_sub_account_action():
