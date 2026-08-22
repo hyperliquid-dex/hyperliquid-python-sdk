@@ -2,8 +2,9 @@ import eth_account
 import pytest
 from eth_utils import to_hex
 
-from hyperliquid.exchange import _multi_sig_payload_action
+from hyperliquid.exchange import Exchange, _multi_sig_payload_action
 from hyperliquid.utils.signing import (
+    MULTI_SIG_ENVELOPE_SIGN_TYPES,
     OrderRequest,
     ScheduleCancelAction,
     action_hash,
@@ -11,6 +12,7 @@ from hyperliquid.utils.signing import (
     float_to_int_for_hashing,
     order_request_to_order_wire,
     order_wires_to_order_action,
+    recover_user_from_user_signed_action,
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
@@ -226,6 +228,63 @@ def test_multi_sig_user_set_abstraction_payload_uses_wire_enum():
 
     assert payload_action["abstraction"] == "i"
     assert action["abstraction"] == "disabled"
+
+
+def test_multi_sig_uses_the_same_vault_address_it_signs():
+    # The outer multi-sig signature commits to the vault address via action_hash, so the
+    # vaultAddress that goes out in the payload has to be the one that was signed.
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    vault_address = "0x1719884eb866cb12b2686399699950d60822350c"
+    nonce = 1700000000000
+    inner_action = {"type": "cancel", "cancels": [{"a": 4, "o": 1}]}
+
+    posted = {}
+
+    class CapturingExchange(Exchange):
+        def post(self, url_path, payload=None):
+            posted.update(payload)
+            return {}
+
+    for constructor_vault, argument_vault in [
+        (None, vault_address),
+        (vault_address, None),
+        (vault_address, vault_address),
+        (None, None),
+    ]:
+        posted.clear()
+        exchange = CapturingExchange(
+            wallet,
+            "https://api.hyperliquid-testnet.xyz",
+            meta={"universe": []},
+            spot_meta={"universe": [], "tokens": []},
+            vault_address=constructor_vault,
+        )
+        exchange.multi_sig(
+            "0x0000000000000000000000000000000000000005",
+            inner_action,
+            [],
+            nonce,
+            vault_address=argument_vault,
+        )
+
+        # Recompute the outer signature the way a verifier would: from what was actually posted.
+        action_without_tag = posted["action"].copy()
+        del action_without_tag["type"]
+        envelope = {
+            "multiSigActionHash": action_hash(
+                action_without_tag, posted["vaultAddress"], posted["nonce"], posted["expiresAfter"]
+            ),
+            "nonce": posted["nonce"],
+            "signatureChainId": "0x66eee",
+        }
+        recovered = recover_user_from_user_signed_action(
+            envelope,
+            posted["signature"],
+            MULTI_SIG_ENVELOPE_SIGN_TYPES,
+            "HyperliquidTransaction:SendMultiSig",
+            False,
+        )
+        assert recovered.lower() == wallet.address.lower()
 
 
 def test_create_sub_account_action():

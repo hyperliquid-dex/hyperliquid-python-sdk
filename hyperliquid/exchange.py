@@ -98,12 +98,14 @@ class Exchange(API):
         self.info = Info(base_url, True, meta, spot_meta, perp_dexs, timeout)
         self.expires_after: Optional[int] = None
 
-    def _post_action(self, action, signature, nonce):
+    def _post_action(self, action, signature, nonce, vault_address=None):
+        if vault_address is None:
+            vault_address = self.vault_address
         payload = {
             "action": action,
             "nonce": nonce,
             "signature": signature,
-            "vaultAddress": self.vault_address if action["type"] not in ["usdClassTransfer", "sendAsset"] else None,
+            "vaultAddress": vault_address if action["type"] not in ["usdClassTransfer", "sendAsset"] else None,
             "expiresAfter": self.expires_after,
         }
         logging.debug(payload)
@@ -1098,6 +1100,8 @@ class Exchange(API):
 
     def multi_sig(self, multi_sig_user, inner_action, signatures, nonce, vault_address=None):
         multi_sig_user = multi_sig_user.lower()
+        if vault_address is None:
+            vault_address = self.vault_address
         payload_action = _multi_sig_payload_action(inner_action)
         multi_sig_action = {
             "type": "multiSig",
@@ -1122,6 +1126,7 @@ class Exchange(API):
             multi_sig_action,
             signature,
             nonce,
+            vault_address,
         )
 
     def use_big_blocks(self, enable: bool) -> Any:
