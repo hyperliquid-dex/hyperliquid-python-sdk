@@ -476,10 +476,11 @@ def float_to_wire(x: float) -> str:
     rounded = f"{x:.8f}"
     if abs(float(rounded) - x) >= 1e-12:
         raise ValueError("float_to_wire causes rounding", x)
-    if rounded == "-0":
-        rounded = "0"
     normalized = Decimal(rounded).normalize()
-    return f"{normalized:f}"
+    wire = f"{normalized:f}"
+    if wire == "-0":
+        wire = "0"
+    return wire
 
 
 def float_to_int_for_hashing(x: float) -> int:
