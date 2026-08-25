@@ -123,8 +123,8 @@ class Exchange(API):
             px = float(self.info.all_mids(dex)[coin])
 
         asset = self.info.coin_to_asset[coin]
-        # spot assets start at 10000
-        is_spot = asset >= 10_000
+        # spot assets start at 10000 and builder-deployed perp dex assets start at 110000
+        is_spot = 10_000 <= asset < 110_000
 
         # Calculate Slippage
         px *= (1 + slippage) if is_buy else (1 - slippage)
