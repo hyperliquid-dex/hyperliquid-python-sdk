@@ -55,3 +55,11 @@ def test_slippage_price_builder_deployed_perp():
     exchange.info.coin_to_asset["test:ABC"] = 110000
     exchange.info.asset_to_sz_decimals[110000] = 0
     assert exchange._slippage_price("test:ABC", True, 0.05, 0.0012345678) == 0.001296
+
+    # The asset id one below is the last spot id and must keep spot precision, so the two
+    # assertions pin the 110000 boundary from both sides: a fix that moved or dropped the
+    # upper bound would flip exactly one of them.
+    exchange.info.name_to_coin["@109999"] = "@109999"
+    exchange.info.coin_to_asset["@109999"] = 109999
+    exchange.info.asset_to_sz_decimals[109999] = 0
+    assert exchange._slippage_price("@109999", True, 0.05, 0.0012345678) == 0.0012963
