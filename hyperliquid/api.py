@@ -35,9 +35,12 @@ class API:
             try:
                 err = json.loads(response.text)
             except JSONDecodeError:
-                raise ClientError(status_code, None, response.text, None, response.headers)
-            if err is None:
-                raise ClientError(status_code, None, response.text, None, response.headers)
-            error_data = err.get("data")
-            raise ClientError(status_code, err["code"], err["msg"], response.headers, error_data)
+                err = None
+            # A 4xx body is only useful when it is an object carrying both keys.
+            # Anything else (plain text, a bare JSON scalar or array, or an object
+            # from an intermediary with a different schema) still has to surface as
+            # a ClientError, with the raw body as the message.
+            if not isinstance(err, dict) or "code" not in err or "msg" not in err:
+                raise ClientError(status_code, None, response.text, response.headers, None)
+            raise ClientError(status_code, err["code"], err["msg"], response.headers, err.get("data"))
         raise ServerError(status_code, response.text)
