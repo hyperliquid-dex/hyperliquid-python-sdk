@@ -127,7 +127,11 @@ class WebsocketManager(threading.Thread):
     def on_open(self, _ws):
         logging.debug("on_open")
         self.ws_ready = True
-        for subscription, active_subscription in self.queued_subscriptions:
+        # Drain the queue before replaying it: subscribe() consults it for the
+        # single-subscription channels, and leaving entries behind would also
+        # replay them again on a later on_open.
+        queued_subscriptions, self.queued_subscriptions = self.queued_subscriptions, []
+        for subscription, active_subscription in queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
 
     def subscribe(
@@ -136,16 +140,19 @@ class WebsocketManager(threading.Thread):
         if subscription_id is None:
             self.subscription_id_counter += 1
             subscription_id = self.subscription_id_counter
+        identifier = subscription_to_identifier(subscription)
+        if identifier == "userEvents" or identifier == "orderUpdates":
+            # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
+            # Queued subscriptions count too, otherwise the duplicate is only caught while on_open replays the
+            # queue, where it aborts the replay and silently drops every subscription behind it.
+            already_queued = any(subscription_to_identifier(s) == identifier for s, _ in self.queued_subscriptions)
+            if len(self.active_subscriptions[identifier]) != 0 or already_queued:
+                raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
         if not self.ws_ready:
             logging.debug("enqueueing subscription")
             self.queued_subscriptions.append((subscription, ActiveSubscription(callback, subscription_id)))
         else:
             logging.debug("subscribing")
-            identifier = subscription_to_identifier(subscription)
-            if identifier == "userEvents" or identifier == "orderUpdates":
-                # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
-                if len(self.active_subscriptions[identifier]) != 0:
-                    raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
             self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id))
             self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
         return subscription_id
