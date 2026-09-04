@@ -91,6 +91,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): HIP-3 DEX name, e.g. "xyz". Empty string ""
+                            targets the standard Hyperliquid perp DEX.
         Returns:
             {
                 assetPositions: [
@@ -138,6 +140,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): HIP-3 DEX name, e.g. "xyz". Empty string ""
+                            targets the standard Hyperliquid perp DEX.
         Returns: [
             {
                 coin: str,
@@ -159,6 +163,8 @@ class Info(API):
         Args:
             address (str): Onchain address in 42-character hexadecimal format;
                             e.g. 0x0000000000000000000000000000000000000000.
+            dex (str): HIP-3 DEX name, e.g. "xyz". Empty string ""
+                            targets the standard Hyperliquid perp DEX.
         Returns: [
             {
                 children:
@@ -189,6 +195,9 @@ class Info(API):
 
         POST /info
 
+        Args:
+            dex (str): HIP-3 DEX name, e.g. "xyz". Empty string ""
+                            targets the standard Hyperliquid perp DEX.
         Returns:
             {
               ATOM: float string,
@@ -275,6 +284,9 @@ class Info(API):
 
         POST /info
 
+        Args:
+            dex (str): HIP-3 DEX name, e.g. "xyz". Empty string ""
+                            targets the standard Hyperliquid perp DEX.
         Returns:
             {
                 universe: [
