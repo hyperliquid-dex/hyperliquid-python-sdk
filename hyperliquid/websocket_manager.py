@@ -82,6 +82,9 @@ class WebsocketManager(threading.Thread):
         self.queued_subscriptions: List[Tuple[Subscription, ActiveSubscription]] = []
         self.active_subscriptions: Dict[str, List[ActiveSubscription]] = defaultdict(list)
         ws_url = "ws" + base_url[len("http") :] + "/ws"
+        # Guards ws_ready, queued_subscriptions and active_subscriptions. Reentrant because
+        # on_open replays the queue through subscribe() while already holding it.
+        self.lock = threading.RLock()
         self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
         self.ping_sender = threading.Thread(target=self.send_ping)
         self.stop_event = threading.Event()
@@ -126,44 +129,52 @@ class WebsocketManager(threading.Thread):
 
     def on_open(self, _ws):
         logging.debug("on_open")
-        self.ws_ready = True
-        # Drain the queue before replaying it: subscribe() consults it for the
-        # single-subscription channels, and leaving entries behind would also
-        # replay them again on a later on_open.
-        queued_subscriptions, self.queued_subscriptions = self.queued_subscriptions, []
-        for subscription, active_subscription in queued_subscriptions:
-            self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
+        # The whole handoff is one critical section. A caller reaching subscribe() between the
+        # swap and the replay would otherwise see an empty queue and an empty active map, claim
+        # a single-subscription channel, and make the replay raise -- which aborts it and drops
+        # every queued subscription behind the one that raised.
+        with self.lock:
+            self.ws_ready = True
+            # Drain the queue before replaying it: subscribe() consults it for the
+            # single-subscription channels, and leaving entries behind would also
+            # replay them again on a later on_open.
+            queued_subscriptions, self.queued_subscriptions = self.queued_subscriptions, []
+            for subscription, active_subscription in queued_subscriptions:
+                self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
 
     def subscribe(
         self, subscription: Subscription, callback: Callable[[Any], None], subscription_id: Optional[int] = None
     ) -> int:
-        if subscription_id is None:
-            self.subscription_id_counter += 1
-            subscription_id = self.subscription_id_counter
-        identifier = subscription_to_identifier(subscription)
-        if identifier == "userEvents" or identifier == "orderUpdates":
-            # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
-            # Queued subscriptions count too, otherwise the duplicate is only caught while on_open replays the
-            # queue, where it aborts the replay and silently drops every subscription behind it.
-            already_queued = any(subscription_to_identifier(s) == identifier for s, _ in self.queued_subscriptions)
-            if len(self.active_subscriptions[identifier]) != 0 or already_queued:
-                raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
-        if not self.ws_ready:
-            logging.debug("enqueueing subscription")
-            self.queued_subscriptions.append((subscription, ActiveSubscription(callback, subscription_id)))
-        else:
-            logging.debug("subscribing")
-            self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id))
-            self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
-        return subscription_id
+        with self.lock:
+            if subscription_id is None:
+                self.subscription_id_counter += 1
+                subscription_id = self.subscription_id_counter
+            identifier = subscription_to_identifier(subscription)
+            if identifier == "userEvents" or identifier == "orderUpdates":
+                # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
+                # Queued subscriptions count too, otherwise the duplicate is only caught while on_open replays the
+                # queue, where it aborts the replay and silently drops every subscription behind it.
+                already_queued = any(subscription_to_identifier(s) == identifier for s, _ in self.queued_subscriptions)
+                if len(self.active_subscriptions[identifier]) != 0 or already_queued:
+                    raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
+            if not self.ws_ready:
+                logging.debug("enqueueing subscription")
+                self.queued_subscriptions.append((subscription, ActiveSubscription(callback, subscription_id)))
+            else:
+                logging.debug("subscribing")
+                self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id))
+                self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
+            return subscription_id
 
     def unsubscribe(self, subscription: Subscription, subscription_id: int) -> bool:
         if not self.ws_ready:
             raise NotImplementedError("Can't unsubscribe before websocket connected")
-        identifier = subscription_to_identifier(subscription)
-        active_subscriptions = self.active_subscriptions[identifier]
-        new_active_subscriptions = [x for x in active_subscriptions if x.subscription_id != subscription_id]
-        if len(new_active_subscriptions) == 0:
-            self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
-        self.active_subscriptions[identifier] = new_active_subscriptions
-        return len(active_subscriptions) != len(new_active_subscriptions)
+        with self.lock:
+            identifier = subscription_to_identifier(subscription)
+            active_subscriptions = self.active_subscriptions[identifier]
+            new_active_subscriptions = [x for x in active_subscriptions if x.subscription_id != subscription_id]
+            if len(new_active_subscriptions) == 0:
+                self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
+            # Read-modify-write: without the lock a concurrent subscribe's append is lost here.
+            self.active_subscriptions[identifier] = new_active_subscriptions
+            return len(active_subscriptions) != len(new_active_subscriptions)
