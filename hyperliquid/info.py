@@ -306,19 +306,20 @@ class Info(API):
                         ...
                     ]
                 },
-            [
-                {
-                    "dayNtlVlm": float string,
-                    "funding": float string,
-                    "impactPxs": Optional([float string, float string]),
-                    "markPx": Optional(float string),
-                    "midPx": Optional(float string),
-                    "openInterest": float string,
-                    "oraclePx": float string,
-                    "premium": Optional(float string),
-                    "prevDayPx": float string
-                },
-                ...
+                [
+                    {
+                        "dayNtlVlm": float string,
+                        "funding": float string,
+                        "impactPxs": Optional([float string, float string]),
+                        "markPx": Optional(float string),
+                        "midPx": Optional(float string),
+                        "openInterest": float string,
+                        "oraclePx": float string,
+                        "premium": Optional(float string),
+                        "prevDayPx": float string
+                    },
+                    ...
+                ]
             ]
         """
         return self.post("/info", {"type": "metaAndAssetCtxs"})
