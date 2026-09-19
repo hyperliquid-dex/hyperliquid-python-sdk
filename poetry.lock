@@ -950,26 +950,27 @@ test = ["pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
 [[package]]
 name = "eth-utils"
-version = "5.2.0"
+version = "6.0.0"
 description = "eth-utils: Common utility functions for python code that interacts with Ethereum"
 category = "main"
 optional = false
-python-versions = "<4,>=3.8"
+python-versions = "<4,>=3.10"
 files = [
-    {file = "eth_utils-5.2.0-py3-none-any.whl", hash = "sha256:4d43eeb6720e89a042ad5b28d4b2111630ae764f444b85cbafb708d7f076da10"},
-    {file = "eth_utils-5.2.0.tar.gz", hash = "sha256:17e474eb654df6e18f20797b22c6caabb77415a996b3ba0f3cc8df3437463134"},
+    {file = "eth_utils-6.0.0-py3-none-any.whl", hash = "sha256:63cf48ee32c45541cb5748751909a8345c470432fb6f0fed4bd7c53fd6400469"},
+    {file = "eth_utils-6.0.0.tar.gz", hash = "sha256:eb54b2f82dd300d3142c49a89da195e823f5e5284d43203593f87c67bad92a96"},
 ]
 
 [package.dependencies]
 cytoolz = {version = ">=0.10.1", markers = "implementation_name == \"cpython\""}
 eth-hash = ">=0.3.1"
 eth-typing = ">=5.0.0"
+pydantic = ">=2.0.0,<3"
 toolz = {version = ">0.8.2", markers = "implementation_name == \"pypy\""}
 
 [package.extras]
-dev = ["build (>=0.9.0)", "bump-my-version (>=0.19.0)", "eth-hash[pycryptodome]", "hypothesis (>=4.43.0)", "ipython", "mypy (==1.10.0)", "pre-commit (>=3.4.0)", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)", "sphinx (>=6.0.0)", "sphinx-autobuild (>=2021.3.14)", "sphinx-rtd-theme (>=1.0.0)", "towncrier (>=24,<25)", "tox (>=4.0.0)", "twine", "wheel"]
-docs = ["sphinx (>=6.0.0)", "sphinx-autobuild (>=2021.3.14)", "sphinx-rtd-theme (>=1.0.0)", "towncrier (>=24,<25)"]
-test = ["hypothesis (>=4.43.0)", "mypy (==1.10.0)", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
+dev = ["build (>=0.9.0)", "bump_my_version (>=0.19.0)", "eth-hash[pycryptodome]", "hypothesis (>=4.43.0)", "ipython", "mypy (==1.18.2)", "mypy (==1.18.2)", "pre-commit (>=3.4.0)", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)", "sphinx (>=6.0.0)", "sphinx-autobuild (>=2021.3.14)", "sphinx_rtd_theme (>=1.0.0)", "towncrier (>=24,<25)", "tox (>=4.0.0)", "twine", "wheel (>=0.38.1)"]
+docs = ["sphinx (>=6.0.0)", "sphinx-autobuild (>=2021.3.14)", "sphinx_rtd_theme (>=1.0.0)", "towncrier (>=24,<25)"]
+test = ["hypothesis (>=4.43.0)", "mypy (==1.18.2)", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
 [[package]]
 name = "exceptiongroup"
@@ -2755,7 +2756,7 @@ files = [
 [package.dependencies]
 PyYAML = "*"
 urllib3 = [
-    {version = "<2", markers = "python_version < \"3.10\" or platform_python_implementation == \"PyPy\""},
+    {version = "<2", markers = "platform_python_implementation == \"PyPy\""},
     {version = "*", markers = "platform_python_implementation != \"PyPy\" and python_version >= \"3.10\""},
 ]
 wrapt = "*"
@@ -2990,5 +2991,5 @@ propcache = ">=0.2.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9"
-content-hash = "2c609b4f0c3982166fd23ca35e7e9a4ba3afcedd03f2e9599c607fe3a29ccda5"
+python-versions = "^3.10"
+content-hash = "ba813710fae0094f51d2763ebbed74e2071f3a0dc5ff3a7b2f10e2fc588fec59"
