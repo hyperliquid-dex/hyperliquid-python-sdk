@@ -78,7 +78,19 @@ L2BookMsg = TypedDict("L2BookMsg", {"channel": Literal["l2Book"], "data": L2Book
 BboData = TypedDict("BboData", {"coin": str, "time": int, "bbo": Tuple[Optional[L2Level], Optional[L2Level]]})
 BboMsg = TypedDict("BboMsg", {"channel": Literal["bbo"], "data": BboData})
 PongMsg = TypedDict("PongMsg", {"channel": Literal["pong"]})
-Trade = TypedDict("Trade", {"coin": str, "side": Side, "px": str, "sz": int, "hash": str, "time": int})
+Trade = TypedDict(
+    "Trade",
+    {
+        "coin": str,
+        "side": Side,
+        "px": str,
+        "sz": str,
+        "hash": str,
+        "time": int,
+        "tid": int,
+        "users": Tuple[str, str],
+    },
+)
 CrossLeverage = TypedDict(
     "CrossLeverage",
     {
