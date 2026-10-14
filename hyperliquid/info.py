@@ -1,5 +1,6 @@
 from hyperliquid.api import API
 from hyperliquid.utils.types import (
+    ActiveAssetData,
     Any,
     Callable,
     Cloid,
@@ -761,6 +762,35 @@ class Info(API):
             ]
         """
         return self.post("/info", {"type": "extraAgents", "user": user})
+
+    def user_active_asset_data(self, user: str, name: str) -> ActiveAssetData:
+        """Retrieve a user's leverage and trading limits for a given coin.
+
+        POST /info
+
+        Args:
+            user (str): Onchain address in 42-character hexadecimal format;
+                        e.g. 0x0000000000000000000000000000000000000000.
+            name (str): Coin to retrieve active asset data for.
+
+        Returns:
+            {
+                user: str,
+                coin: str,
+                leverage: {
+                    type: "cross" | "isolated",
+                    value: int,
+                    rawUsd: float string  # only if type is "isolated"
+                },
+                maxTradeSzs: [float string, float string],
+                availableToTrade: [float string, float string],
+                markPx: float string
+            }
+        """
+        return cast(
+            ActiveAssetData,
+            self.post("/info", {"type": "activeAssetData", "user": user, "coin": self.name_to_coin[name]}),
+        )
 
     def _remap_coin_subscription(self, subscription: Subscription) -> None:
         if (

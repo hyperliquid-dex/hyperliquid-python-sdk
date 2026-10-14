@@ -257,3 +257,15 @@ def test_extra_agents():
         assert "name" in agent, "Each agent should have a 'name' field"
         assert "address" in agent, "Each agent should have an 'address' field"
         assert "validUntil" in agent, "Each agent should have a 'validUntil' field"
+
+
+@pytest.mark.vcr()
+def test_user_active_asset_data():
+    info = Info(skip_ws=True, spot_meta=TEST_SPOT_META)
+    response = info.user_active_asset_data(user="0x5e9ee1089755c3435139848e47e6635505d5a13a", name="BTC")
+    assert response["user"].lower() == "0x5e9ee1089755c3435139848e47e6635505d5a13a"
+    assert response["coin"] == "BTC"
+    assert response["leverage"]["type"] in ("cross", "isolated")
+    assert isinstance(response["leverage"]["value"], int)
+    for key in ["maxTradeSzs", "availableToTrade", "markPx"]:
+        assert key in response.keys()
