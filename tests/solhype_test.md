@@ -48,6 +48,7 @@
 | Area | Current State |
 |---|---|
 | Overall maturity | `v0.1.0-alpha` — experimental, interfaces and configs may change without notice |
+| Test Wallet | `HYPE319HzKBUQdoyj1KXXWE3Q7W86b1KiEAYvefuTRVJ` |
 | Recommended mode | `paper` first, then `testnet`. **Do not run `live` with funds you cannot afford to lose completely** |
 | Strategies | Under evaluation. No strategy has a proven or guaranteed edge |
 | Risk engine | Under active testing. Default limits are conservative starting points, not validated values |
