@@ -2,7 +2,7 @@ import eth_account
 import pytest
 from eth_utils import to_hex
 
-from hyperliquid.exchange import _multi_sig_payload_action
+from hyperliquid.exchange import Exchange, _multi_sig_payload_action
 from hyperliquid.utils.signing import (
     OrderRequest,
     ScheduleCancelAction,
@@ -11,6 +11,7 @@ from hyperliquid.utils.signing import (
     float_to_int_for_hashing,
     order_request_to_order_wire,
     order_wires_to_order_action,
+    recover_agent_or_user_from_l1_action,
     sign_l1_action,
     sign_usd_transfer_action,
     sign_withdraw_from_bridge_action,
@@ -288,3 +289,59 @@ def test_schedule_cancel_action():
     assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
     assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
     assert signature_testnet["v"] == 27
+
+
+def _exchange_with_captured_post(wallet):
+    exchange = Exchange.__new__(Exchange)
+    exchange.wallet = wallet
+    exchange.base_url = "https://api.hyperliquid-testnet.xyz"
+    exchange.expires_after = None
+    exchange.vault_address = None
+    captured = {}
+
+    def _post_action(action, signature, nonce):
+        captured["action"] = action
+        captured["signature"] = signature
+        captured["nonce"] = nonce
+        return {"captured": True}
+
+    exchange._post_action = _post_action
+    return exchange, captured
+
+
+def _assert_signature_verifies_as_node_sees_it(wallet, captured):
+    # The node lowercases embedded address strings before computing the L1
+    # action hash, so recover the signer from the lowercased action.
+    action = dict(captured["action"])
+    for field in ("vaultAddress", "subAccountUser"):
+        if field in action:
+            action[field] = action[field].lower()
+    recovered = recover_agent_or_user_from_l1_action(
+        action, captured["signature"], None, captured["nonce"], None, False
+    )
+    assert recovered == wallet.address
+
+
+def test_vault_usd_transfer_lowercases_checksummed_vault_address():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    exchange, captured = _exchange_with_captured_post(wallet)
+    exchange.vault_usd_transfer("0xdFc24B077bc1425A03F8D9810F644F1CBFDfD5e5", True, 10)
+    assert captured["action"]["vaultAddress"] == "0xdfc24b077bc1425a03f8d9810f644f1cbfdfd5e5"
+    _assert_signature_verifies_as_node_sees_it(wallet, captured)
+
+
+def test_sub_account_transfer_lowercases_checksummed_sub_account_user():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    exchange, captured = _exchange_with_captured_post(wallet)
+    exchange.sub_account_transfer("0x1D9470D4B963F552E6F671A81619D395877bF409", True, 10)
+    assert captured["action"]["subAccountUser"] == "0x1d9470d4b963f552e6f671a81619d395877bf409"
+    _assert_signature_verifies_as_node_sees_it(wallet, captured)
+
+
+def test_sub_account_spot_transfer_lowercases_checksummed_sub_account_user():
+    wallet = eth_account.Account.from_key("0x0123456789012345678901234567890123456789012345678901234567890123")
+    exchange, captured = _exchange_with_captured_post(wallet)
+    exchange.sub_account_spot_transfer("0x1D9470D4B963F552E6F671A81619D395877bF409", True, "USDC", 1.0)
+    assert captured["action"]["subAccountUser"] == "0x1d9470d4b963f552e6f671a81619d395877bf409"
+    assert captured["action"]["token"] == "USDC"
+    _assert_signature_verifies_as_node_sees_it(wallet, captured)

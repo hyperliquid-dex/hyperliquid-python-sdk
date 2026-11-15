@@ -519,7 +519,7 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
         sub_account_transfer_action = {
             "type": "subAccountTransfer",
-            "subAccountUser": sub_account_user,
+            "subAccountUser": sub_account_user.lower(),
             "isDeposit": is_deposit,
             "usd": usd,
         }
@@ -541,7 +541,7 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
         sub_account_transfer_action = {
             "type": "subAccountSpotTransfer",
-            "subAccountUser": sub_account_user,
+            "subAccountUser": sub_account_user.lower(),
             "isDeposit": is_deposit,
             "token": token,
             "amount": str(amount),
@@ -564,7 +564,7 @@ class Exchange(API):
         timestamp = get_timestamp_ms()
         vault_transfer_action = {
             "type": "vaultTransfer",
-            "vaultAddress": vault_address,
+            "vaultAddress": vault_address.lower(),
             "isDeposit": is_deposit,
             "usd": usd,
         }
