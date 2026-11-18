@@ -36,8 +36,9 @@ class API:
                 err = json.loads(response.text)
             except JSONDecodeError:
                 raise ClientError(status_code, None, response.text, None, response.headers)
-            if err is None:
+            if err is None or not isinstance(err, dict):
                 raise ClientError(status_code, None, response.text, None, response.headers)
             error_data = err.get("data")
-            raise ClientError(status_code, err["code"], err["msg"], response.headers, error_data)
+            error_message = err.get("msg") or response.text
+            raise ClientError(status_code, err.get("code"), error_message, response.headers, error_data)
         raise ServerError(status_code, response.text)
