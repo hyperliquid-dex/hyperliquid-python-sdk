@@ -10,7 +10,7 @@ repos:
     rev: v3.19.1
     hooks:
       - id: pyupgrade
-        args: [--py39-plus]
+        args: [--py310-plus]
         exclude: hyperliquid/utils/types.py$
   - repo: https://github.com/PyCQA/isort
     rev: 6.0.0
