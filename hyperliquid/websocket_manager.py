@@ -7,7 +7,15 @@ import websocket
 
 from hyperliquid.utils.types import Any, Callable, Dict, List, NamedTuple, Optional, Subscription, Tuple, WsMsg
 
-ActiveSubscription = NamedTuple("ActiveSubscription", [("callback", Callable[[Any], None]), ("subscription_id", int)])
+ActiveSubscription = NamedTuple(
+    "ActiveSubscription",
+    [("callback", Callable[[Any], None]), ("subscription_id", int), ("subscription", Subscription)],
+)
+
+# Delay in seconds between websocket reconnect attempts. The server
+# disconnects periodically and without announcement, so the manager must
+# re-establish the connection on its own instead of going dark.
+RECONNECT_DELAY_SECONDS = 5
 
 
 def subscription_to_identifier(subscription: Subscription) -> str:
@@ -82,20 +90,27 @@ class WebsocketManager(threading.Thread):
         self.queued_subscriptions: List[Tuple[Subscription, ActiveSubscription]] = []
         self.active_subscriptions: Dict[str, List[ActiveSubscription]] = defaultdict(list)
         ws_url = "ws" + base_url[len("http") :] + "/ws"
-        self.ws = websocket.WebSocketApp(ws_url, on_message=self.on_message, on_open=self.on_open)
+        self.ws = websocket.WebSocketApp(
+            ws_url, on_message=self.on_message, on_open=self.on_open, on_close=self.on_close, on_error=self.on_error
+        )
         self.ping_sender = threading.Thread(target=self.send_ping)
         self.stop_event = threading.Event()
 
     def run(self):
         self.ping_sender.start()
-        self.ws.run_forever()
+        self.ws.run_forever(reconnect=RECONNECT_DELAY_SECONDS)
 
     def send_ping(self):
         while not self.stop_event.wait(50):
             if not self.ws.keep_running:
                 break
             logging.debug("Websocket sending ping")
-            self.ws.send(json.dumps({"method": "ping"}))
+            try:
+                self.ws.send(json.dumps({"method": "ping"}))
+            except websocket.WebSocketConnectionClosedException:
+                # The socket is down while run_forever reconnects; keep the
+                # ping thread alive so pings resume once it is back.
+                logging.debug("Websocket ping failed, connection is reconnecting")
         logging.debug("Websocket ping sender stopped")
 
     def stop(self):
@@ -127,8 +142,30 @@ class WebsocketManager(threading.Thread):
     def on_open(self, _ws):
         logging.debug("on_open")
         self.ws_ready = True
-        for subscription, active_subscription in self.queued_subscriptions:
+        # Take the queue before replaying it: subscribe() consults this list,
+        # and leaving entries in place would replay them again on the next
+        # on_open (e.g. after a reconnect).
+        queued_subscriptions, self.queued_subscriptions = self.queued_subscriptions, []
+        # Subscriptions that were already active before a reconnect are not in
+        # the queue, but the server forgot them with the old connection, so
+        # re-send them first. Snapshot before replaying the queue: replaying
+        # appends to active_subscriptions, and those must only be sent once.
+        active_subscriptions = [s for subs in self.active_subscriptions.values() for s in subs]
+        for active_subscription in active_subscriptions:
+            try:
+                self.ws.send(json.dumps({"method": "subscribe", "subscription": active_subscription.subscription}))
+            except websocket.WebSocketConnectionClosedException:
+                logging.debug("Websocket send failed while replaying subscriptions on reconnect")
+        for subscription, active_subscription in queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
+
+    def on_close(self, _ws, close_status_code, close_msg):
+        logging.debug(f"Websocket closed: {close_status_code} {close_msg}")
+        self.ws_ready = False
+
+    def on_error(self, _ws, error):
+        logging.debug(f"Websocket error: {error}")
+        self.ws_ready = False
 
     def subscribe(
         self, subscription: Subscription, callback: Callable[[Any], None], subscription_id: Optional[int] = None
@@ -138,7 +175,9 @@ class WebsocketManager(threading.Thread):
             subscription_id = self.subscription_id_counter
         if not self.ws_ready:
             logging.debug("enqueueing subscription")
-            self.queued_subscriptions.append((subscription, ActiveSubscription(callback, subscription_id)))
+            self.queued_subscriptions.append(
+                (subscription, ActiveSubscription(callback, subscription_id, subscription))
+            )
         else:
             logging.debug("subscribing")
             identifier = subscription_to_identifier(subscription)
@@ -146,8 +185,20 @@ class WebsocketManager(threading.Thread):
                 # TODO: ideally the userEvent and orderUpdates messages would include the user so that we can multiplex
                 if len(self.active_subscriptions[identifier]) != 0:
                     raise NotImplementedError(f"Cannot subscribe to {identifier} multiple times")
-            self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id))
-            self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
+            self.active_subscriptions[identifier].append(ActiveSubscription(callback, subscription_id, subscription))
+            try:
+                self.ws.send(json.dumps({"method": "subscribe", "subscription": subscription}))
+            except websocket.WebSocketConnectionClosedException:
+                # The socket dropped between the ws_ready check and the send
+                # (e.g. mid-reconnect). Queue the subscription instead of
+                # raising: it is re-sent on the next on_open.
+                logging.debug("Websocket send failed, queueing subscription")
+                self.active_subscriptions[identifier] = [
+                    x for x in self.active_subscriptions[identifier] if x.subscription_id != subscription_id
+                ]
+                self.queued_subscriptions.append(
+                    (subscription, ActiveSubscription(callback, subscription_id, subscription))
+                )
         return subscription_id
 
     def unsubscribe(self, subscription: Subscription, subscription_id: int) -> bool:
