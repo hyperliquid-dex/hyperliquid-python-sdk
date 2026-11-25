@@ -28,9 +28,6 @@ class Info(API):
     ):  # pylint: disable=too-many-locals
         super().__init__(base_url, timeout)
         self.ws_manager: Optional[WebsocketManager] = None
-        if not skip_ws:
-            self.ws_manager = WebsocketManager(self.base_url)
-            self.ws_manager.start()
 
         if spot_meta is None:
             spot_meta = self.spot_meta()
@@ -69,6 +66,10 @@ class Info(API):
             else:
                 fresh_meta = self.meta(dex=perp_dex)
                 self.set_perp_meta(fresh_meta, offset)
+
+        if not skip_ws:
+            self.ws_manager = WebsocketManager(self.base_url)
+            self.ws_manager.start()
 
     def set_perp_meta(self, meta: Meta, offset: int) -> Any:
         for asset, asset_info in enumerate(meta["universe"]):
