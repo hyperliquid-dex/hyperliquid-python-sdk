@@ -42,6 +42,8 @@ def subscription_to_identifier(subscription: Subscription) -> str:
 def ws_msg_to_identifier(ws_msg: WsMsg) -> Optional[str]:
     if ws_msg["channel"] == "pong":
         return "pong"
+    elif ws_msg["channel"] == "error":
+        return "error"
     elif ws_msg["channel"] == "allMids":
         return "allMids"
     elif ws_msg["channel"] == "l2Book":
@@ -113,6 +115,9 @@ class WebsocketManager(threading.Thread):
         identifier = ws_msg_to_identifier(ws_msg)
         if identifier == "pong":
             logging.debug("Websocket received pong")
+            return
+        if identifier == "error":
+            logging.warning(f"Websocket received error message: {message}")
             return
         if identifier is None:
             logging.debug("Websocket not handling empty message")
