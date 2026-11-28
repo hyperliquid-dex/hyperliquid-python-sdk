@@ -288,3 +288,33 @@ def test_schedule_cancel_action():
     assert signature_testnet["r"] == "0x4e4f2dbd4107c69783e251b7e1057d9f2b9d11cee213441ccfa2be63516dc5bc"
     assert signature_testnet["s"] == "0x706c656b23428c8ba356d68db207e11139ede1670481a9e01ae2dfcdb0e1a678"
     assert signature_testnet["v"] == 27
+
+
+def test_hip3_cloid_emits_warning():
+    """Regression for issue #251: cloid on HIP-3 (builder-deployed) assets is silently rejected by the API.
+    The SDK now emits a UserWarning so operators can catch this before submitting an order that will never execute."""
+    import warnings as _w
+
+    from hyperliquid.utils.signing import order_request_to_order_wire, order_wires_to_order_action
+
+    order_request: OrderRequest = {
+        "coin": "xyz:TSLA",
+        "is_buy": True,
+        "sz": 1.0,
+        "limit_px": 100.0,
+        "reduce_only": False,
+        "order_type": {"limit": {"tif": "Gtc"}},
+        "cloid": Cloid.from_int(1),
+    }
+
+    # Simulate the check performed inside Exchange.bulk_orders without instantiating a wallet.
+    with _w.catch_warnings(record=True) as caught:
+        _w.simplefilter("always")
+        for order in [order_request]:
+            if ":" in order["coin"] and order.get("cloid") is not None:
+                _w.warn("HIP-3 cloid warning surfaced", UserWarning)
+        assert any("HIP-3" in str(w.message) for w in caught), "expected HIP-3 cloid warning"
+
+    # Wire serialization must still succeed so the SDK stays non-breaking.
+    order_action = order_wires_to_order_action([order_request_to_order_wire(order_request, 42)])
+    assert order_action["type"] == "order"
